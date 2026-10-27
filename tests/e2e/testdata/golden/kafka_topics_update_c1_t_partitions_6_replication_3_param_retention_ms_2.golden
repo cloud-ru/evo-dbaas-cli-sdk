@@ -1,0 +1,17 @@
+exit: 0
+--- stdout
+operation op1 — in progress
+resource  c1
+          Создание кластера
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+PATCH /kafka/v1/clusters/c1/topics/t
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"cluster_id":"c1","name":"t","num_partitions":6,"parameters":{"retention.ms":"2"},"replication_factor":3}

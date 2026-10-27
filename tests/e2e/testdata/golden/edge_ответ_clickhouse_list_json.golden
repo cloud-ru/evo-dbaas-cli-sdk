@@ -1,0 +1,13 @@
+exit: 0
+--- stdout
+{"clusters":[{"id":"c1","name":"n","new_field":{"x":12345678901234567890}}]}
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /clickhouse/v1/clusters?project_id=proj-1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

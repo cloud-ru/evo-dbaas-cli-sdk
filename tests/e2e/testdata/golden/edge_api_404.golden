@@ -1,0 +1,13 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: API 404: cluster not found
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /kafka/v1/clusters/c404
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

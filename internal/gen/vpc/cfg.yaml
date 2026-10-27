@@ -1,0 +1,7 @@
+package: vpc
+output: internal/gen/vpc/client.gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  skip-prune: true

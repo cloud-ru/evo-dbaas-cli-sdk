@@ -1,0 +1,17 @@
+exit: 0
+--- stdout
+operation op1 — in progress
+resource  c1
+          Создание кластера
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+POST /redis/v1/clusters
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"logging":{"enabled":true,"log_group_id":"lg"},"name":"n","parameters":{"maxmemory-policy":"allkeys-lru"},"project_id":"proj-1","replicas":1,"shards":1,"specification_id":"s","subnet_ids":["sn1"],"type":"STANDALONE","version_id":"v1"}

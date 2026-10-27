@@ -1,0 +1,22 @@
+exit: 0
+--- stdout
+id:                c-new
+name:              demo
+status:            READY
+health:            
+version:           24.3
+specification_id:  s1
+shards:            1
+replicas:          0 (hosts per shard)
+storage_gib:       
+hosts:             h1:9440
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /clickhouse/v1/clusters/c-new
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

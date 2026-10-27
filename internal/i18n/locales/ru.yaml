@@ -1,0 +1,459 @@
+# Каталог ru. Ключи — те же, что в en.yaml, глаголы fmt — в том же порядке.
+auth.err.cache: "token cache: %w"
+auth.err.cache_write: "token cache: write %s: %w"
+auth.err.iam: "iam: %w"
+auth.err.iam_request: "IAM: %w"
+auth.err.key_forbidden: "access key forbidden"
+auth.err.key_rejected: "access key rejected"
+auth.err.no_key: "no access key"
+auth.err.no_token: "IAM: в ответе нет access_token"
+auth.err.rate_limited: "iam rate limited"
+auth.iam_error: "iam: status %d: %s"
+base.err.body: "--body: %s"
+base.err.key_value: "--%s %q: нужен вид ключ=значение"
+base.err.logging: "--log-group-id без --logging не имеет смысла"
+base.err.one_of: "--%s %q: допустимо %s"
+base.err.password_required: "нужен пароль: --password-env ИМЯ_ПЕРЕМЕННОЙ или --password-stdin"
+base.err.password_sources: "--password-env и --password-stdin вместе нельзя"
+base.err.stdin: "stdin: %w"
+base.err.wait_no_operation: "--wait: в ответе API нет операции — ждать нечего; проверь состояние перед повтором"
+base.err.zone_not_found: "зона %q не найдена, см. zones list"
+base.err.zones: "зоны: %w"
+base.err.zones_parse: "не разобрать список зон: %s"
+base.flag.body: "сырой JSON тела запроса (строкой или @файл); ключи верхнего уровня заменяют собранные флагами — для полей API, у которых ещё нет флага"
+base.flag.log_group_id: "лог-группа для --logging (без неё — группа по умолчанию)"
+base.flag.logging: "отправлять логи кластера в Клиентское логирование"
+base.flag.new_password_env: "имя переменной окружения с новым паролем"
+base.flag.new_password_stdin: "новый пароль из первой строки stdin"
+base.flag.password_env: "имя переменной окружения с паролем"
+base.flag.password_stdin: "читать пароль из первой строки stdin"
+base.flag.wait: "ждать завершения"
+base.operation.done: "завершена"
+base.operation.failed: "ошибка"
+base.operation.failed_message: "ошибка: %s"
+base.operation.pending: "в процессе"
+base.operation.resource: "resource  %s"
+base.operation.status: "operation %s — %s"
+base.wait.no_resource_id: "операция завершилась без resource_id — кластер ищите в %s"
+base.wait.progress: "… %s"
+base.wait.retry: "… сбой опроса (%v), повтор"
+clickhouse.auth.check.no_project: "проект не задан: CLOUDRU_PROJECT_ID или --project"
+clickhouse.auth.check.short: "Получить токен и сделать пробный запрос"
+clickhouse.auth.check.success: "ключ работает: %s"
+clickhouse.auth.err.project_access: "токен есть, но к проекту %s доступа нет (%s): проверь, что у аккаунта есть роль platform.project.user (iam roles list --subject)"
+clickhouse.auth.short: "Проверка ключа доступа"
+clickhouse.cluster.create.flag.config: "серверный параметр ключ=число; можно несколько раз (в спецификации поля config — readOnly, но API их применяет: проверено 13.10 на max_connections)"
+clickhouse.cluster.create.flag.keeper: "режим ClickHouse Keeper: embedded | standalone"
+clickhouse.cluster.create.flag.name: "имя кластера (обязательно)"
+clickhouse.cluster.create.flag.replicas: "хостов на шард, 1–3 (не «дополнительных», как в спецификации)"
+clickhouse.cluster.create.flag.shards: "число шардов"
+clickhouse.cluster.create.flag.spec: "specification_id с ролью CLICKHOUSE_SERVER, см. specs list (обязательно)"
+clickhouse.cluster.create.flag.storage_gib: "диск, ГиБ (не меньше min_storage_gigs спецификации)"
+clickhouse.cluster.create.flag.subnet_id: "подсеть VPC; можно несколько раз"
+clickhouse.cluster.create.flag.version: "версия ClickHouse, см. versions list (обязательно)"
+clickhouse.cluster.create.flag.wait: "ждать готовности кластера"
+clickhouse.cluster.create.long: |-
+  Создать кластер. Возвращает операцию; с --wait ждёт её завершения и печатает кластер.
+
+  Порядок для нового кластера:
+    cloudru-dbaas clickhouse versions list                                # версия
+    cloudru-dbaas zones list                                              # availability_zone_id
+    cloudru-dbaas clickhouse specs list --version 25.8 --zone <ZONE_ID>   # specification_id, min/max шардов и реплик
+    cloudru-dbaas clickhouse clusters create --name demo --version 25.8 --spec <ID> \
+        --shards 1 --replicas 1 --keeper embedded --storage-gib 40 \
+        --subnet-id <SUBNET_ID> --wait --timeout 60m
+
+  --replicas — ХОСТОВ на шард, 1–3 (проверено 9.10: replicas 1 — один хост). Спецификация
+  API называет их «дополнительными» — это неверно, 0 даёт 400.
+  --keeper embedded — только 1×1 и одна подсеть (проверено 13.10); режим по умолчанию (legacy) принимает только 1×3 и 3×3 с одной подсетью;
+  multi-AZ (несколько подсетей) — только --keeper standalone.
+  --keeper standalone — выделенный Keeper: нужна --keeper-spec (specs list --role keeper)
+  и --keeper-storage-gib. Вживую не проверялся.
+  --config ключ=число — серверные параметры (max_connections, max_concurrent_queries и др.,
+  см. поле config в API); можно несколько раз.
+  Создание минимального кластера — около 30 минут, после READY порт открывается ещё 2–3 мин.
+clickhouse.cluster.create.short: "Создать кластер"
+clickhouse.cluster.delete.short: "Удалить кластер (необратимо, нужен --yes)"
+clickhouse.cluster.err.keeper_embedded: "--keeper embedded — только 1 шард, 1 реплика и 1 подсеть (так отвечает API); для multi-AZ — --keeper standalone"
+clickhouse.cluster.err.keeper_legacy: "режим Keeper по умолчанию (legacy) — только 1 подсеть (так отвечает API); для multi-AZ — --keeper standalone"
+clickhouse.cluster.err.keeper_resources: "выделенный Keeper: нужна --keeper-spec (specs list --role keeper) и --keeper-storage-gib"
+clickhouse.cluster.err.keeper_standalone: "--keeper-spec и --keeper-storage-gib — только с --keeper standalone"
+clickhouse.cluster.flag.keeper_spec: "specification_id выделенного Keeper, см. specs list --role keeper"
+clickhouse.cluster.flag.keeper_storage_gib: "диск выделенного Keeper, ГиБ"
+clickhouse.cluster.flag.wait: "ждать завершения"
+clickhouse.cluster.get.short: "Кластер: статус, адреса хостов, конфигурация"
+clickhouse.cluster.list.short: "Список кластеров проекта"
+clickhouse.cluster.replicas: "%d (хостов на шард)"
+clickhouse.cluster.resize.err.no_changes: "укажите, что менять: --spec, --storage-gib, --keeper-spec, --keeper-storage-gib, --config или --body"
+clickhouse.cluster.resize.flag.config: "серверный параметр ключ=число; можно несколько раз"
+clickhouse.cluster.resize.flag.spec: "новая specification_id"
+clickhouse.cluster.resize.flag.storage_gib: "новый размер диска, ГиБ"
+clickhouse.cluster.resize.short: "Изменить кластер: спецификацию, диск, выделенный Keeper, серверные параметры"
+clickhouse.cluster.short: "Кластеры ClickHouse"
+clickhouse.database.create.short: "Создать базу"
+clickhouse.database.created: "база %s создана"
+clickhouse.database.delete.short: "Удалить базу (нужен --yes)"
+clickhouse.database.deleted: "база %s удалена"
+clickhouse.database.get.short: "База: движок"
+clickhouse.database.list.short: "Список баз"
+clickhouse.database.short: "Базы данных кластера"
+clickhouse.flag.api_url: "адрес Public API ClickHouse"
+clickhouse.operation.get.short: "Статус операции"
+clickhouse.operation.list.short: "Операции кластера"
+clickhouse.operation.short: "Операции над кластерами"
+clickhouse.role.list.short: "Список ролей"
+clickhouse.role.short: "Роли кластера"
+clickhouse.short: "Managed ClickHouse"
+clickhouse.spec.err.zone_required: "нужна --zone: имя (ru.AZ-1) или id из zones list"
+clickhouse.spec.flag.role: "server | keeper"
+clickhouse.spec.flag.version: "версия ClickHouse"
+clickhouse.spec.flag.zone: "зона: имя (ru.AZ-1) или id из zones list (обязательно)"
+clickhouse.spec.list.short: "Спецификации (vCPU/RAM) и допустимые шарды, реплики, диск"
+clickhouse.spec.short: "Спецификации кластера"
+clickhouse.user.create.flag.role: "роль; можно несколько раз"
+clickhouse.user.create.long: |-
+  Создать пользователя. Пароль лучше передавать через переменную окружения:
+    CH_PASSWORD=... cloudru-dbaas clickhouse users create <CLUSTER_ID> app --password-env CH_PASSWORD --role cloud_writer
+  или первой строкой stdin: --password-stdin. Флага с самим паролем нет: он виден
+  в истории shell и в списке процессов.
+  Без ролей пользователь ничего не может; список ролей — cloudru-dbaas clickhouse roles list <CLUSTER_ID>.
+clickhouse.user.create.short: "Создать пользователя"
+clickhouse.user.created: "пользователь %s создан"
+clickhouse.user.delete.short: "Удалить пользователя (нужен --yes)"
+clickhouse.user.deleted: "пользователь %s удалён"
+clickhouse.user.get.short: "Пользователь: роли"
+clickhouse.user.grant.short: "Выдать роль пользователю"
+clickhouse.user.list.short: "Список пользователей"
+clickhouse.user.revoke.short: "Отозвать роль у пользователя"
+clickhouse.user.short: "Пользователи кластера"
+clickhouse.user.update.err.conflicting_fields: "пароль и роли ClickHouse меняются разными вызовами: сначала users update с паролем, затем с --role"
+clickhouse.user.update.err.no_changes: "укажите, что менять: --password-env / --password-stdin или --role"
+clickhouse.user.update.flag.role: "роль; заменяет список целиком; можно несколько раз"
+clickhouse.user.update.long: |-
+  Сменить пароль (--password-env или --password-stdin) или заменить список ролей
+  целиком (--role, можно несколько раз); вместе — нельзя, API отвечает 400. Добавить или убрать одну роль — users grant / revoke.
+clickhouse.user.update.short: "Сменить пароль или заменить список ролей"
+clickhouse.user.updated: "пользователь %s изменён"
+clickhouse.version.list.short: "Доступные версии"
+clickhouse.version.short: "Версии ClickHouse"
+cloud.api_error: "API %d: %s"
+cloud.err.bad_expires: "не RFC 3339"
+cloud.err.bad_id: "недопустимый id"
+cloud.err.body_object: "--body: нужен JSON-объект: %w"
+cloud.err.client_clickhouse: "клиент ClickHouse: %w"
+cloud.err.client_compute: "клиент compute: %w"
+cloud.err.client_iam: "клиент IAM: %w"
+cloud.err.client_kafka: "клиент Kafka: %w"
+cloud.err.client_redis: "клиент Redis: %w"
+cloud.err.client_vpc: "клиент VPC: %w"
+cloud.err.empty_operation: "пустой ответ на запрос операции %s"
+cloud.err.empty_vpc_operation: "пустой ответ на запрос операции VPC %s"
+cloud.err.expires: "срок %q — %w (2026-12-31T00:00:00Z)"
+cloud.err.id: "%s %q — %w"
+cloud.err.integer: "--%s %s=%q: нужно целое число"
+cloud.err.list: "список не собран"
+cloud.err.list_changed: "%w: %s менялся во время обхода (%d попытки): собрано %d из %d — повторите позже"
+cloud.err.list_field_changed: "%w: ответ %s: нет поля %s, но есть список %q — формат ответа сменился"
+cloud.err.list_field_missing: "%w: ответ %s: нет поля %s, а страница не последняя"
+cloud.err.list_field_type: "%w: ответ %s: поле %q — не список"
+cloud.err.list_loop: "%w: API повторил токен страницы %q — пагинация зациклилась"
+cloud.err.list_marshal: "%w: сборка страниц: %w"
+cloud.err.list_null: "%w: ответ %s: null вместо объекта"
+cloud.err.list_pages: "%w: длиннее %d страниц — похоже на неисправность API, обход остановлен"
+cloud.err.list_parse: "%w: не разобрать ответ %s: %w"
+cloud.err.list_size: "%w: %s больше %d МБ — обход остановлен"
+cloud.err.not_uuid: "не UUID"
+cloud.err.request_body: "тело запроса: %w"
+cloud.resource.account: "аккаунт"
+cloud.resource.key: "ключ"
+cloud.resource.operation: "операция"
+cloud.resource.project: "проект"
+cloud.resource.role: "роль"
+cloud.resource.subnet: "подсеть"
+cloud.resource.vpc: "VPC"
+cloud.resource.zone: "зона"
+cloudru-dbaas.error: "ошибка: %s"
+cmd.err.negative: "--%s: %s — нужно неотрицательное число"
+cmd.flag.json: "вывод в JSON (для скриптов и агентов)"
+cmd.flag.project: "идентификатор проекта cloud.ru"
+cmd.flag.timeout: "предел ожидания для --wait"
+cmd.long: |-
+  cloudru-dbaas управляет кластерами Managed ClickHouse, Redis и Kafka в cloud.ru через Public API.
+
+  Ключ доступа — из переменных окружения:
+    CLOUDRU_KEY_ID, CLOUDRU_KEY_SECRET   ключ сервисного аккаунта или персональный ключ
+    CLOUDRU_PROJECT_ID                   проект по умолчанию (или флаг --project)
+
+  Для агентов: флаг --json выводит ответ API как есть, одной строкой JSON.
+
+  Коды выхода: 0 успех, 1 ошибка (и операция в облаке упала), 2 отмена (Ctrl-C),
+  4 ключ или доступ, 8 --wait не дождался — операция могла продолжиться.
+cmd.short: "Managed ClickHouse, Redis и Kafka в cloud.ru из командной строки"
+common.err.need_yes: "удаление необратимо: повторите с --yes"
+common.flag.description: "описание"
+common.flag.name: "имя"
+common.flag.wait_op: "ждать завершения операции"
+common.flag.yes: "подтвердить удаление"
+iam.accesskey.create.flag.description: "описание ключа"
+iam.accesskey.create.flag.env_file: "новый файл для ключа (0600); существующий не перезаписывается"
+iam.accesskey.create.flag.ttl: "срок жизни, например 720h"
+iam.accesskey.create.long: |-
+  Выпустить ключ доступа. Секрет API отдаёт один раз; CLI пишет его только
+  в новый файл --env-file с правами 0600 (CLOUDRU_KEY_ID, CLOUDRU_KEY_SECRET,
+  CLOUDRU_PROJECT_ID) и не печатает. Подключить: set -a; . FILE; set +a.
+iam.accesskey.create.short: "Выпустить ключ доступа и записать его в env-файл"
+iam.accesskey.created: "ключ %s записан в %s (секрет в выводе не показан)"
+iam.accesskey.delete.short: "Отозвать ключ доступа (нужен --yes)"
+iam.accesskey.err.env_file: "env-файл: %s (нужен новый путь — секрет не перезаписываем)"
+iam.accesskey.err.missing_secret: "API не вернул key_id и secret; ключ мог быть создан — проверь access-keys list"
+iam.accesskey.err.write: "ключ выпущен, но env-файл не записан: %s"
+iam.accesskey.get.short: "Ключ доступа (без секрета)"
+iam.accesskey.list.short: "Ключи доступа (без секретов)"
+iam.accesskey.revoked: "отозван %s"
+iam.accesskey.short: "Ключи доступа сервисного аккаунта"
+iam.long: |-
+  Сервисные аккаунты проекта, их ключи доступа и роли.
+  Нужен ключ с правом управлять сервисными аккаунтами проекта (например, роль
+  platform.project.admin); без него API ответит 403.
+iam.role.err.need_yes: "отзыв роли: повторите с --yes"
+iam.role.get.short: "Выданная роль"
+iam.role.grant.flag.expires: "срок действия, RFC 3339 (2026-12-31T00:00:00Z)"
+iam.role.grant.flag.role: "роль, например dbaas.clickhouse.admin"
+iam.role.grant.flag.subject: "id сервисного аккаунта или пользователя"
+iam.role.grant.long: |-
+  Выдать роль аккаунту или пользователю в проекте, например
+  dbaas.clickhouse.admin, dbaas.redis.admin, dbaas.kafka.admin, vpc.admin.
+iam.role.grant.short: "Выдать роль в проекте"
+iam.role.granted: "выдана %s id %s"
+iam.role.list.flag.subject: "только роли этого аккаунта или пользователя (id)"
+iam.role.list.short: "Выданные роли в проекте"
+iam.role.revoke.flag.yes: "подтвердить отзыв"
+iam.role.revoke.short: "Отозвать выданную роль (id из roles list, нужен --yes)"
+iam.role.revoked: "отозвана %s"
+iam.role.short: "Роли в проекте: кому какая выдана"
+iam.serviceaccount.create.flag.name: "имя аккаунта"
+iam.serviceaccount.create.short: "Создать сервисный аккаунт в проекте"
+iam.serviceaccount.created: "создан %s %s"
+iam.serviceaccount.delete.short: "Удалить сервисный аккаунт и его ключи (нужен --yes)"
+iam.serviceaccount.deleted: "удалён %s"
+iam.serviceaccount.get.short: "Сервисный аккаунт"
+iam.serviceaccount.short: "Сервисные аккаунты проекта"
+iam.short: "Сервисные аккаунты, ключи доступа и роли"
+kafka.cluster.create.flag.auto_rebalance: "автоматически перераспределять партиции (нужен --cruise-control)"
+kafka.cluster.create.flag.brokers: "число брокеров (в пределах specs list)"
+kafka.cluster.create.flag.cruise_control: "включить Cruise Control"
+kafka.cluster.create.flag.name: "имя кластера (обязательно)"
+kafka.cluster.create.flag.param: "параметр кластера ключ=значение (см. «Параметры кластера» в документации); можно несколько раз"
+kafka.cluster.create.flag.spec: "specification_id из specs list (обязательно)"
+kafka.cluster.create.flag.storage_gib: "диск, ГиБ (обязательно; не меньше минимального в specs list)"
+kafka.cluster.create.flag.subnet_id: "подсеть VPC (обязательно)"
+kafka.cluster.create.flag.ui: "включить веб-интерфейс Kafka UI"
+kafka.cluster.create.flag.version_id: "id версии из versions list (обязательно)"
+kafka.cluster.create.flag.wait: "ждать готовности кластера"
+kafka.cluster.create.long: |-
+  Создать кластер. Возвращает операцию; с --wait ждёт её завершения и печатает кластер.
+
+  Порядок для нового кластера:
+    cloudru-dbaas kafka versions list                         # id версии
+    cloudru-dbaas zones list                                  # availability_zone_id
+    cloudru-dbaas kafka specs list --version-id <VERSION_ID> --zone <ZONE>  # specification_id, брокеры, минимальный диск
+    cloudru-dbaas kafka clusters create --name demo --version-id <VERSION_ID> --spec <SPEC_ID> \
+        --brokers 1 --storage-gib 40 --subnet-id <SUBNET_ID> --wait
+kafka.cluster.create.short: "Создать кластер"
+kafka.cluster.delete.short: "Удалить кластер (необратимо, нужен --yes)"
+kafka.cluster.flag.wait: "ждать завершения"
+kafka.cluster.get.short: "Кластер: статус, адреса брокеров, конфигурация"
+kafka.cluster.list.short: "Список кластеров проекта"
+kafka.cluster.resize.err.no_changes: "укажите, что менять: --spec, --storage-gib, --param или --body"
+kafka.cluster.resize.flag.param: "параметр кластера ключ=значение; можно несколько раз"
+kafka.cluster.resize.flag.spec: "новая specification_id"
+kafka.cluster.resize.flag.storage_gib: "новый размер диска, ГиБ"
+kafka.cluster.resize.short: "Изменить кластер: спецификацию, диск, параметры"
+kafka.cluster.short: "Кластеры Kafka"
+kafka.flag.api_url: "адрес Public API Kafka"
+kafka.operation.get.short: "Статус операции"
+kafka.operation.list.short: "Операции кластера"
+kafka.operation.short: "Операции над кластерами"
+kafka.role.list.short: "Список ролей"
+kafka.role.short: "Роли кластера"
+kafka.short: "Managed Kafka"
+kafka.spec.err.filters_required: "нужны --version-id и --zone (или --cluster-id — спецификации для resize кластера)"
+kafka.spec.flag.cluster_id: "вместо версии и зоны: спецификации, доступные для resize этого кластера (вживую не проверялось)"
+kafka.spec.flag.zone: "зона: имя (ru.AZ-1) или id из zones list (обязательно)"
+kafka.spec.list.short: "Спецификации (vCPU/RAM), допустимое число брокеров, минимальный диск"
+kafka.spec.short: "Спецификации кластера"
+kafka.topic.create.flag.partitions: "число партиций"
+kafka.topic.create.flag.replication: "фактор репликации"
+kafka.topic.create.long: |-
+  Создать топик. Параметры Kafka — --param ключ=значение, например --param retention.ms=86400000.
+  Фактор репликации не больше числа брокеров кластера.
+kafka.topic.create.short: "Создать топик"
+kafka.topic.delete.short: "Удалить топик вместе с данными (нужен --yes)"
+kafka.topic.flag.param: "параметр топика ключ=значение; можно несколько раз"
+kafka.topic.get.short: "Топик: партиции, репликация, параметры"
+kafka.topic.list.flag.filter: "часть имени топика"
+kafka.topic.list.short: "Список топиков"
+kafka.topic.short: "Топики кластера"
+kafka.topic.summary: "%s\tpartitions=%d\treplication=%d"
+kafka.topic.update.err.no_changes: "укажите, что менять: --partitions, --replication или --param"
+kafka.topic.update.flag.partitions: "новое число партиций (только больше текущего)"
+kafka.topic.update.flag.replication: "новый фактор репликации"
+kafka.topic.update.long: |-
+  Изменить топик. Kafka умеет только увеличивать число партиций.
+  Параметры — --param ключ=значение, можно несколько раз.
+kafka.topic.update.short: "Изменить топик: партиции, репликацию, параметры"
+kafka.user.create.flag.role: "роль; можно несколько раз"
+kafka.user.create.long: |-
+  Создать пользователя. Пароль — через переменную окружения или первой строкой stdin:
+    KAFKA_PASSWORD=... cloudru-dbaas kafka users create <CLUSTER_ID> app --password-env KAFKA_PASSWORD --role cloud_writer
+  Без ролей пользователь ничего не может; список ролей — cloudru-dbaas kafka roles list <CLUSTER_ID>.
+kafka.user.create.short: "Создать пользователя"
+kafka.user.delete.short: "Удалить пользователя (нужен --yes)"
+kafka.user.err.name: "имя пользователя %q: только строчная латиница и цифры (так отвечает API)"
+kafka.user.get.short: "Пользователь: роли"
+kafka.user.list.short: "Список пользователей"
+kafka.user.short: "Пользователи кластера"
+kafka.user.update.err.no_changes: "укажите, что менять: --password-env / --password-stdin и/или --role"
+kafka.user.update.flag.role: "роль; заменяет список целиком; можно несколько раз"
+kafka.user.update.long: |-
+  Сменить пароль (--password-env или --password-stdin) и/или заменить список ролей
+  целиком (--role, можно несколько раз).
+kafka.user.update.short: "Сменить пароль и/или заменить список ролей"
+kafka.version.list.short: "Доступные версии: id нужен для clusters create --version-id"
+kafka.version.short: "Версии Kafka"
+network.short: "Сеть: подсети и VPC (нужны для создания кластеров)"
+network.subnet.create.flag.cidr: "адрес подсети, например 10.0.9.0/24"
+network.subnet.create.flag.dns: "DNS-сервер; можно несколько раз"
+network.subnet.create.flag.gateway: "адрес шлюза (по умолчанию — первый адрес подсети)"
+network.subnet.create.flag.isolated: "без маршрутизации за пределы подсети"
+network.subnet.create.flag.name: "имя (латиница, цифры, . - _)"
+network.subnet.create.flag.vpc_id: "VPC (по умолчанию — VPC проекта по умолчанию)"
+network.subnet.create.flag.wait: "ждать, пока подсеть станет готовой"
+network.subnet.create.flag.zone: "зона: id или имя (ru.AZ-1); кластер и подсеть — в одной зоне"
+network.subnet.create.long: |-
+  Создать подсеть в зоне. Без --vpc-id — в VPC проекта по умолчанию.
+  CIDR — частный диапазон, не пересекающийся с другими подсетями VPC
+  (подсети проекта: network subnets list). Подсеть создаётся за секунды.
+network.subnet.create.short: "Создать подсеть"
+network.subnet.create.wait: "создание подсети %s"
+network.subnet.delete.flag.wait: "ждать, пока подсеть исчезнет"
+network.subnet.delete.short: "Удалить подсеть (нужен --yes)"
+network.subnet.delete.wait: "удаление подсети %s"
+network.subnet.deleted: "удалена %s"
+network.subnet.err.state: "подсеть %s в состоянии %s"
+network.subnet.get.short: "Подсеть"
+network.subnet.list.flag.name: "только подсеть с этим именем"
+network.subnet.list.flag.vpc_id: "только подсети этой VPC"
+network.subnet.list.flag.zone: "только подсети зоны (id или имя, ru.AZ-1)"
+network.subnet.list.short: "Подсети проекта"
+network.subnet.short: "Подсети"
+network.vpc.create.short: "Создать VPC (обычно хватает VPC по умолчанию)"
+network.vpc.delete.short: "Удалить VPC (нужен --yes)"
+network.vpc.get.short: "VPC"
+network.vpc.list.short: "VPC проекта"
+network.vpc.short: "Виртуальные сети (VPC)"
+operation.err.pending: "операция ещё идёт"
+output.auth.forbidden: "IAM вернул 403: %s — ключ распознан, но токен не выдан: проверь, не отключены ли ключ или сервисный аккаунт"
+output.auth.no_key: "не задан ключ доступа: установите CLOUDRU_KEY_ID и CLOUDRU_KEY_SECRET"
+output.auth.other: "IAM вернул %d: %s"
+output.auth.rate_limited: "IAM вернул 429: %s — слишком много запросов, повтори через минуту"
+output.auth.rejected: "IAM вернул 401: %s — ключ не принят, проверь CLOUDRU_KEY_ID и CLOUDRU_KEY_SECRET"
+output.err.decode: "разбор ответа: %w"
+output.err.encode_json: "encode JSON: %w"
+output.err.write_output: "write output: %w"
+output.err.write_table: "write table: %w"
+output.operation.canceled: "%s — ожидание прервано; в облаке может продолжаться, проверь состояние перед повтором"
+output.operation.canceled_hint: "%s — ожидание прервано; в облаке может продолжаться, дождаться: `%s %s --wait`"
+output.operation.failed: "операция %s завершилась ошибкой: %s"
+output.operation.name: "операция %s"
+output.operation.no_description: "без описания"
+output.operation.poll: "%s — опрос не удался: %s; в облаке может продолжаться, проверь состояние перед повтором"
+output.operation.poll_hint: "%s — опрос не удался: %s; в облаке может продолжаться, дождаться: `%s %s --wait`"
+output.operation.timeout: "%s не завершилось за %s; в облаке может продолжаться, проверь состояние перед повтором"
+output.operation.timeout_hint: "%s не завершилось за %s; в облаке может продолжаться, дождаться: `%s %s --wait`"
+output.operation.timeout_operation: "%s не завершилась за %s; в облаке может продолжаться, проверь состояние перед повтором"
+output.operation.timeout_operation_hint: "%s не завершилась за %s; в облаке может продолжаться, дождаться: `%s %s --wait`"
+redis.cluster.create.flag.name: "имя кластера (обязательно)"
+redis.cluster.create.flag.param: "параметр кластера ключ=значение (см. «Параметры кластера» в документации); можно несколько раз"
+redis.cluster.create.flag.replicas: "число узлов-реплик; API требует ≥ 1 и для standalone (проверено 14.10)"
+redis.cluster.create.flag.shards: "число шардов"
+redis.cluster.create.flag.spec: "specification_id из specs list (обязательно)"
+redis.cluster.create.flag.storage_gib: "диск, ГиБ (не меньше минимального в specs list)"
+redis.cluster.create.flag.subnet_id: "подсеть VPC; можно несколько раз"
+redis.cluster.create.flag.type: "standalone | master-replica"
+redis.cluster.create.flag.version_id: "id версии из versions list (обязательно)"
+redis.cluster.create.flag.wait: "ждать готовности кластера"
+redis.cluster.create.long: |-
+  Создать кластер. Возвращает операцию; с --wait ждёт её завершения и печатает кластер.
+
+  Порядок для нового кластера:
+    cloudru-dbaas redis versions list                         # id версии
+    cloudru-dbaas zones list                                  # availability_zone_id
+    cloudru-dbaas redis specs list --version-id <VERSION_ID> --zone <ZONE>  # specification_id, минимальный диск
+    cloudru-dbaas redis clusters create --name demo --version-id <VERSION_ID> --spec <SPEC_ID> \
+        --type standalone --replicas 1 --storage-gib 15 --subnet-id <SUBNET_ID> --wait --timeout 60m
+
+  --type standalone — один узел; master-replica — мастер и реплики. --replicas по умолчанию 1:
+  без него API отвечает 400 «replicas must be positive» и для standalone (проверено 14.10).
+redis.cluster.create.short: "Создать кластер"
+redis.cluster.delete.short: "Удалить кластер (необратимо, нужен --yes)"
+redis.cluster.get.short: "Кластер: статус, адреса хостов, конфигурация"
+redis.cluster.list.short: "Список кластеров проекта"
+redis.cluster.resize.err.conflicting_fields: "--spec и --storage-gib — разными вызовами: сначала диск (не меньше 2× RAM новой спецификации), затем --spec"
+redis.cluster.resize.err.no_changes: "укажите, что менять: --spec, --storage-gib, --param или --body"
+redis.cluster.resize.flag.param: "параметр кластера ключ=значение; можно несколько раз"
+redis.cluster.resize.flag.spec: "новая specification_id"
+redis.cluster.resize.flag.storage_gib: "новый размер диска, ГиБ"
+redis.cluster.resize.short: "Изменить кластер: спецификацию, диск, параметры"
+redis.cluster.short: "Кластеры Redis"
+redis.flag.api_url: "адрес Public API Redis"
+redis.operation.get.short: "Статус операции"
+redis.operation.list.short: "Операции кластера"
+redis.operation.short: "Операции над кластерами"
+redis.role.list.short: "Список ролей"
+redis.role.short: "Роли кластера"
+redis.short: "Managed Redis"
+redis.spec.err.filter: "нужны --version-id и --zone (или --cluster-id — спецификации для resize кластера)"
+redis.spec.flag.cluster_id: "вместо версии и зоны: спецификации, доступные для resize этого кластера (вживую не проверялось)"
+redis.spec.flag.version_id: "id версии из versions list (обязательно)"
+redis.spec.flag.zone: "зона: имя (ru.AZ-1) или id из zones list (обязательно)"
+redis.spec.list.short: "Спецификации (vCPU/RAM) и минимальный диск"
+redis.spec.short: "Спецификации кластера"
+redis.user.create.flag.role: "роль; можно несколько раз"
+redis.user.create.long: |-
+  Создать пользователя. Пароль — через переменную окружения или первой строкой stdin:
+    REDIS_PASSWORD=... cloudru-dbaas redis users create <CLUSTER_ID> app --password-env REDIS_PASSWORD --role <ROLE>
+  Список ролей — cloudru-dbaas redis roles list <CLUSTER_ID>.
+redis.user.create.short: "Создать пользователя"
+redis.user.delete.short: "Удалить пользователя (нужен --yes)"
+redis.user.get.short: "Пользователь: роли"
+redis.user.list.short: "Список пользователей"
+redis.user.short: "Пользователи кластера"
+redis.user.update.err.no_changes: "укажите, что менять: --password-env / --password-stdin и/или --role"
+redis.user.update.flag.role: "роль; заменяет список целиком; можно несколько раз"
+redis.user.update.long: |-
+  Сменить пароль (--password-env или --password-stdin) и/или заменить список ролей
+  целиком (--role, можно несколько раз).
+  API Redis меняет пользователя целиком (PUT): без --role текущие роли
+  читаются и отправляются заново.
+redis.user.update.short: "Сменить пароль и/или заменить список ролей"
+redis.version.list.short: "Доступные версии: id нужен для clusters create --version-id"
+redis.version.short: "Версии Redis"
+state.empty_body.bad_request: "ответ без тела — вероятно, не хватает обязательного параметра"
+state.empty_body.forbidden: "ответ без тела — нет доступа: проверь проект (--project, CLOUDRU_PROJECT_ID) и роли сервисного аккаунта в нём"
+state.empty_body.not_found: "ответ без тела — ресурс не найден: проверь id и проект"
+state.empty_body.other: "ответ без тела"
+state.empty_body.rate_limited: "ответ без тела — слишком много запросов, повтори через минуту"
+state.empty_body.server_error: "ответ без тела — сбой на стороне API, повтори позже"
+state.empty_body.unauthorized: "ответ без тела — API не принял токен и после перевыпуска у IAM: ключ действует, проверь, что сервисный аккаунт из этого проекта"
+state.err.insecure_url: "%s — без TLS: ключ и токен ушли бы открытым текстом. Нужен https://; стенд без TLS — CLOUDRU_ALLOW_HTTP=1"
+state.err.no_project: "не задан проект: --project или CLOUDRU_PROJECT_ID"
+state.warning.insecure_url: "предупреждение: %s — без TLS, ключ и токен уйдут открытым текстом"
+transport.err.body_size: "ответ API больше %d МБ — чтение прервано"
+transport.err.read_body: "read body: %w"
+transport.err.read_error_body: "read error body: %w"
+transport.err.token_refreshed: "API не принял токен, токен перевыпущен; %s не повторяется сам, чтобы не выполнить его дважды — повтори команду"
+zones.err.list: "зоны: %w"
+zones.err.parse: "не разобрать список зон: %s"
+zones.list.short: "Список зон доступности"
+zones.short: "Зоны доступности (для specs list --zone)"

@@ -1,0 +1,18 @@
+exit: 1
+--- stdout
+operation vop1 — failed
+--- stderr
+error: operation vop1 failed: no description
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+POST /vpc/v1/vpcs
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"name":"v","projectId":"proj-1"}
+GET /vpc/v1/vpcs/operations/vop1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

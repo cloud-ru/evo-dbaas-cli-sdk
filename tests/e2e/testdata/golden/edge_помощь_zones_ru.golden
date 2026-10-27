@@ -1,0 +1,22 @@
+exit: 0
+--- stdout
+Зоны доступности (для specs list --zone)
+
+Usage:
+  cloudru-dbaas zones [command]
+
+Available Commands:
+  list        Список зон доступности
+
+Flags:
+  -h, --help   help for zones
+
+Global Flags:
+      --json               вывод в JSON (для скриптов и агентов)
+      --project string     идентификатор проекта cloud.ru (default "proj-1")
+      --timeout duration   предел ожидания для --wait (default 30m0s)
+
+Use "cloudru-dbaas zones [command] --help" for more information about a command.
+--- stderr
+
+--- requests

@@ -1,0 +1,1450 @@
+openapi: 3.0.3
+info:
+    title: Cloud.ru Managed ClickHouse API
+    description: '[Документация Managed ClickHouse](https://cloud.ru/docs/clickhouse/ug/index.html)'
+    contact:
+        email: support@cloud.ru
+    version: 1.0.0
+servers:
+    - url: https://clickhouse.api.cloud.ru
+paths:
+    /v1/clusters:
+        get:
+            tags:
+                - ClusterService
+            description: Получение списка кластеров.
+            operationId: ClusterService_List
+            parameters:
+                - name: project_id
+                  in: query
+                  description: Идентификатор проекта.
+                  schema:
+                    type: string
+                - name: page_size
+                  in: query
+                  description: Максимальное количество результатов на странице ответа.
+                  schema:
+                    type: string
+                    format: int64
+                - name: page_token
+                  in: query
+                  description: |-
+                    Токен запрашиваемой страницы с результатами.
+                     При первом запросе оставьте поле пустым.
+                     При последующих запросах укажите значение параметра `next_page_token` из ответа метода.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.ListClustersResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        post:
+            tags:
+                - ClusterService
+            description: Создание кластера.
+            operationId: ClusterService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.CreateClusterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}:
+        get:
+            tags:
+                - ClusterService
+            description: Получение информации о кластере.
+            operationId: ClusterService_Get
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.Cluster'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        delete:
+            tags:
+                - ClusterService
+            description: Удаление кластера.
+            operationId: ClusterService_Delete
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        patch:
+            tags:
+                - ClusterService
+            description: Изменение ресурсов кластера.
+            operationId: ClusterService_Update
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.UpdateClusterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/databases:
+        get:
+            tags:
+                - DatabaseService
+            description: Получение списка баз данных.
+            operationId: DatabaseService_List
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.ListDatabasesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        post:
+            tags:
+                - DatabaseService
+            description: Создание базы данных.
+            operationId: DatabaseService_Create
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.CreateDatabaseRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.Database'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/databases/{name}:
+        get:
+            tags:
+                - DatabaseService
+            description: Получение информации о базе данных.
+            operationId: DatabaseService_Get
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: name
+                  in: path
+                  description: Название базы данных.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.Database'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        delete:
+            tags:
+                - DatabaseService
+            description: Удаление базы данных.
+            operationId: DatabaseService_Delete
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: name
+                  in: path
+                  description: Название базы данных.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.DeleteDatabaseResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/operations:
+        get:
+            tags:
+                - ClusterService
+            description: Получение списка операций, произведенных над кластером.
+            operationId: ClusterService_ListOperations
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: page_size
+                  in: query
+                  description: Максимальное количество результатов на странице ответа.
+                  schema:
+                    type: string
+                    format: int64
+                - name: page_token
+                  in: query
+                  description: |-
+                    Токен запрашиваемой страницы с результатами.
+                     При первом запросе оставьте поле пустым.
+                     При последующих запросах укажите значение параметра `next_page_token` из ответа метода.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.ListOperationsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/roles:
+        get:
+            tags:
+                - RoleService
+            description: Список ролей кластера.
+            operationId: RoleService_List
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.ListRolesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/users:
+        get:
+            tags:
+                - UserService
+            description: Список пользователей кластера.
+            operationId: UserService_List
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.ListUsersResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        post:
+            tags:
+                - UserService
+            description: Создание пользователя.
+            operationId: UserService_Create
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.CreateUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.User'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/users/{user_name}:
+        get:
+            tags:
+                - UserService
+            description: Получение информации о пользователе.
+            operationId: UserService_Get
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: user_name
+                  in: path
+                  description: Имя пользователя.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.User'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        delete:
+            tags:
+                - UserService
+            description: Удаление пользователя в кластере.
+            operationId: UserService_Delete
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: user_name
+                  in: path
+                  description: Имя пользователя.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.DeleteUserResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        patch:
+            tags:
+                - UserService
+            description: Изменение пользователя кластера.
+            operationId: UserService_Update
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: user_name
+                  in: path
+                  description: Имя пользователя.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.UpdateUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.User'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/users/{user_name}:grantRole:
+        post:
+            tags:
+                - UserService
+            description: Предоставление роли пользователю.
+            operationId: UserService_GrantRole
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: user_name
+                  in: path
+                  description: Имя пользователя.
+                  required: true
+                  schema:
+                    type: string
+                - name: role
+                  in: query
+                  description: Роль, которую нужно выдать.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.GrantRoleResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/users/{user_name}:revokeRole:
+        post:
+            tags:
+                - UserService
+            description: Отзыв роли у пользователя.
+            operationId: UserService_RevokeRole
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: user_name
+                  in: path
+                  description: Имя пользователя.
+                  required: true
+                  schema:
+                    type: string
+                - name: role
+                  in: query
+                  description: Роль, которую нужно отозвать.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.RevokeRoleResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/operations/{operation_id}:
+        get:
+            tags:
+                - OperationService
+            description: Получение информации об операции по идентификатору.
+            operationId: OperationService_Get
+            parameters:
+                - name: operation_id
+                  in: path
+                  description: Идентификатор операции.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/specifications:
+        get:
+            tags:
+                - SpecificationService
+            description: Получение списка спецификаций без пагинации.
+            operationId: SpecificationService_List
+            parameters:
+                - name: version
+                  in: query
+                  description: Версия продукта.
+                  schema:
+                    type: string
+                - name: availability_zone_id
+                  in: query
+                  description: |-
+                    Идентификатор зоны доступности.
+
+                     Список зон доступности и их описание можно получить через API сервиса виртуальных машин
+                     в разделе [Availability Zones](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3#tag/Availability-Zones).
+                  schema:
+                    type: string
+                - name: role
+                  in: query
+                  description: Назначение спецификаций.
+                  schema:
+                    enum:
+                        - SPECIFICATION_ROLE_UNSPECIFIED
+                        - SPECIFICATION_ROLE_CLICKHOUSE_SERVER
+                        - SPECIFICATION_ROLE_CLICKHOUSE_KEEPER
+                    type: string
+                    format: enum
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.ListSpecificationsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/versions:
+        get:
+            tags:
+                - VersionService
+            description: Получение списка версий без пагинации.
+            operationId: VersionService_List
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.ListVersionsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+components:
+    schemas:
+        cloudru.dbaas.clickhouse.v1.Cluster:
+            required:
+                - name
+                - version
+                - specification_id
+                - shards
+                - replicas
+                - project_id
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор кластера.
+                name:
+                    example: name-of-cluster_1
+                    type: string
+                    description: Имя кластера.
+                description:
+                    example: Some short text.
+                    type: string
+                    description: Описание кластера.
+                health:
+                    readOnly: true
+                    example: HEALTH_HEALTHY
+                    enum:
+                        - HEALTH_UNSPECIFIED
+                        - HEALTHY
+                        - UNHEALTHY
+                    type: string
+                    description: Состояние здоровья кластера.
+                    format: enum
+                status:
+                    readOnly: true
+                    example: STATUS_READY
+                    enum:
+                        - STATUS_UNSPECIFIED
+                        - PENDING
+                        - DEPLOYING
+                        - FAILED
+                        - UPDATING
+                        - READY
+                        - SUSPENDED
+                        - SUSPENDING
+                        - ERASED
+                        - ERASING
+                        - ROLLING_BACK
+                    type: string
+                    description: Статус кластера.
+                    format: enum
+                version:
+                    example: 24.3
+                    type: string
+                    description: Версия кластера.
+                specification_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор спецификации кластера. Используйте спецификацию с назначением `SPECIFICATION_ROLE_CLICKHOUSE_SERVER`.
+                hosts:
+                    readOnly: true
+                    example: ["clickhouse-node1.example.com:9000", "clickhouse-node2.example.com:9000"]
+                    type: array
+                    items:
+                        type: string
+                    description: Адреса кластера.
+                shards:
+                    example: 3
+                    type: integer
+                    description: Количество шардов кластера.
+                    format: int32
+                replicas:
+                    example: 2
+                    type: integer
+                    description: |-
+                        Количество дополнительных реплик на шард кластера.
+                         Реальное количество хостов, участвующих в репликации, на один больше.
+                    format: int32
+                disk_size_gigs:
+                    example: 40
+                    deprecated: true
+                    type: integer
+                    description: |-
+                        Размер диска в гигабайтах.
+
+                         Deprecated: используйте поле `storage_gib` вместо `disk_size_gigs`.
+                    format: int32
+                created_at:
+                    readOnly: true
+                    example: 2026-02-14T17:17:45.000Z
+                    type: string
+                    description: Дата создания кластера.
+                    format: date-time
+                config:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.ClusterConfig'
+                    description: Конфигурация кластера ClickHouse.
+                logging:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.LoggingConfig'
+                    description: Параметры интеграции с сервисом Клиентского логирования.
+                storage_gib:
+                    example: 40
+                    type: integer
+                    description: Размер диска в гибибайтах.
+                    format: int32
+                project_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор проекта.
+                subnet_ids:
+                    example: ["00000000-0000-0000-0000-000000000000"]
+                    type: array
+                    items:
+                        type: string
+                    description: Идентификаторы подсетей.
+                keeper_mode:
+                    example: KEEPER_MODE_EMBEDDED
+                    enum:
+                        - KEEPER_MODE_UNSPECIFIED
+                        - KEEPER_MODE_EMBEDDED
+                        - KEEPER_MODE_STANDALONE
+                    type: string
+                    description: Режим работы ClickHouse Keeper.
+                    format: enum
+                standalone_keeper:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.StandaloneKeeper'
+                    description: Конфигурация выделенного ClickHouse Keeper.
+            description: Кластер ClickHouse.
+        cloudru.dbaas.clickhouse.v1.ClusterConfig:
+            type: object
+            properties:
+                background_pool_size:
+                    readOnly: true
+                    example: 10
+                    type: integer
+                    description: Размер пула потоков для фоновых операций (например, слияния).
+                    format: int64
+                    x-go-type: FlexInt64
+                background_schedule_pool_size:
+                    readOnly: true
+                    example: 10
+                    type: integer
+                    description: Максимальное количество потоков, которые будут использоваться для постоянного выполнения некоторых легковесных периодических операций для реплицированных таблиц, потоков Kafka и обновлений кеша DNS.
+                    format: int64
+                    x-go-type: FlexInt64
+                keep_alive_timeout:
+                    readOnly: true
+                    example: 60
+                    type: integer
+                    description: Количество секунд, которое ClickHouse ждет входящих запросов перед закрытием соединения.
+                    format: int64
+                    x-go-type: FlexInt64
+                mark_cache_size:
+                    readOnly: true
+                    example: 5368709120
+                    type: integer
+                    description: Максимальный размер кеша для меток (индекс MergeTree семейства таблиц).
+                    format: int64
+                    x-go-type: FlexInt64
+                max_concurrent_queries:
+                    readOnly: true
+                    example: 100
+                    type: integer
+                    description: Лимит на общее количество одновременно выполняемых запросов на сервере.
+                    format: int64
+                    x-go-type: FlexInt64
+                max_connections:
+                    readOnly: true
+                    example: 100
+                    type: integer
+                    description: Максимальное количество одновременных подключений к СУБД.
+                    format: int64
+                    x-go-type: FlexInt64
+                max_partition_size_to_drop:
+                    readOnly: true
+                    example: 50000000000
+                    type: integer
+                    description: Ограничение на удаление партиций во время выполнения запроса.
+                    format: int64
+                    x-go-type: FlexInt64
+                max_table_size_to_drop:
+                    readOnly: true
+                    example: 50000000000
+                    type: integer
+                    description: Ограничение на удаление таблиц во время выполнения запроса.
+                    format: int64
+                    x-go-type: FlexInt64
+                max_session_timeout:
+                    readOnly: true
+                    example: 30
+                    type: integer
+                    description: Максимальное время ожидания сеанса в секундах.
+                    format: int64
+                    x-go-type: FlexInt64
+                uncompressed_cache_size:
+                    readOnly: true
+                    example: 2048
+                    type: integer
+                    description: Максимальный размер кеша (в байтах) для не сжатых данных, используемых движками таблиц из семейства MergeTree.
+                    format: int64
+                    x-go-type: FlexInt64
+            description: Конфигурация кластера ClickHouse.
+        cloudru.dbaas.clickhouse.v1.CreateClusterRequest:
+            required:
+                - name
+                - version
+                - specification_id
+                - project_id
+                - shards
+                - replicas
+            type: object
+            properties:
+                name:
+                    example: name-of-cluster_1
+                    type: string
+                    description: Название кластера.
+                description:
+                    example: Some short text.
+                    type: string
+                    description: Описание кластера.
+                version:
+                    example: 24.3
+                    type: string
+                    description: Версия кластера.
+                specification_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор спецификации кластера. Используйте спецификацию с назначением `SPECIFICATION_ROLE_CLICKHOUSE_SERVER`.
+                subnet_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    deprecated: true
+                    type: string
+                    description: |-
+                        Идентификатор подсети.
+
+                         Deprecated: используйте поле `subnet_ids`.
+                project_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор проекта.
+                shards:
+                    example: 3
+                    type: integer
+                    description: Количество шардов кластера.
+                    format: int32
+                replicas:
+                    example: 2
+                    type: integer
+                    description: |-
+                        Количество дополнительных реплик на шард кластера.
+                         Реальное количество хостов, участвующих в репликации, на один больше.
+                    format: int32
+                disk_size_gigs:
+                    example: 40
+                    deprecated: true
+                    type: integer
+                    description: |-
+                        Размер диска в гигабайтах.
+
+                         Deprecated: используйте поле `storage_gib` вместо `disk_size_gigs`.
+                    format: int32
+                config:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.ClusterConfig'
+                    description: Конфигурация кластера ClickHouse.
+                logging:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.LoggingConfig'
+                    description: Параметры интеграции с сервисом Клиентского логирования.
+                storage_gib:
+                    example: 40
+                    type: integer
+                    description: Размер диска в гибибайтах.
+                    format: int32
+                subnet_ids:
+                    example: ["00000000-0000-0000-0000-000000000000"]
+                    type: array
+                    items:
+                        type: string
+                    description: |-
+                        Идентификаторы подсетей.
+
+                         Список подсетей и их описание можно получить через API сервиса виртуальных машин
+                         в разделе [Subnets](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3#tag/Subnets).
+                keeper_mode:
+                    example: KEEPER_MODE_EMBEDDED
+                    enum:
+                        - KEEPER_MODE_UNSPECIFIED
+                        - KEEPER_MODE_EMBEDDED
+                        - KEEPER_MODE_STANDALONE
+                    type: string
+                    description: Режим работы ClickHouse Keeper.
+                    format: enum
+                standalone_keeper:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.StandaloneKeeper'
+                    description: Конфигурация выделенного ClickHouse Keeper.
+            description: Запрос на создание кластера.
+        cloudru.dbaas.clickhouse.v1.CreateDatabaseRequest:
+            required:
+                - cluster_id
+                - name
+            type: object
+            properties:
+                cluster_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор кластера.
+                name:
+                    example: db_name
+                    type: string
+                    description: Название базы данных.
+            description: Запрос на создание базы данных.
+        cloudru.dbaas.clickhouse.v1.CreateUserRequest:
+            required:
+                - cluster_id
+                - user_name
+                - password
+            type: object
+            properties:
+                cluster_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор кластера.
+                user_name:
+                    example: some_user-1
+                    type: string
+                    description: Имя пользователя.
+                password:
+                    example: some_pass
+                    type: string
+                    description: Пароль.
+                roles:
+                    example: {"value": ["cloud_writer", "cloud_reader"]}
+                    deprecated: true
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.protobuf.v1.RepeatedString'
+                    description: |-
+                        Роли.
+
+                         Deprecated: используйте поле `granted_roles` вместо `roles`.
+                granted_roles:
+                    example: {"value": ["cloud_writer", "cloud_reader"]}
+                    type: object
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.protobuf.v1.RepeatedString'
+                    description: Список ролей, назначенных пользователю. Если список пуст, пользователь не может выполнять никакие действия.
+            description: Запрос на создание пользователя в кластере.
+        cloudru.dbaas.clickhouse.v1.Database:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    example: db_name
+                    type: string
+                    description: Название базы данных.
+                engine:
+                    readOnly: true
+                    example: Atomic
+                    type: string
+                    description: Движок базы данных.
+            description: База данных ClickHouse.
+        cloudru.dbaas.clickhouse.v1.DeleteDatabaseResponse:
+            type: object
+            properties: {}
+        cloudru.dbaas.clickhouse.v1.DeleteUserResponse:
+            type: object
+            properties: {}
+            description: Ответ на запрос на удаление пользователя в кластере.
+        cloudru.dbaas.clickhouse.v1.GrantRoleResponse:
+            type: object
+            properties: {}
+            description: Ответ на запрос на предоставление роли пользователю.
+        cloudru.dbaas.clickhouse.v1.ListClustersResponse:
+            type: object
+            properties:
+                clusters:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.Cluster'
+                    description: Список кластеров в текущем проекте.
+                next_page_token:
+                    readOnly: true
+                    example: abcdefghabcdefghabcdefghabcdefgh
+                    type: string
+                    description: Токен следующей страницы с результатами.
+            description: Ответ на запрос на получение списка кластеров текущего проекта.
+        cloudru.dbaas.clickhouse.v1.ListDatabasesResponse:
+            type: object
+            properties:
+                databases:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.Database'
+                    description: Список баз данных продукта.
+            description: Ответ на запрос на получение списка баз данных продукта.
+        cloudru.dbaas.clickhouse.v1.ListOperationsResponse:
+            type: object
+            properties:
+                operations:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                    description: Список операций, выполненных над заданным кластером.
+                next_page_token:
+                    readOnly: true
+                    example: abcdefghabcdefghabcdefghabcdefgh
+                    type: string
+                    description: Токен следующей страницы с результатами.
+            description: Ответ на запрос на получение списка операций кластера.
+        cloudru.dbaas.clickhouse.v1.ListRolesResponse:
+            type: object
+            properties:
+                roles:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.Role'
+                    description: Список ролей кластера.
+            description: Ответ на запрос на получение списка ролей кластера.
+        cloudru.dbaas.clickhouse.v1.ListSpecificationsResponse:
+            type: object
+            properties:
+                specifications:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.Specification'
+                    description: Список спецификаций, доступных для определенной версии.
+            description: Ответ на запрос на получение спецификаций.
+        cloudru.dbaas.clickhouse.v1.ListUsersResponse:
+            type: object
+            properties:
+                users:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.User'
+                    description: Список пользователей кластера.
+            description: Ответ на запрос на получение списка пользователей кластера.
+        cloudru.dbaas.clickhouse.v1.ListVersionsResponse:
+            type: object
+            properties:
+                versions:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.Version'
+                    description: Список версий, доступных для продукта.
+            description: Ответ на запрос на получение списка доступных версий продукта.
+        cloudru.dbaas.clickhouse.v1.LoggingConfig:
+            type: object
+            properties:
+                enabled:
+                    example: true
+                    type: boolean
+                    description: |-
+                        Признак отправки логов кластера.
+                         По умолчанию `false` — логи не отправляются.
+                log_group_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: |-
+                        Идентификатор лог-группы, в которую отправляются логи.
+                         Если значение не задано, будет использоваться лог-группа проекта по умолчанию — `default`.
+            description: Параметры интеграции с сервисом Клиентского логирования.
+        cloudru.dbaas.clickhouse.v1.RevokeRoleResponse:
+            type: object
+            properties: {}
+            description: Ответ на запрос на отзыв роли у пользователя.
+        cloudru.dbaas.clickhouse.v1.Role:
+            type: object
+            properties:
+                name:
+                    readOnly: true
+                    example: cloud_writer
+                    type: string
+                    description: Название роли.
+            description: Роль в базе данных ClickHouse, представляющая набор привилегий, которую можно назначать пользователям.
+        cloudru.dbaas.clickhouse.v1.Specification:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор спецификации.
+                name:
+                    readOnly: true
+                    example: 8vCPU/32GB RAM (Business)
+                    type: string
+                    description: Название спецификации.
+                cpu:
+                    readOnly: true
+                    example: 8
+                    type: number
+                    description: Количество виртуальных ядер процессора.
+                    format: double
+                memory:
+                    readOnly: true
+                    example: 32
+                    type: number
+                    description: Объем оперативной памяти в гигабайтах.
+                    format: double
+                flavor_type:
+                    readOnly: true
+                    example: FLAVOR_TYPE_BALANCE
+                    deprecated: true
+                    enum:
+                        - FLAVOR_TYPE_UNSPECIFIED
+                        - MEMORY
+                        - CPU
+                        - BALANCE
+                    type: string
+                    description: |-
+                        Категория флейвора дата-узлов. Возможные значения:
+                          - `cpu` — содержит флейворы с увеличенной долей ядер процессора. Соотношение vCPU к RAM 1:1 и 1:2.
+                          - `balance` — содержит флейворы с оптимальным соотношением vCPU к RAM 1:4.
+                          - `memory` — содержит флейворы с увеличенной долей оперативной памяти. Соотношение vCPU к RAM 1:8 и 1:16.
+
+                         Deprecated: Поле будет удалено в будущем.
+                    format: enum
+                cluster_type:
+                    readOnly: true
+                    example: CLUSTER_TYPE_SINGLE_SHARD
+                    enum:
+                        - CLUSTER_TYPE_UNSPECIFIED
+                        - SINGLE_NODE
+                        - SINGLE_SHARD
+                        - MULTI_SHARD
+                    type: string
+                    description: Тип кластера.
+                    format: enum
+                min_shards:
+                    readOnly: true
+                    example: 1
+                    type: integer
+                    description: Минимальное количество шардов.
+                    format: int32
+                max_shards:
+                    readOnly: true
+                    example: 1
+                    type: integer
+                    description: Максимальное количество шардов.
+                    format: int32
+                min_replicas:
+                    readOnly: true
+                    example: 3
+                    type: integer
+                    description: Минимальное количество реплик на шард.
+                    format: int32
+                max_replicas:
+                    readOnly: true
+                    example: 3
+                    type: integer
+                    description: Максимальное количество реплик на шард.
+                    format: int32
+                min_storage_gigs:
+                    readOnly: true
+                    example: 40
+                    type: integer
+                    description: Минимальный размер диска в гигабайтах.
+                    format: int32
+                role:
+                    readOnly: true
+                    example: SPECIFICATION_ROLE_CLICKHOUSE_SERVER
+                    enum:
+                        - SPECIFICATION_ROLE_UNSPECIFIED
+                        - SPECIFICATION_ROLE_CLICKHOUSE_SERVER
+                        - SPECIFICATION_ROLE_CLICKHOUSE_KEEPER
+                    type: string
+                    description: Назначение спецификации.
+                    format: enum
+            description: Спецификация ClickHouse.
+        cloudru.dbaas.clickhouse.v1.StandaloneKeeper:
+            type: object
+            properties:
+                specification_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор спецификации выделенного ClickHouse Keeper. Используйте спецификацию с назначением `SPECIFICATION_ROLE_CLICKHOUSE_KEEPER`.
+                storage_gib:
+                    example: 10
+                    type: integer
+                    description: Размер диска выделенного ClickHouse Keeper в гибибайтах.
+                    format: int32
+            description: Конфигурация выделенного ClickHouse Keeper.
+        cloudru.dbaas.clickhouse.v1.UpdateClusterRequest:
+            required:
+                - cluster_id
+            type: object
+            properties:
+                cluster_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор кластера.
+                config:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.ClusterConfig'
+                    description: Конфигурация кластера ClickHouse.
+                storage_gib:
+                    example: 40
+                    type: integer
+                    description: Новый размер хранилища в гибибайтах.
+                    format: int32
+                specification_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор спецификации кластера ClickHouse для вертикального масштабирования.
+                standalone_keeper:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.clickhouse.v1.StandaloneKeeper'
+                    description: Ресурсы выделенного ClickHouse Keeper.
+            description: Запрос на изменение ресурсов кластера.
+        cloudru.dbaas.clickhouse.v1.UpdateUserRequest:
+            required:
+                - cluster_id
+                - user_name
+            type: object
+            properties:
+                cluster_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор кластера.
+                user_name:
+                    example: some_user-1
+                    type: string
+                    description: Имя пользователя.
+                password:
+                    example: some_pass
+                    type: string
+                    description: Пароль.
+                roles:
+                    example: {"value": ["cloud_writer", "cloud_reader"]}
+                    deprecated: true
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.protobuf.v1.RepeatedString'
+                    description: |-
+                        Роли.
+
+                         Deprecated: используйте поле `granted_roles` вместо `roles`.
+                granted_roles:
+                    example: {"value": ["cloud_writer", "cloud_reader"]}
+                    type: object
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.protobuf.v1.RepeatedString'
+                    description: Список ролей, назначенных пользователю. Если список пуст, пользователь не может выполнять никакие действия.
+            description: Запрос на изменение пользователя в кластере.
+        cloudru.dbaas.clickhouse.v1.User:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    example: some_user-1
+                    type: string
+                    description: Имя пользователя.
+                roles:
+                    readOnly: true
+                    example: ["cloud_writer", "cloud_reader"]
+                    deprecated: true
+                    type: array
+                    items:
+                        type: string
+                    description: |-
+                        Назначенные роли.
+
+                         Deprecated: используйте поле `granted_roles` вместо `roles`.
+                read_only:
+                    readOnly: true
+                    example: false
+                    type: boolean
+                    description: |-
+                        Доступ к пользователям:
+                         - `true` — пользователи, которых нельзя редактировать. Это пользователи databaseAdmin и userAdmin.
+                         - `false` — пользователи, которых можно редактировать. Это пользователи созданные через UI, public-api или terraform.
+                granted_roles:
+                    example: {"value": ["cloud_writer", "cloud_reader"]}
+                    type: object
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.protobuf.v1.RepeatedString'
+                    description: Список ролей, назначенных пользователю. Если список пуст, пользователь не может выполнять никакие действия.
+            description: Пользователь базы данных ClickHouse.
+        cloudru.dbaas.clickhouse.v1.Version:
+            type: object
+            properties:
+                name:
+                    readOnly: true
+                    example: 24.3
+                    type: string
+                    description: Версия продукта.
+            description: Версия ClickHouse.
+        cloudru.dbaas.operation.Operation:
+            required:
+                - id
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: Идентификатор операции.
+                resource_name:
+                    readOnly: true
+                    example: urn:cloud:postgresql::265c6f28-9c84-4cef-bbc5-4472c1743bc0:backend
+                    type: string
+                    description: Информация о ресурсе, над которым производится операция.
+                    format: urn:cloud:SERVICE:ZONE_OPT:PROJECT_OPT:RESOURCE_TYPE_OPT
+                resource_id:
+                    readOnly: true
+                    example: 54295782-7aef-43e6-b33b-c9735938677a
+                    type: string
+                    description: Уникальный идентификатор ресурса, над которым производится операция.
+                created_at:
+                    readOnly: true
+                    type: string
+                    description: Время создания операции.
+                    format: date-time
+                updated_at:
+                    readOnly: true
+                    type: string
+                    description: Время последнего изменения операции.
+                    format: date-time
+                done:
+                    readOnly: true
+                    type: boolean
+                    description: |-
+                        Флаг завершенности операции:
+                         - `true` — операция завершена. Операция считается завершенной, даже если в ходе ее выполнения возникла ошибка.
+                         - `false` — операция не завершена.
+                description:
+                    readOnly: true
+                    type: string
+                    description: Описание операции. От 0 до 255 символов.
+                error:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/google.rpc.Status'
+                    description: Результат операции в случае ошибки.
+        cloudru.protobuf.v1.RepeatedString:
+            type: object
+            properties:
+                value:
+                    type: array
+                    items:
+                        type: string
+                    description: The repeated string value.
+        google.protobuf.Any:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: URL-адрес или имя ресурса, которое определяет тип сериализованного сообщения.
+            additionalProperties: true
+        google.rpc.Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: Код ошибки.
+                    format: int32
+                message:
+                    type: string
+                    description: Описание ошибки.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/google.protobuf.Any'
+                    description: Дополнительная информация об ошибке.
+            description: Ошибка.
+tags:
+    - name: ClusterService
+      description: Управление кластерами ClickHouse.
+    - name: DatabaseService
+      description: Управление базами данных ClickHouse.
+    - name: OperationService
+      description: Управление операциями ClickHouse.
+    - name: RoleService
+      description: Управление ролями ClickHouse.
+    - name: SpecificationService
+      description: Управление спецификациями ClickHouse.
+    - name: UserService
+      description: Управление пользователями ClickHouse.
+    - name: VersionService
+      description: Управление версиями ClickHouse.

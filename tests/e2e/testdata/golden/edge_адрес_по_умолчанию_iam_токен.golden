@@ -1,0 +1,7 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: IAM: Post "https://iam.api.cloud.ru/api/v1/auth/token": Forbidden
+--- requests
+CONNECT iam.api.cloud.ru:443

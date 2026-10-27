@@ -1,0 +1,15 @@
+#!/bin/sh
+# Правка скилла уходит в коммит только с трейлером Doubt-Review: — путь к
+# разбору doubt-driven-development или «не по находкам — <причина>».
+# Скилл советует команды агентам — непроверенная правка в нём ломает чужой сценарий.
+git diff --cached --name-only | grep -q '^skills/.*SKILL\.md$' || exit 0
+grep -Eq '^Doubt-Review: *[^ ]' "$1" && exit 0
+cat >&2 <<'MSG'
+commit-msg: правка skills/*/SKILL.md без трейлера Doubt-Review:.
+Добавь строку в конец сообщения:
+  Doubt-Review: <путь к разбору doubt-driven-development>
+или
+  Doubt-Review: не по находкам — <причина>
+См. CONTRIBUTING.md, п. 3.
+MSG
+exit 1

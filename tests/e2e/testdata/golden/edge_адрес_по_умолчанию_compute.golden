@@ -1,0 +1,11 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: Delete "https://compute.api.cloud.ru/api/v1/subnets/22222222-2222-4222-8222-222222222222": Forbidden
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+CONNECT compute.api.cloud.ru:443

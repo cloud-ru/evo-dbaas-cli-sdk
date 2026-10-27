@@ -1,0 +1,6 @@
+exit: 4
+--- stdout
+
+--- stderr
+error: access key not set: set CLOUDRU_KEY_ID and CLOUDRU_KEY_SECRET
+--- requests

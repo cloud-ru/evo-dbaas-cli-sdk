@@ -1,0 +1,13 @@
+exit: 0
+--- stdout
+ID  KEY_ID  EXPIRES  DESCRIPTION
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /iamapi/api/v2/serviceAccounts/sa1/accessKeys
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

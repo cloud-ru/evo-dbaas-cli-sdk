@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: subnet "sn1" — not a UUID
+--- requests

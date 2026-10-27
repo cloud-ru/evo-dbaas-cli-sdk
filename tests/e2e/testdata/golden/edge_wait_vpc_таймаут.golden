@@ -1,0 +1,16 @@
+exit: 8
+--- stdout
+
+--- stderr
+error: operation vop1 did not finish within 1s; it may still be running in the cloud; check its state before retrying
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+DELETE /vpc/v1/vpcs/v1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+GET /vpc/v1/vpcs/operations/vop1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

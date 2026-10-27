@@ -1,0 +1,30 @@
+exit: 0
+--- stdout
+ClickHouse clusters
+
+Usage:
+  cloudru-dbaas clickhouse clusters [command]
+
+Aliases:
+  clusters, cluster
+
+Available Commands:
+  create      Create a cluster
+  delete      Delete a cluster (irreversible, requires --yes)
+  get         Cluster: status, host addresses, configuration
+  list        List project clusters
+  resize      Update a cluster: specification, disk, dedicated Keeper, server settings
+
+Flags:
+  -h, --help   help for clusters
+
+Global Flags:
+      --api-url string     ClickHouse Public API URL (default "https://clickhouse.api.cloud.ru")
+      --json               output JSON (for scripts and agents)
+      --project string     cloud.ru project id (default "proj-1")
+      --timeout duration   time limit for --wait (default 30m0s)
+
+Use "cloudru-dbaas clickhouse clusters [command] --help" for more information about a command.
+--- stderr
+
+--- requests

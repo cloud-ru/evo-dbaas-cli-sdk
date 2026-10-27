@@ -1,0 +1,13 @@
+exit: 0
+--- stdout
+
+--- stderr
+revoke: r1 → u
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+POST /clickhouse/v1/clusters/c1/users/u:revokeRole?role=r1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

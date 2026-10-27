@@ -1,0 +1,3 @@
+# Спеки облака и сгенерированный по ним код: GitHub сворачивает их в диффе ревью.
+api/openapi-*.yaml linguist-generated=true
+internal/*/client.gen.go linguist-generated=true

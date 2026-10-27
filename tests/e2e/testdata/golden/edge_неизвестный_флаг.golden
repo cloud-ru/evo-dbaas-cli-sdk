@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: unknown flag: --frob
+--- requests

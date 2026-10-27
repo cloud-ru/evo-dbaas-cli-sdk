@@ -1,0 +1,20 @@
+exit: 0
+--- stdout
+id:                
+name:              
+status:            
+health:            
+version_id:        
+specification_id:  
+brokers:           0
+storage_gib:       0
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /kafka/v1/clusters/c1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

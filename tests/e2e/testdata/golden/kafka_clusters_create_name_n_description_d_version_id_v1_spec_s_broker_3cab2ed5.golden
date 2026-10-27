@@ -1,0 +1,17 @@
+exit: 0
+--- stdout
+operation op1 — in progress
+resource  c1
+          Создание кластера
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+POST /kafka/v1/clusters
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"brokers":3,"cruise_control_enabled":true,"cruise_control_rebalance_auto_enabled":true,"description":"d","name":"n","project_id":"proj-1","specification_id":"s","storage_gib":40,"subnet_id":"sn1","ui_enabled":true,"version_id":"v1"}

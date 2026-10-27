@@ -1,0 +1,17 @@
+exit: 2
+--- stdout
+
+--- stderr
+… Удаление кластера
+error: operation op1 — waiting interrupted; it may still be running in the cloud; wait with: `cloudru-dbaas redis operations get op1 --wait`
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+DELETE /redis/v1/clusters/c1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+GET /redis/v1/operations/op1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

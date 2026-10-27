@@ -1,0 +1,59 @@
+# Гейты PR. Канон — CONSTRAINTS.md, здесь обёртки; CI гоняет `task check`.
+version: "3"
+
+tasks:
+  build:
+    desc: Собрать бинарник в bin/
+    cmds:
+      - go build -o bin/cloudru-dbaas ./cmd/cloudru-dbaas
+
+  fmt:
+    desc: Отформатировать (gofumpt + gci)
+    cmds:
+      - golangci-lint fmt ./...
+
+  lint:
+    desc: Формат, линтер, границы карты
+    cmds:
+      - golangci-lint fmt --diff ./...
+      - golangci-lint run ./...
+
+  test:
+    desc: Тесты с покрытием; JSON событий — для храповика пройденных тестов
+    cmds:
+      - go test -race -coverprofile=cover.out -json ./... > test.json || (go run ./tools/ratchet -failures test.json; exit 1)
+
+  vuln:
+    desc: Уязвимости зависимостей
+    cmds:
+      - govulncheck ./...
+
+  floor:
+    desc: Пол CONSTRAINTS.md на дифе от origin/main
+    cmds:
+      - go run ./tools/floorguard -base {{.BASE | default "origin/main"}}
+
+  gencheck:
+    desc: Файлы с заголовком генератора воспроизводятся генератором байт в байт
+    cmds:
+      - tools/gencheck.sh
+
+  ratchet:
+    desc: Строки и покрытие против CONSTRAINTS.md
+    deps: [test]
+    cmds:
+      - go run ./tools/ratchet -cover cover.out -tests test.json
+
+  check:
+    desc: Все гейты PR
+    cmds:
+      - task: lint
+      - task: vuln
+      - task: gencheck
+      - task: ratchet
+      - task: floor
+
+  gen:
+    desc: Перегенерировать клиенты из api/
+    cmds:
+      - scripts/generate.sh

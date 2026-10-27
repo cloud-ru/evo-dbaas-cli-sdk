@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: accepts 1 arg(s), received 0
+--- requests

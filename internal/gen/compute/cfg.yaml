@@ -1,0 +1,10 @@
+package: compute
+output: internal/gen/compute/client.gen.go
+generate:
+  models: true
+  client: true
+# Перечисления DiskState, SubnetState, VmState совпадают с именами констант.
+compatibility:
+  always-prefix-enum-values: true
+output-options:
+  skip-prune: true

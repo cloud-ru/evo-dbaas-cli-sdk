@@ -1,0 +1,22 @@
+exit: 0
+--- stdout
+id:                k9
+name:              events
+status:            READY
+health:            
+version_id:        v
+specification_id:  s
+brokers:           3
+storage_gib:       40
+hosts:             10.0.1.8:9092
+ui_host:           10.0.1.9
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /kafka/v1/clusters/k9
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

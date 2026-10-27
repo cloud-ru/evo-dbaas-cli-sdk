@@ -1,0 +1,28 @@
+exit: 0
+--- stdout
+id:                
+name:              
+status:            
+health:            
+version_id:        
+specification_id:  
+brokers:           0
+storage_gib:       0
+--- stderr
+… Создание кластера
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+POST /kafka/v1/clusters
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"brokers":1,"cruise_control_enabled":false,"cruise_control_rebalance_auto_enabled":false,"name":"n","project_id":"proj-1","specification_id":"s","storage_gib":40,"subnet_id":"sn1","ui_enabled":false,"version_id":"v1"}
+GET /kafka/v1/operations/op1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+GET /kafka/v1/clusters/c1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

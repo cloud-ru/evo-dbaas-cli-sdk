@@ -1,0 +1,7 @@
+package: kafka
+output: internal/gen/kafka/client.gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  skip-prune: true

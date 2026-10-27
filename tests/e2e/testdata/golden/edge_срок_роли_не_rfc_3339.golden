@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: expiry "2026-12-31" — not RFC 3339 (2026-12-31T00:00:00Z)
+--- requests

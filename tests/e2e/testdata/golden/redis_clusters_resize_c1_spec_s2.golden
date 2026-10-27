@@ -1,0 +1,17 @@
+exit: 0
+--- stdout
+operation op1 — in progress
+resource  c1
+          Создание кластера
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+PATCH /redis/v1/clusters/c1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"cluster_id":"c1","specification_id":"s2"}

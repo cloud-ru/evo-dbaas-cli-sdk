@@ -1,0 +1,21 @@
+exit: 0
+--- stdout
+id:                
+name:              
+status:            
+health:            
+version:           
+specification_id:  
+shards:            0
+replicas:          0 (hosts per shard)
+storage_gib:       
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /clickhouse/v1/clusters/c1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

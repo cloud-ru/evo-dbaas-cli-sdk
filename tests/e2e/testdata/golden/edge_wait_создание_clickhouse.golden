@@ -1,0 +1,29 @@
+exit: 0
+--- stdout
+id:                
+name:              
+status:            
+health:            
+version:           
+specification_id:  
+shards:            0
+replicas:          0 (hosts per shard)
+storage_gib:       
+--- stderr
+… Создание кластера
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+POST /clickhouse/v1/clusters
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"keeper_mode":"KEEPER_MODE_EMBEDDED","name":"n","project_id":"proj-1","replicas":1,"shards":1,"specification_id":"s","subnet_ids":["sn1"],"version":"25.8"}
+GET /clickhouse/v1/operations/op1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+GET /clickhouse/v1/clusters/c1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

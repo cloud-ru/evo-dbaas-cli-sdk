@@ -1,0 +1,16 @@
+exit: 0
+--- stdout
+{"id":"op1","done":true,"description":"Создание кластера","resource_id":"c1"}
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+DELETE /redis/v1/clusters/c1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+GET /redis/v1/operations/op1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

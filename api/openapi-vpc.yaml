@@ -1,0 +1,1824 @@
+openapi: 3.0.3
+info:
+    title: Evolution VPC Public API
+    version: 0.0.1
+    description: '[Документация сервиса Evolution VPC](https://cloud.ru/docs/evolution-vpc/ug/index.html)'
+    contact:
+    email: support@cloud.ru
+servers:
+- url: https://vpc.api.cloud.ru
+paths:
+    /v1/vips:
+        get:
+            tags:
+                - VirtualIPService
+            description: Возвращает список виртуальных IP-адресов.
+            operationId: VirtualIPService_List
+            parameters:
+                - name: projectId
+                  in: query
+                  description: Идентификатор проекта для получения списка виртуальных IP-адресов.
+                  required: true
+                  schema:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                - name: pageSize
+                  in: query
+                  description: Максимальное количество элементов на странице.
+                  schema:
+                    example: 100
+                    type: integer
+                    format: uint32
+                - name: pageToken
+                  in: query
+                  description: Токен для пагинации (получения следующей страницы).
+                  schema:
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListVipsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - VirtualIPService
+            description: Создает виртуальный IP-адрес.
+            operationId: VirtualIPService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateVipRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vips/{id}:
+        get:
+            tags:
+                - VirtualIPService
+            description: Возвращает виртуальный IP-адрес.
+            operationId: VirtualIPService_Get
+            parameters:
+                - name: id
+                  in: path
+                  description: Идентификатор виртуального IP-адреса.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Vip'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - VirtualIPService
+            description: Обновляет виртуальный IP-адрес.
+            operationId: VirtualIPService_Update
+            parameters:
+                - name: id
+                  in: path
+                  description: Идентификатор виртуального IP-адреса.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateVipRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - VirtualIPService
+            description: Удаляет виртуальный IP-адрес.
+            operationId: VirtualIPService_Delete
+            parameters:
+                - name: id
+                  in: path
+                  description: Идентификатор виртуального IP-адреса.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vips/{id}/operations:
+        get:
+            tags:
+                - VirtualIPService
+            description: Возвращает список операций для виртуального IP-адреса.
+            operationId: VirtualIPService_ListOperations
+            parameters:
+                - name: id
+                  in: path
+                  description: Идентификатор виртуального IP-адреса.
+                  required: true
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  description: Размер страницы.
+                  schema:
+                    example: 100
+                    type: integer
+                    format: uint32
+                - name: pageToken
+                  in: query
+                  description: Токен страницы.
+                  schema:
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListVipsOperationResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vpcs:
+        get:
+            tags:
+                - VpcService
+            description: Возвращает список VPC, соответствующих указанным фильтрам.
+            operationId: VpcService_List
+            parameters:
+                - name: projectId
+                  in: query
+                  description: Идентификатор проекта для получения списка VPC.
+                  required: true
+                  schema:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                - name: pageSize
+                  in: query
+                  description: Максимальное количество элементов на странице.
+                  schema:
+                    example: 100
+                    type: integer
+                    format: uint32
+                - name: pageToken
+                  in: query
+                  description: Токен для пагинации (получения следующей страницы).
+                  schema:
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+                - name: filter
+                  in: query
+                  description: |-
+                    Поле filter - это [cel-выражениe](https://github.com/google/cel-spec/blob/master/doc/langdef.md), состоящее из фильтрующих выражений, каждое выражение соединяется оператором && (логическое и).
+                     Поддерживаемые поля:
+                     1. ids []string опциональное. Поддерживаемые операторы: 'in'.
+                     Пример выражения: ids in ['5e45ad32-7fca-4dd8-bab6-f334c9f8e553', "4507e4d1-0e92-438b-9c2e-2a5b91f2f755"].
+                  schema:
+                    example: ids in ['496e40f7-cc4b-4fa4-b42a-8cd2c9360716']
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListVPCResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - VpcService
+            description: Создает новую VPC на основе переданного запроса.
+            operationId: VpcService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateVPCRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vpcs/operations/{operationId}:
+        get:
+            tags:
+                - OperationService
+            description: Возвращает операцию по идентификатору.
+            operationId: OperationService_Get
+            parameters:
+                - name: operationId
+                  in: path
+                  description: Идентификатор операции.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vpcs/{vpcId}:
+        get:
+            tags:
+                - VpcService
+            description: Возвращает сведения о VPC по указанному идентификатору.
+            operationId: VpcService_Get
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор запрашиваемой VPC.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Vpc'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - VpcService
+            description: Обновляет существующую VPC новыми данными, указанными в запросе.
+            operationId: VpcService_Update
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор обновляемой VPC.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateVPCRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - VpcService
+            description: Удаляет существующую VPC по указанному идентификатору.
+            operationId: VpcService_Delete
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор удаляемой VPC.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vpcs/{vpcId}/addressPools:
+        get:
+            tags:
+                - AddressPoolService
+            description: Возвращает список пулов адресов VPC.
+            operationId: AddressPoolService_List
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC, список пулов адресов которой нужно получить.
+                  required: true
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  description: |-
+                    Максимальное количество элементов на странице. Допустимые значения: от 0 до 1000.
+                     Значение по умолчанию: 100.
+                  schema:
+                    example: 100
+                    type: integer
+                    format: uint32
+                - name: pageToken
+                  in: query
+                  description: Токен для пагинации (получения следующей страницы) в формате base64.
+                  schema:
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAddressPoolsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - AddressPoolService
+            description: Создает пул адресов в VPC.
+            operationId: AddressPoolService_Create
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC, в которой будет создан пул адресов.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateAddressPoolRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vpcs/{vpcId}/addressPools/{addressPoolId}:
+        get:
+            tags:
+                - AddressPoolService
+            description: Возвращает сведения о пуле адресов.
+            operationId: AddressPoolService_Get
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC, в которой создан пул адресов.
+                  required: true
+                  schema:
+                    type: string
+                - name: addressPoolId
+                  in: path
+                  description: Идентификатор пула адресов.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AddressPool'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - AddressPoolService
+            description: Удаляет пул адресов.
+            operationId: AddressPoolService_Delete
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC, в которой создан пул адресов.
+                  required: true
+                  schema:
+                    type: string
+                - name: addressPoolId
+                  in: path
+                  description: Идентификатор пула адресов.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        patch:
+            tags:
+                - AddressPoolService
+            description: Обновляет пул адресов.
+            operationId: AddressPoolService_Update
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC, в которой создан пул адресов.
+                  required: true
+                  schema:
+                    type: string
+                - name: addressPoolId
+                  in: path
+                  description: Идентификатор пула адресов.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateAddressPoolRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vpcs/{vpcId}/addressPools/{addressPoolId}/allocations:
+        get:
+            tags:
+                - AllocationService
+            description: Возвращает список аллокаций пула адресов.
+            operationId: AllocationService_List
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC, в которой создан пул адресов.
+                  required: true
+                  schema:
+                    type: string
+                - name: addressPoolId
+                  in: path
+                  description: Идентификатор пула адресов.
+                  required: true
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  description: |-
+                    Максимальное количество элементов на странице. Допустимые значения: от 0 до 1000.
+                     Значение по умолчанию: 100.
+                  schema:
+                    example: 100
+                    type: integer
+                    format: uint32
+                - name: pageToken
+                  in: query
+                  description: Токен для пагинации (получения следующей страницы) в формате base64.
+                  schema:
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAllocationsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vpcs/{vpcId}/addressPools/{addressPoolId}/allocations/{allocationId}:
+        get:
+            tags:
+                - AllocationService
+            description: Возвращает информацию об аллокации из пула адресов.
+            operationId: AllocationService_Get
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC, в которой создан пул адресов.
+                  required: true
+                  schema:
+                    type: string
+                - name: addressPoolId
+                  in: path
+                  description: Идентификатор пула адресов.
+                  required: true
+                  schema:
+                    type: string
+                - name: allocationId
+                  in: path
+                  description: Идентификатор аллокации.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Allocation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vpcs/{vpcId}/addressPools/{addressPoolId}/operations:
+        get:
+            tags:
+                - AddressPoolService
+            description: Возвращает список операций, выполненных над указанным пулом адресов.
+            operationId: AddressPoolService_ListOperations
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC, в которой создан пул адресов.
+                  required: true
+                  schema:
+                    type: string
+                - name: addressPoolId
+                  in: path
+                  description: Идентификатор пула адресов.
+                  required: true
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  description: Максимальное количество элементов на странице.
+                  schema:
+                    example: 100
+                    type: integer
+                    format: uint32
+                - name: pageToken
+                  in: query
+                  description: Токен для пагинации (получения следующей страницы) в формате base64.
+                  schema:
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAddressPoolsOperationResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vpcs/{vpcId}/routes/static:
+        get:
+            tags:
+                - VpcRoutingService
+            description: Возвращает список статических маршрутов.
+            operationId: VpcRoutingService_List
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC для получения списка маршрутов.
+                  required: true
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  description: Максимальное количество элементов на странице.
+                  schema:
+                    example: 100
+                    type: integer
+                    format: uint32
+                - name: pageToken
+                  in: query
+                  description: Токен для пагинации (получения следующей страницы).
+                  schema:
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+                - name: filter
+                  in: query
+                  description: |-
+                    Поле filter - это [cel-выражениe](https://github.com/google/cel-spec/blob/master/doc/langdef.md), состоящее из фильтрующих выражений, каждое выражение соединяется оператором && (логическое и).
+                     Поддерживаемые поля:
+                     1. ids []string опциональное. Поддерживаемые операторы: 'in'.
+                     Пример выражения: ids in ['5e45ad32-7fca-4dd8-bab6-f334c9f8e553', "4507e4d1-0e92-438b-9c2e-2a5b91f2f755"].
+                     2. next_hop_types []string опциональное. Поддерживаемые операторы: 'in'.
+                     Пример выражения: next_hop_types in ['ROUTE_NEXT_HOP_TYPE_IP'].
+                  schema:
+                    example: ids in ['496e40f7-cc4b-4fa4-b42a-8cd2c9360716']
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListStaticRoutesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - VpcRoutingService
+            description: Создает статический маршрут.
+            operationId: VpcRoutingService_Create
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateStaticRouteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vpcs/{vpcId}/routes/static/{staticRouteId}:
+        get:
+            tags:
+                - VpcRoutingService
+            description: Возвращает статический маршрут.
+            operationId: VpcRoutingService_Get
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC.
+                  required: true
+                  schema:
+                    type: string
+                - name: staticRouteId
+                  in: path
+                  description: Идентификатор маршрута.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StaticRoute'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - VpcRoutingService
+            description: Обновляет статический маршрут.
+            operationId: VpcRoutingService_Update
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC.
+                  required: true
+                  schema:
+                    type: string
+                - name: staticRouteId
+                  in: path
+                  description: Идентификатор маршрута.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateStaticRouteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - VpcRoutingService
+            description: Удаляет статический маршрут.
+            operationId: VpcRoutingService_Delete
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC.
+                  required: true
+                  schema:
+                    type: string
+                - name: staticRouteId
+                  in: path
+                  description: Идентификатор маршрута.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/vpcs/{vpcId}/routes/static/{staticRouteId}/operations:
+        get:
+            tags:
+                - VpcRoutingService
+            description: Возвращает список операций для статического маршрута.
+            operationId: VpcRoutingService_ListOperations
+            parameters:
+                - name: vpcId
+                  in: path
+                  description: Идентификатор VPC.
+                  required: true
+                  schema:
+                    type: string
+                - name: staticRouteId
+                  in: path
+                  description: Идентификатор маршрута.
+                  required: true
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  description: Размер страницы.
+                  schema:
+                    example: 100
+                    type: integer
+                    format: uint32
+                - name: pageToken
+                  in: query
+                  description: Токен страницы.
+                  schema:
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListStaticRoutesOperationResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+components:
+    schemas:
+        AddressPool:
+            required:
+                - cidr
+                - vpcId
+                - name
+            type: object
+            properties:
+                id:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор пула адресов.
+                cidr:
+                    example: 192.168.0.0/24
+                    type: string
+                    description: CIDR пула адресов. Не может быть изменен после создания.
+                vpcId:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор VPC, в которой создан пул адресов.
+                projectId:
+                    readOnly: true
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор проекта.
+                reference:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/InstanceReference'
+                    description: Ресурс, которому принадлежит пул адресов. Отсутствует, если пул создан пользователем.
+                name:
+                    example: my-address-pool
+                    type: string
+                    description: Название пула адресов.
+                description:
+                    example: Address pool for production VPN gateways
+                    type: string
+                    description: Описание пула адресов.
+                status:
+                    readOnly: true
+                    example: ADDRESS_POOL_STATUS_CREATED
+                    enum:
+                        - ADDRESS_POOL_STATUS_UNSPECIFIED
+                        - ADDRESS_POOL_STATUS_NEW
+                        - ADDRESS_POOL_STATUS_CREATING
+                        - ADDRESS_POOL_STATUS_CREATED
+                        - ADDRESS_POOL_STATUS_FAILED_CREATE
+                        - ADDRESS_POOL_STATUS_DELETING
+                        - ADDRESS_POOL_STATUS_DELETED
+                        - ADDRESS_POOL_STATUS_FAILED_DELETE
+                        - ADDRESS_POOL_STATUS_UPDATING
+                        - ADDRESS_POOL_STATUS_FAILED_UPDATE
+                    type: string
+                    description: Статус пула адресов.
+                    format: enum
+                numberAddresses:
+                    readOnly: true
+                    example: 256
+                    type: integer
+                    description: Общее количество адресов в пуле.
+                    format: uint32
+                busyAddresses:
+                    readOnly: true
+                    example: 12
+                    type: integer
+                    description: Количество занятых адресов в пуле.
+                    format: uint32
+                createdAt:
+                    readOnly: true
+                    example: 2024-01-15T10:30:00Z
+                    type: string
+                    description: Время создания.
+                    format: date-time
+                updatedAt:
+                    readOnly: true
+                    example: 2024-01-15T10:30:00Z
+                    type: string
+                    description: Время последнего обновления.
+                    format: date-time
+                type:
+                    readOnly: true
+                    example: ADDRESS_POOL_TYPE_CLIENT
+                    enum:
+                        - ADDRESS_POOL_TYPE_UNSPECIFIED
+                        - ADDRESS_POOL_TYPE_CLIENT
+                        - ADDRESS_POOL_TYPE_SERVICE
+                    type: string
+                    description: Тип пула адресов.
+                    format: enum
+                maxContiguousFreeAddresses:
+                    readOnly: true
+                    example: 64
+                    type: integer
+                    description: Максимальный непрерывный интервал свободных адресов в пуле.
+                    format: uint32
+            description: Пул адресов VPC.
+        Allocation:
+            type: object
+            properties:
+                id:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор аллокации.
+                address:
+                    readOnly: true
+                    example: 192.168.0.10
+                    type: string
+                    description: Выделенный IP-адрес.
+                addressPoolId:
+                    readOnly: true
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор пула адресов, из которого выделен адрес.
+                vpcId:
+                    readOnly: true
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор VPC, в которой создана аллокация.
+                projectId:
+                    readOnly: true
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор проекта.
+                reference:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/InstanceReference'
+                    description: Ресурс, использующий адрес.
+                name:
+                    readOnly: true
+                    example: my-allocation
+                    type: string
+                    description: Название аллокации.
+                description:
+                    readOnly: true
+                    example: Allocation for VPN gateway
+                    type: string
+                    description: Описание аллокации. Максимум 256 символов.
+                status:
+                    readOnly: true
+                    example: ALLOCATION_STATUS_CREATED
+                    enum:
+                        - ALLOCATION_STATUS_UNSPECIFIED
+                        - ALLOCATION_STATUS_NEW
+                        - ALLOCATION_STATUS_CREATING
+                        - ALLOCATION_STATUS_CREATED
+                        - ALLOCATION_STATUS_FAILED_CREATE
+                        - ALLOCATION_STATUS_DELETING
+                        - ALLOCATION_STATUS_DELETED
+                        - ALLOCATION_STATUS_FAILED_DELETE
+                        - ALLOCATION_STATUS_UPDATING
+                        - ALLOCATION_STATUS_FAILED_UPDATE
+                    type: string
+                    description: Статус аллокации.
+                    format: enum
+                createdAt:
+                    readOnly: true
+                    example: 2024-01-15T10:30:00Z
+                    type: string
+                    description: Время создания.
+                    format: date-time
+                updatedAt:
+                    readOnly: true
+                    example: 2024-01-15T10:30:00Z
+                    type: string
+                    description: Время последнего обновления.
+                    format: date-time
+            description: Аллокация — выделение одного IP-адреса из пула адресов.
+        Baremetal:
+            required:
+                - subnetId
+            type: object
+            properties:
+                subnetId:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: |-
+                        Идентификатор подсети серверов Bare Metal, в которой размещается виртуальный IP-адрес.
+                         Не может быть изменен после создания виртуального IP-адреса.
+        CreateAddressPoolRequest:
+            required:
+                - name
+                - cidr
+            type: object
+            properties:
+                name:
+                    example: my-address-pool
+                    type: string
+                    description: Название пула адресов.
+                cidr:
+                    example: 192.168.0.0/24
+                    type: string
+                    description: CIDR пула адресов.
+                description:
+                    example: Address pool for production VPN gateways
+                    type: string
+                    description: Описание пула адресов. Максимум 256 символов.
+            description: Создает пул адресов.
+        CreateStaticRouteRequest:
+            required:
+                - projectId
+                - subnet
+                - nextHop
+            type: object
+            properties:
+                projectId:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор проекта.
+                subnet:
+                    example: 192.168.0.0/24
+                    type: string
+                    description: Адрес назначения.
+                nextHop:
+                    allOf:
+                        - $ref: '#/components/schemas/RouteNextHop'
+                    description: Next Hop маршрута.
+                description:
+                    example: Route to internal network
+                    type: string
+                    description: Описание маршрута.
+            description: Запрос на создание статического маршрута.
+        CreateVPCRequest:
+            required:
+                - projectId
+                - name
+            type: object
+            properties:
+                projectId:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: ID проекта, в котором создается VPC.
+                name:
+                    example: my-vpc
+                    type: string
+                    description: Название создаваемой VPC.
+                description:
+                    example: Main VPC for production
+                    type: string
+                    description: Описание создаваемой VPC.
+        CreateVipRequest:
+            required:
+                - projectId
+                - name
+                - target
+            type: object
+            properties:
+                projectId:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор проекта.
+                name:
+                    example: my-vip
+                    type: string
+                    description: Название виртуального IP-адреса.
+                description:
+                    example: Main VIP for production
+                    type: string
+                    description: Описание виртуального IP-адреса.
+                ip:
+                    example: 192.168.0.1
+                    type: string
+                    description: IP-адрес. Если не указан, генерируется автоматически из диапазона подсети.
+                target:
+                    allOf:
+                        - $ref: '#/components/schemas/VipTarget'
+                    description: Целевая платформа, в которой будет создан виртуальный IP-адрес.
+            description: Запрос на создание виртуального IP-адреса.
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        InstanceReference:
+            type: object
+            properties:
+                productIntName:
+                    readOnly: true
+                    example: vpn
+                    type: string
+                    description: Название продукта, которому принадлежит ресурс.
+                instanceId:
+                    readOnly: true
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор ресурса, использующего адрес из пула адресов.
+            description: Ссылка на аллокацию или ресурс, использующий пул адресов.
+        Interface:
+            required:
+                - id
+            type: object
+            properties:
+                id:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор интерфейса.
+            description: Сетевой интерфейс.
+        ListAddressPoolsOperationResponse:
+            type: object
+            properties:
+                operations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Operation'
+                    description: Список операций.
+                nextPageToken:
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+                    description: Токен следующей страницы.
+            description: Ответ со списком операций, выполненных над пулом адресов.
+        ListAddressPoolsResponse:
+            type: object
+            properties:
+                addressPools:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AddressPool'
+                    description: Список пулов адресов.
+                nextPageToken:
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+                    description: Токен следующей страницы.
+            description: Ответ со списком пулов адресов.
+        ListAllocationsResponse:
+            type: object
+            properties:
+                allocations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Allocation'
+                    description: Список аллокаций.
+                nextPageToken:
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+                    description: Токен следующей страницы.
+            description: Ответ со списком аллокаций.
+        ListStaticRoutesOperationResponse:
+            type: object
+            properties:
+                operations:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Operation'
+                    description: Список операций.
+                nextPageToken:
+                    readOnly: true
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+                    description: Токен следующей страницы.
+                totalCount:
+                    readOnly: true
+                    example: 100
+                    type: integer
+                    description: Общее количество операций.
+                    format: uint32
+            description: Ответ со списком операций для статического маршрута.
+        ListStaticRoutesResponse:
+            type: object
+            properties:
+                routes:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/StaticRoute'
+                    description: Список маршрутов.
+                nextPageToken:
+                    readOnly: true
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+                    description: Токен следующей страницы.
+                totalCount:
+                    readOnly: true
+                    example: 100
+                    type: integer
+                    description: Общее количество маршрутов.
+                    format: uint32
+            description: Ответ со списком статических маршрутов.
+        ListVPCResponse:
+            type: object
+            properties:
+                vpcs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Vpc'
+                    description: Список найденных VPC.
+                nextPageToken:
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+                    description: Токен для получения следующей страницы результатов.
+        ListVipsOperationResponse:
+            type: object
+            properties:
+                operations:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Operation'
+                    description: Список операций.
+                nextPageToken:
+                    readOnly: true
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+                    description: Токен следующей страницы.
+            description: Ответ со списком операций для виртуального IP-адреса.
+        ListVipsResponse:
+            type: object
+            properties:
+                vips:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Vip'
+                    description: Список виртуальных IP-адресов.
+                nextPageToken:
+                    readOnly: true
+                    example: j8eAMouA15uA0VHPZeicNWa7SL
+                    type: string
+                    description: Токен следующей страницы.
+            description: Ответ со списком виртуальных IP-адресов.
+        MagicRouter:
+            required:
+                - id
+            type: object
+            properties:
+                id:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор Magic Router.
+            description: Magic Router.
+        NextHopIP:
+            required:
+                - address
+            type: object
+            properties:
+                address:
+                    example: 192.168.0.10
+                    type: string
+                    description: IPv4-адрес Next Hop в подсети исходной VPC.
+                announce:
+                    example: false
+                    type: boolean
+                    description: |-
+                        Признак распространения маршрута в другие зоны доступности этой VPC.
+                        Задается при создании маршрута. По умолчанию false.
+                        Укажите true, чтобы трафик из других зон доступности мог направляться к сети назначения через указанный Next Hop.
+            description: Параметры IP-адреса, используемого как Next Hop статического маршрута.
+        NextHopMagicRouter:
+            required:
+                - magicRouter
+                - azName
+            type: object
+            properties:
+                magicRouter:
+                    allOf:
+                        - $ref: '#/components/schemas/MagicRouter'
+                    description: Magic Router.
+                azName:
+                    example: ru.AZ-1
+                    type: string
+                    description: Зона доступности.
+            description: Next Hop маршрута — Magic Router.
+        NextHopVIP:
+            required:
+                - vips
+            type: object
+            properties:
+                vips:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/VipShort'
+                    description: Список виртуальных IP-адресов.
+            description: Next Hop маршрута — виртуальный IP-адрес.
+        NextHopVirtualMachine:
+            required:
+                - virtualMachine
+                - interface
+            type: object
+            properties:
+                virtualMachine:
+                    allOf:
+                        - $ref: '#/components/schemas/VirtualMachine'
+                    description: Виртуальная машина.
+                interface:
+                    allOf:
+                        - $ref: '#/components/schemas/Interface'
+                    description: Сетевой интерфейс.
+            description: Next Hop маршрута — интерфейс виртуальной машины.
+        Operation:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: string
+                    description: Идентификатор операции.
+                resourceName:
+                    readOnly: true
+                    type: string
+                    description: |-
+                        Информация о ресурсе, над которым производится операция.
+                         Строится следующим образом: urn:cloud:SERVICE:ZONE_OPT:PROJECT_OPT:RESOURCE_TYPE_OPT.
+                         Пример: urn:cloud:lbaas::54295782-7aef-43e6-b33b-c9735938677a:backend
+                resourceId:
+                    readOnly: true
+                    type: string
+                    description: |-
+                        Уникальный идентификатор ресурса, над которым производится операция.
+                         Пример: 54295782-7aef-43e6-b33b-c9735938677a
+                createdAt:
+                    readOnly: true
+                    type: string
+                    description: Время создания операции.
+                    format: date-time
+                updatedAt:
+                    readOnly: true
+                    type: string
+                    description: Время последнего изменения операции.
+                    format: date-time
+                done:
+                    readOnly: true
+                    type: boolean
+                    description: |-
+                        Флаг завершенности операции.
+                         Если значение `false`, то операция в процессе выполнения.
+                         Если значение `true`, то операция завершена и поле `error` может быть заполнено.
+                description:
+                    readOnly: true
+                    type: string
+                    description: Описание операции. От 0 до 255 символов.
+                error:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/Status'
+                    description: Результат операции в случае ошибки.
+        RouteNextHop:
+            type: object
+            properties:
+                magicRouter:
+                    allOf:
+                        - $ref: '#/components/schemas/NextHopMagicRouter'
+                    description: Next Hop маршрута — Magic Router.
+                virtualMachine:
+                    allOf:
+                        - $ref: '#/components/schemas/NextHopVirtualMachine'
+                    description: Next Hop маршрута — интерфейс виртуальной машины.
+                vip:
+                    allOf:
+                        - $ref: '#/components/schemas/NextHopVIP'
+                    description: Next Hop маршрута — виртуальный IP-адрес.
+                ip:
+                    allOf:
+                        - $ref: '#/components/schemas/NextHopIP'
+                    description: IP-адрес шлюза для передачи трафика по статическому маршруту.
+            description: Next Hop маршрута.
+        StaticRoute:
+            required:
+                - vpcId
+                - projectId
+                - nextHop
+                - subnet
+            type: object
+            properties:
+                id:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Уникальный идентификатор маршрута.
+                vpcId:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор VPC, в которой создан маршрут.
+                projectId:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор проекта.
+                nextHop:
+                    allOf:
+                        - $ref: '#/components/schemas/RouteNextHop'
+                    description: Next Hop маршрута.
+                nextHopType:
+                    readOnly: true
+                    example: ROUTE_NEXT_HOP_TYPE_MAGIC_ROUTER
+                    enum:
+                        - ROUTE_NEXT_HOP_TYPE_UNSPECIFIED
+                        - ROUTE_NEXT_HOP_TYPE_VPC
+                        - ROUTE_NEXT_HOP_TYPE_MAGIC_ROUTER
+                        - ROUTE_NEXT_HOP_TYPE_VIRTUAL_MACHINE
+                        - ROUTE_NEXT_HOP_TYPE_VIP
+                        - ROUTE_NEXT_HOP_TYPE_IP
+                    type: string
+                    description: Тип Next Hop.
+                    format: enum
+                subnet:
+                    example: 192.168.0.0/24
+                    type: string
+                    description: Адрес назначения.
+                description:
+                    example: Route to internal network
+                    type: string
+                    description: Описание маршрута.
+                status:
+                    readOnly: true
+                    example: ROUTE_STATUS_CREATED
+                    enum:
+                        - ROUTE_STATUS_UNSPECIFIED
+                        - ROUTE_STATUS_NEW
+                        - ROUTE_STATUS_CREATING
+                        - ROUTE_STATUS_CREATED
+                        - ROUTE_STATUS_FAILED_CREATE
+                        - ROUTE_STATUS_DELETING
+                        - ROUTE_STATUS_DELETED
+                        - ROUTE_STATUS_FAILED_DELETE
+                    type: string
+                    description: Текущий статус маршрута (только для чтения).
+                    format: enum
+                type:
+                    readOnly: true
+                    example: ROUTE_TYPE_CLIENT
+                    enum:
+                        - ROUTE_TYPE_UNSPECIFIED
+                        - ROUTE_TYPE_CLIENT
+                        - ROUTE_TYPE_SERVICE
+                        - ROUTE_TYPE_ADMIN
+                    type: string
+                    description: Тип маршрута (только для чтения).
+                    format: enum
+                createdAt:
+                    readOnly: true
+                    example: 2024-01-15T10:30:00Z
+                    type: string
+                    description: Время создания маршрута (только для чтения).
+                    format: date-time
+                updatedAt:
+                    readOnly: true
+                    example: 2024-01-15T10:30:00Z
+                    type: string
+                    description: Время последнего обновления маршрута (только для чтения).
+                    format: date-time
+            description: Статический маршрут в VPC.
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        UpdateAddressPoolRequest:
+            type: object
+            properties:
+                name:
+                    example: my-address-pool
+                    type: string
+                    description: |-
+                        Новое название пула адресов. Если поле не передано, название не меняется.
+                         Пустое значение не допускается.
+                description:
+                    example: Address pool for production VPN gateways
+                    type: string
+                    description: |-
+                        Новое описание пула адресов. Если поле не передано, описание не меняется.
+                         Пустое значение не допускается. Максимум 256 символов.
+            description: |-
+                Обновляет пул адресов. CIDR нельзя изменить после создания,
+                 поэтому поле cidr отсутствует в запросе.
+        UpdateStaticRouteRequest:
+            type: object
+            properties:
+                description:
+                    example: Route to internal network
+                    type: string
+                    description: Новое описание маршрута.
+            description: Запрос на обновление статического маршрута.
+        UpdateVPCRequest:
+            type: object
+            properties:
+                name:
+                    example: my-vpc
+                    type: string
+                    description: Новое название VPC.
+                description:
+                    example: Main VPC for production
+                    type: string
+                    description: Новое описание VPC.
+        UpdateVipRequest:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    example: my-vip
+                    type: string
+                    description: Новое название виртуального IP-адреса.
+                description:
+                    example: Main VIP for production
+                    type: string
+                    description: Новое описание виртуального IP-адреса.
+                target:
+                    allOf:
+                        - $ref: '#/components/schemas/VipTarget'
+                    description: |-
+                        Новые параметры целевой платформы для обновления виртуального IP-адреса.
+                         Если не указан, виртуальный IP-адрес будет снят со всех интерфейсов, на которых он был назначен.
+            description: Запрос на обновление виртуального IP-адреса.
+        Vip:
+            required:
+                - projectId
+                - name
+                - target
+            type: object
+            properties:
+                id:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор виртуального IP-адреса.
+                projectId:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор проекта.
+                vpcId:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор VPC. Отсутствует, если IP для виртуального IP-адреса выделен в изолированной подсети.
+                ip:
+                    example: 192.168.0.1
+                    type: string
+                    description: IP-адрес.
+                status:
+                    readOnly: true
+                    example: VIP_STATUS_CREATED
+                    enum:
+                        - VIP_STATUS_UNSPECIFIED
+                        - VIP_STATUS_NEW
+                        - VIP_STATUS_CREATING
+                        - VIP_STATUS_CREATED
+                        - VIP_STATUS_FAILED_CREATE
+                        - VIP_STATUS_DELETING
+                        - VIP_STATUS_DELETED
+                        - VIP_STATUS_FAILED_DELETE
+                        - VIP_STATUS_UPDATING
+                        - VIP_STATUS_FAILED_UPDATE
+                    type: string
+                    description: Статус виртуального IP-адреса.
+                    format: enum
+                name:
+                    example: my-vip
+                    type: string
+                    description: Название виртуального IP-адреса.
+                description:
+                    example: Main VIP for production
+                    type: string
+                    description: Описание виртуального IP-адреса.
+                createdAt:
+                    readOnly: true
+                    example: 2024-01-15T10:30:00Z
+                    type: string
+                    description: Время создания.
+                    format: date-time
+                updatedAt:
+                    readOnly: true
+                    example: 2024-01-15T10:30:00Z
+                    type: string
+                    description: Время последнего обновления.
+                    format: date-time
+                subnetType:
+                    readOnly: true
+                    example: VIP_SUBNET_TYPE_VIRTUALIZATION
+                    enum:
+                        - VIP_SUBNET_TYPE_UNSPECIFIED
+                        - VIP_SUBNET_TYPE_VIRTUALIZATION
+                        - VIP_SUBNET_TYPE_BAREMETAL
+                    type: string
+                    description: Тип подсети, в которой выделен виртуальный IP-адрес.
+                    format: enum
+                target:
+                    allOf:
+                        - $ref: '#/components/schemas/VipTarget'
+                    description: Целевая платформа, в которой создан виртуальный IP-адрес.
+            description: Виртуальный IP-адрес.
+        VipShort:
+            required:
+                - id
+            type: object
+            properties:
+                id:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор виртуального IP-адреса.
+            description: Виртуальный IP-адрес.
+        VipTarget:
+            type: object
+            properties:
+                virtualization:
+                    allOf:
+                        - $ref: '#/components/schemas/Virtualization'
+                    description: Виртуальный IP-адрес в виртуальной подсети.
+                baremetal:
+                    allOf:
+                        - $ref: '#/components/schemas/Baremetal'
+                    description: Виртуальный IP-адрес в подсети Bare Metal.
+            description: Целевая платформа для создания виртуального IP-адреса.
+        VirtualMachine:
+            required:
+                - id
+            type: object
+            properties:
+                id:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор виртуальной машины.
+            description: Виртуальная машина.
+        Virtualization:
+            required:
+                - subnetId
+            type: object
+            properties:
+                subnetId:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: |-
+                        Идентификатор подсети, в которой размещается виртуальный IP-адрес.
+                         Не может быть изменен после создания виртуального IP-адреса.
+                vmInterfaceIds:
+                    example: ["496e40f7-cc4b-4fa4-b42a-8cd2c9360716", "496e40f7-cc4b-4fa4-b42a-8cd2c9360716"]
+                    type: array
+                    items:
+                        type: string
+                    description: Список идентификаторов интерфейсов виртуальных машин, на которые будет назначен виртуальный IP-адрес.
+        Vpc:
+            required:
+                - name
+                - projectId
+            type: object
+            properties:
+                id:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Уникальный идентификатор VPC.
+                name:
+                    example: my-vpc
+                    type: string
+                    description: Название VPC.
+                projectId:
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор проекта, к которому относится VPC.
+                customerId:
+                    readOnly: true
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор клиента (владельца VPC).
+                createdAt:
+                    readOnly: true
+                    example: 2024-01-15T10:30:00Z
+                    type: string
+                    description: Дата и время создания VPC.
+                    format: date-time
+                default:
+                    readOnly: true
+                    example: true
+                    type: boolean
+                    description: Флаг, указывающий является ли VPC дефолтной.
+                productInstanceId:
+                    readOnly: true
+                    example: 496e40f7-cc4b-4fa4-b42a-8cd2c9360716
+                    type: string
+                    description: Идентификатор экземпляра продукта.
+                type:
+                    readOnly: true
+                    example: VPC_TYPE_CLIENT
+                    enum:
+                        - VPC_TYPE_UNSPECIFIED
+                        - VPC_TYPE_CLIENT
+                        - VPC_TYPE_SERVICE
+                    type: string
+                    description: Тип VPC (клиентский/сервисный).
+                    format: enum
+                description:
+                    example: Main VPC for production
+                    type: string
+                    description: Описание VPC.
+                updatedAt:
+                    readOnly: true
+                    example: 2024-01-15T10:30:00Z
+                    type: string
+                    description: Дата и время последнего обновления VPC.
+                    format: date-time
+    securitySchemes:
+        ApiKey:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+security:
+    - ApiKey: []
+tags:
+    - name: AddressPoolService
+      description: Сервис для работы с пулами адресов VPC.
+    - name: AllocationService
+      description: Сервис для получения аллокаций пулов адресов VPC.
+    - name: OperationService
+      description: Сервис для работы с операциями.
+    - name: VirtualIPService
+      description: Сервис для работы с виртуальными IP-адресами.
+    - name: VpcRoutingService
+      description: Сервис для работы со статическими маршрутами в VPC.
+    - name: VpcService
+      description: Сервис для работы с VPC.

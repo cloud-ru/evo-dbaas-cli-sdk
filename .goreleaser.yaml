@@ -1,0 +1,20 @@
+version: 2
+project_name: cloudru-dbaas
+builds:
+  - id: cloudru-dbaas
+    main: ./cmd/cloudru-dbaas
+    binary: cloudru-dbaas
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags: ["-s -w -X github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd.Version={{ .Version }}"]
+archives:
+  # Голые бинарники: cloudru-dbaas_darwin_arm64 (так в скиллах).
+  - formats: [binary]
+    name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
+checksum:
+  name_template: checksums.txt
+changelog:
+  use: git
+  sort: asc

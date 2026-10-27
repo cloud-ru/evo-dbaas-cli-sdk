@@ -1,0 +1,19 @@
+exit: 0
+--- stdout
+FIELD   VALUE
+id      
+name    
+cidr    
+zone    
+vpc_id  
+state   
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /compute/api/v1/subnets/22222222-2222-4222-8222-222222222222
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

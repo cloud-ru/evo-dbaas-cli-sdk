@@ -1,0 +1,73 @@
+--- api/openapi-clickhouse.yaml
++++ api/openapi-clickhouse.yaml
+@@ -801,60 +801,70 @@
+                     type: integer
+                     description: Размер пула потоков для фоновых операций (например, слияния).
+                     format: int64
++                    x-go-type: FlexInt64
+                 background_schedule_pool_size:
+                     readOnly: true
+                     example: 10
+                     type: integer
+                     description: Максимальное количество потоков, которые будут использоваться для постоянного выполнения некоторых легковесных периодических операций для реплицированных таблиц, потоков Kafka и обновлений кеша DNS.
+                     format: int64
++                    x-go-type: FlexInt64
+                 keep_alive_timeout:
+                     readOnly: true
+                     example: 60
+                     type: integer
+                     description: Количество секунд, которое ClickHouse ждет входящих запросов перед закрытием соединения.
+                     format: int64
++                    x-go-type: FlexInt64
+                 mark_cache_size:
+                     readOnly: true
+                     example: 5368709120
+                     type: integer
+                     description: Максимальный размер кеша для меток (индекс MergeTree семейства таблиц).
+                     format: int64
++                    x-go-type: FlexInt64
+                 max_concurrent_queries:
+                     readOnly: true
+                     example: 100
+                     type: integer
+                     description: Лимит на общее количество одновременно выполняемых запросов на сервере.
+                     format: int64
++                    x-go-type: FlexInt64
+                 max_connections:
+                     readOnly: true
+                     example: 100
+                     type: integer
+                     description: Максимальное количество одновременных подключений к СУБД.
+                     format: int64
++                    x-go-type: FlexInt64
+                 max_partition_size_to_drop:
+                     readOnly: true
+                     example: 50000000000
+                     type: integer
+                     description: Ограничение на удаление партиций во время выполнения запроса.
+                     format: int64
++                    x-go-type: FlexInt64
+                 max_table_size_to_drop:
+                     readOnly: true
+                     example: 50000000000
+                     type: integer
+                     description: Ограничение на удаление таблиц во время выполнения запроса.
+                     format: int64
++                    x-go-type: FlexInt64
+                 max_session_timeout:
+                     readOnly: true
+                     example: 30
+                     type: integer
+                     description: Максимальное время ожидания сеанса в секундах.
+                     format: int64
++                    x-go-type: FlexInt64
+                 uncompressed_cache_size:
+                     readOnly: true
+                     example: 2048
+                     type: integer
+                     description: Максимальный размер кеша (в байтах) для не сжатых данных, используемых движками таблиц из семейства MergeTree.
+                     format: int64
++                    x-go-type: FlexInt64
+             description: Конфигурация кластера ClickHouse.
+         cloudru.dbaas.clickhouse.v1.CreateClusterRequest:
+             required:

@@ -1,0 +1,13 @@
+exit: 0
+--- stdout
+ID  NAME  DEFAULT
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /compute/api/v1/availability-zones
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

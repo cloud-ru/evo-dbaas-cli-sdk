@@ -1,0 +1,10 @@
+exit: 4
+--- stdout
+
+--- stderr
+error: IAM returned 401: {"error":"invalid_client"} — key rejected; check CLOUDRU_KEY_ID and CLOUDRU_KEY_SECRET
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}

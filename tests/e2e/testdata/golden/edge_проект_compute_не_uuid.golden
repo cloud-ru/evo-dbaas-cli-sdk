@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: project "proj-1" — not a UUID
+--- requests

@@ -1,0 +1,16 @@
+exit: 8
+--- stdout
+
+--- stderr
+error: operation op1 — polling failed: API 404: operation not found; it may still be running in the cloud; wait with: `cloudru-dbaas clickhouse operations get op1 --wait`
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+DELETE /clickhouse/v1/clusters/c1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+GET /clickhouse/v1/operations/op1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

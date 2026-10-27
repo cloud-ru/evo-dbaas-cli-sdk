@@ -1,0 +1,13 @@
+exit: 0
+--- stdout
+ID  ROLE  SUBJECT  SUBJECT_TYPE  ENABLED
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /iamapi/api/v3/permissions?filter=resource_id%3Dproj-1+AND+subject_id%3Dsa1&pageSize=1000
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

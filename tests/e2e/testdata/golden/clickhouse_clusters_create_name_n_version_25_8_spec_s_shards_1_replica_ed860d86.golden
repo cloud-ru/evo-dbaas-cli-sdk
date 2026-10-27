@@ -1,0 +1,17 @@
+exit: 0
+--- stdout
+operation op1 — in progress
+resource  c1
+          Создание кластера
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+POST /clickhouse/v1/clusters
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"config":{"background_pool_size":1,"background_schedule_pool_size":1,"keep_alive_timeout":1,"mark_cache_size":1,"max_concurrent_queries":50,"max_connections":100,"max_partition_size_to_drop":1,"max_session_timeout":1,"max_table_size_to_drop":1,"uncompressed_cache_size":1},"description":"из-body","keeper_mode":"KEEPER_MODE_STANDALONE","logging":{"enabled":true,"log_group_id":"lg"},"name":"n","project_id":"proj-1","replicas":3,"shards":1,"specification_id":"s","standalone_keeper":{"specification_id":"ks","storage_gib":10},"subnet_ids":["sn1","sn2"],"version":"25.8"}

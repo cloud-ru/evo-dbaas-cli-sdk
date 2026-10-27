@@ -1,0 +1,20 @@
+exit: 0
+--- stdout
+ID  NAME  STATUS  HEALTH  BROKERS  STORAGE_GIB
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /kafka/v1/clusters?page_size=100&product_type=kafka&project_id=proj-1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /kafka/v1/clusters?page_size=100&product_type=kafka&project_id=proj-1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok2

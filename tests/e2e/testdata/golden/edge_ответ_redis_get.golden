@@ -1,0 +1,23 @@
+exit: 0
+--- stdout
+id:                r9
+name:              cache
+status:            READY
+health:            
+type:              STANDALONE
+version_id:        v
+specification_id:  s
+shards:            1
+replicas:          0
+storage_gib:       
+hosts:             10.0.1.7
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /redis/v1/clusters/r9
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

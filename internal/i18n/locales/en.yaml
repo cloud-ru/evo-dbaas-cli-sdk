@@ -1,0 +1,460 @@
+# Каталог en — язык по умолчанию. Ключ — «<пакет>.<что>»; тексты с глаголами fmt
+# (%s, %d, %w) — в том же порядке, что в ru.yaml. Ключи в алфавитном порядке.
+auth.err.cache: "token cache: %w"
+auth.err.cache_write: "token cache: write %s: %w"
+auth.err.iam: "iam: %w"
+auth.err.iam_request: "IAM: %w"
+auth.err.key_forbidden: "access key forbidden"
+auth.err.key_rejected: "access key rejected"
+auth.err.no_key: "no access key"
+auth.err.no_token: "IAM: response has no access_token"
+auth.err.rate_limited: "iam rate limited"
+auth.iam_error: "iam: status %d: %s"
+base.err.body: "--body: %s"
+base.err.key_value: "--%s %q: expected key=value"
+base.err.logging: "--log-group-id requires --logging"
+base.err.one_of: "--%s %q: allowed values: %s"
+base.err.password_required: "a password is required: --password-env VARIABLE_NAME or --password-stdin"
+base.err.password_sources: "--password-env and --password-stdin cannot be used together"
+base.err.stdin: "stdin: %w"
+base.err.wait_no_operation: "--wait: API response has no operation — nothing to wait for; check the resource state before retrying"
+base.err.zone_not_found: "zone %q not found; see zones list"
+base.err.zones: "zones: %w"
+base.err.zones_parse: "cannot parse zone list: %s"
+base.flag.body: "raw JSON request body (inline or @file); top-level keys override values built from flags — for API fields without a dedicated flag"
+base.flag.log_group_id: "log group for --logging (uses the default group if omitted)"
+base.flag.logging: "send cluster logs to Customer Logging"
+base.flag.new_password_env: "environment variable containing the new password"
+base.flag.new_password_stdin: "read the new password from the first line of stdin"
+base.flag.password_env: "environment variable containing the password"
+base.flag.password_stdin: "read the password from the first line of stdin"
+base.flag.wait: "wait for completion"
+base.operation.done: "completed"
+base.operation.failed: "failed"
+base.operation.failed_message: "failed: %s"
+base.operation.pending: "in progress"
+base.operation.resource: "resource  %s"
+base.operation.status: "operation %s — %s"
+base.wait.no_resource_id: "operation finished without resource_id — find the cluster with %s"
+base.wait.progress: "… %s"
+base.wait.retry: "… polling failed (%v), retrying"
+clickhouse.auth.check.no_project: "project is not set: CLOUDRU_PROJECT_ID or --project"
+clickhouse.auth.check.short: "Obtain a token and send a test request"
+clickhouse.auth.check.success: "access key works: %s"
+clickhouse.auth.err.project_access: "token obtained, but project %s is inaccessible (%s): check that the account has the platform.project.user role (iam roles list --subject)"
+clickhouse.auth.short: "Check access key"
+clickhouse.cluster.create.flag.config: "server setting key=number; can be repeated (config fields are readOnly in the specification, but the API applies them: verified on 13 October with max_connections)"
+clickhouse.cluster.create.flag.keeper: "ClickHouse Keeper mode: embedded | standalone"
+clickhouse.cluster.create.flag.name: "cluster name (required)"
+clickhouse.cluster.create.flag.replicas: "hosts per shard, 1–3 (not \"additional\" hosts as stated in the specification)"
+clickhouse.cluster.create.flag.shards: "number of shards"
+clickhouse.cluster.create.flag.spec: "specification_id with the CLICKHOUSE_SERVER role; see specs list (required)"
+clickhouse.cluster.create.flag.storage_gib: "disk size in GiB (at least min_storage_gigs from the specification)"
+clickhouse.cluster.create.flag.subnet_id: "VPC subnet; can be repeated"
+clickhouse.cluster.create.flag.version: "ClickHouse version; see versions list (required)"
+clickhouse.cluster.create.flag.wait: "wait for the cluster to become ready"
+clickhouse.cluster.create.long: |-
+  Create a cluster. Returns an operation; --wait waits for completion and prints the cluster.
+
+  Steps for a new cluster:
+    cloudru-dbaas clickhouse versions list                                # version
+    cloudru-dbaas zones list                                              # availability_zone_id
+    cloudru-dbaas clickhouse specs list --version 25.8 --zone <ZONE_ID>   # specification_id, min/max shards and replicas
+    cloudru-dbaas clickhouse clusters create --name demo --version 25.8 --spec <id> \
+        --shards 1 --replicas 1 --keeper embedded --storage-gib 40 \
+        --subnet-id <SUBNET_ID> --wait --timeout 60m
+
+  --replicas means HOSTS per shard, 1–3 (verified on 9 October: replicas 1 means one host). The API
+  specification calls them "additional" hosts — this is incorrect; 0 returns 400.
+  --keeper embedded supports only 1×1 and one subnet (verified on 13 October); the default mode (legacy) accepts only 1×3 and 3×3 with one subnet;
+  multi-AZ (multiple subnets) requires --keeper standalone.
+  --keeper standalone means a dedicated Keeper: requires --keeper-spec (specs list --role keeper)
+  and --keeper-storage-gib. Not verified live.
+  --config key=number sets server settings (max_connections, max_concurrent_queries, etc.;
+  see the config field in the API); can be repeated.
+  Creating a minimal cluster takes about 30 minutes; the port opens 2–3 minutes after READY.
+clickhouse.cluster.create.short: "Create a cluster"
+clickhouse.cluster.delete.short: "Delete a cluster (irreversible, requires --yes)"
+clickhouse.cluster.err.keeper_embedded: "--keeper embedded requires exactly 1 shard, 1 replica and 1 subnet (API requirement); for multi-AZ, use --keeper standalone"
+clickhouse.cluster.err.keeper_legacy: "default Keeper mode (legacy) requires exactly 1 subnet (API requirement); for multi-AZ, use --keeper standalone"
+clickhouse.cluster.err.keeper_resources: "dedicated Keeper requires --keeper-spec (specs list --role keeper) and --keeper-storage-gib"
+clickhouse.cluster.err.keeper_standalone: "--keeper-spec and --keeper-storage-gib require --keeper standalone"
+clickhouse.cluster.flag.keeper_spec: "dedicated Keeper specification_id; see specs list --role keeper"
+clickhouse.cluster.flag.keeper_storage_gib: "dedicated Keeper disk size in GiB"
+clickhouse.cluster.flag.wait: "wait for completion"
+clickhouse.cluster.get.short: "Cluster: status, host addresses, configuration"
+clickhouse.cluster.list.short: "List project clusters"
+clickhouse.cluster.replicas: "%d (hosts per shard)"
+clickhouse.cluster.resize.err.no_changes: "specify what to change: --spec, --storage-gib, --keeper-spec, --keeper-storage-gib, --config or --body"
+clickhouse.cluster.resize.flag.config: "server setting key=number; can be repeated"
+clickhouse.cluster.resize.flag.spec: "new specification_id"
+clickhouse.cluster.resize.flag.storage_gib: "new disk size in GiB"
+clickhouse.cluster.resize.short: "Update a cluster: specification, disk, dedicated Keeper, server settings"
+clickhouse.cluster.short: "ClickHouse clusters"
+clickhouse.database.create.short: "Create a database"
+clickhouse.database.created: "database %s created"
+clickhouse.database.delete.short: "Delete a database (requires --yes)"
+clickhouse.database.deleted: "database %s deleted"
+clickhouse.database.get.short: "Database: engine"
+clickhouse.database.list.short: "List databases"
+clickhouse.database.short: "Cluster databases"
+clickhouse.flag.api_url: "ClickHouse Public API URL"
+clickhouse.operation.get.short: "Operation status"
+clickhouse.operation.list.short: "List cluster operations"
+clickhouse.operation.short: "Cluster operations"
+clickhouse.role.list.short: "List roles"
+clickhouse.role.short: "Cluster roles"
+clickhouse.short: "Managed ClickHouse"
+clickhouse.spec.err.zone_required: "--zone is required: name (ru.AZ-1) or id from zones list"
+clickhouse.spec.flag.role: "server | keeper"
+clickhouse.spec.flag.version: "ClickHouse version"
+clickhouse.spec.flag.zone: "zone: name (ru.AZ-1) or id from zones list (required)"
+clickhouse.spec.list.short: "Specifications (vCPU/RAM) and allowed shards, replicas, disk size"
+clickhouse.spec.short: "Cluster specifications"
+clickhouse.user.create.flag.role: "role; can be repeated"
+clickhouse.user.create.long: |-
+  Create a user. Prefer passing the password through an environment variable:
+    CH_PASSWORD=... cloudru-dbaas clickhouse users create <CLUSTER_ID> app --password-env CH_PASSWORD --role cloud_writer
+  or as the first line of stdin: --password-stdin. There is no flag for the password itself: it would appear
+  in shell history and the process list.
+  A user without roles has no permissions; list roles with cloudru-dbaas clickhouse roles list <CLUSTER_ID>.
+clickhouse.user.create.short: "Create a user"
+clickhouse.user.created: "user %s created"
+clickhouse.user.delete.short: "Delete a user (requires --yes)"
+clickhouse.user.deleted: "user %s deleted"
+clickhouse.user.get.short: "User: roles"
+clickhouse.user.grant.short: "Grant a role to a user"
+clickhouse.user.list.short: "List users"
+clickhouse.user.revoke.short: "Revoke a role from a user"
+clickhouse.user.short: "Cluster users"
+clickhouse.user.update.err.conflicting_fields: "ClickHouse passwords and roles must be changed in separate calls: first users update with a password, then with --role"
+clickhouse.user.update.err.no_changes: "specify what to change: --password-env / --password-stdin or --role"
+clickhouse.user.update.flag.role: "role; replaces the entire list; can be repeated"
+clickhouse.user.update.long: |-
+  Change the password (--password-env or --password-stdin) or replace the role list
+  entirely (--role, can be repeated); these cannot be combined, as the API returns 400. To add or remove a single role, use users grant / revoke.
+clickhouse.user.update.short: "Change the password or replace the role list"
+clickhouse.user.updated: "user %s updated"
+clickhouse.version.list.short: "Available versions"
+clickhouse.version.short: "ClickHouse versions"
+cloud.api_error: "API %d: %s"
+cloud.err.bad_expires: "not RFC 3339"
+cloud.err.bad_id: "invalid id"
+cloud.err.body_object: "--body: a JSON object is required: %w"
+cloud.err.client_clickhouse: "ClickHouse client: %w"
+cloud.err.client_compute: "compute client: %w"
+cloud.err.client_iam: "IAM client: %w"
+cloud.err.client_kafka: "Kafka client: %w"
+cloud.err.client_redis: "Redis client: %w"
+cloud.err.client_vpc: "VPC client: %w"
+cloud.err.empty_operation: "empty response for operation %s"
+cloud.err.empty_vpc_operation: "empty response for VPC operation %s"
+cloud.err.expires: "expiry %q — %w (2026-12-31T00:00:00Z)"
+cloud.err.id: "%s %q — %w"
+cloud.err.integer: "--%s %s=%q: an integer is required"
+cloud.err.list: "list not assembled"
+cloud.err.list_changed: "%w: %s changed during traversal (attempts: %d): collected %d of %d — try again later"
+cloud.err.list_field_changed: "%w: response %s: field %s is missing, but list %q is present — response format has changed"
+cloud.err.list_field_missing: "%w: response %s: field %s is missing on a non-final page"
+cloud.err.list_field_type: "%w: response %s: field %q is not a list"
+cloud.err.list_loop: "%w: API repeated page token %q — pagination is looping"
+cloud.err.list_marshal: "%w: assembling pages: %w"
+cloud.err.list_null: "%w: response %s: null instead of an object"
+cloud.err.list_pages: "%w: exceeds %d pages — possible API malfunction, traversal stopped"
+cloud.err.list_parse: "%w: cannot parse response %s: %w"
+cloud.err.list_size: "%w: %s exceeds %d MB — traversal stopped"
+cloud.err.not_uuid: "not a UUID"
+cloud.err.request_body: "request body: %w"
+cloud.resource.account: "account"
+cloud.resource.key: "key"
+cloud.resource.operation: "operation"
+cloud.resource.project: "project"
+cloud.resource.role: "role"
+cloud.resource.subnet: "subnet"
+cloud.resource.vpc: "VPC"
+cloud.resource.zone: "zone"
+cloudru-dbaas.error: "error: %s"
+cmd.err.negative: "--%s: %s — a non-negative number is required"
+cmd.flag.json: "output JSON (for scripts and agents)"
+cmd.flag.project: "cloud.ru project id"
+cmd.flag.timeout: "time limit for --wait"
+cmd.long: |-
+  cloudru-dbaas manages Managed ClickHouse, Redis and Kafka clusters in cloud.ru through the Public API.
+
+  Access key from environment variables:
+    CLOUDRU_KEY_ID, CLOUDRU_KEY_SECRET   service account key or personal key
+    CLOUDRU_PROJECT_ID                   default project (or the --project flag)
+
+  For agents: --json prints the API response as is, as a single line of JSON.
+
+  Exit codes: 0 success, 1 error (including a failed cloud operation), 2 cancellation (Ctrl-C),
+  4 key or access error, 8 --wait timed out — the operation may still be running.
+cmd.short: "Managed ClickHouse, Redis and Kafka in cloud.ru from the command line"
+common.err.need_yes: "deletion cannot be undone: rerun with --yes"
+common.flag.description: "description"
+common.flag.name: "name"
+common.flag.wait_op: "wait for the operation to finish"
+common.flag.yes: "confirm deletion"
+iam.accesskey.create.flag.description: "key description"
+iam.accesskey.create.flag.env_file: "new file for the key (0600); an existing file is never overwritten"
+iam.accesskey.create.flag.ttl: "lifetime, for example 720h"
+iam.accesskey.create.long: |-
+  Issue an access key. The API returns the secret once; the CLI writes it only
+  to a new --env-file with permissions 0600 (CLOUDRU_KEY_ID, CLOUDRU_KEY_SECRET,
+  CLOUDRU_PROJECT_ID) and does not print it. Load with: set -a; . FILE; set +a.
+iam.accesskey.create.short: "Issue an access key and save it to an env file"
+iam.accesskey.created: "key %s saved to %s (secret omitted from output)"
+iam.accesskey.delete.short: "Revoke an access key (requires --yes)"
+iam.accesskey.err.env_file: "env file: %s (a new path is required — the secret is never overwritten)"
+iam.accesskey.err.missing_secret: "API did not return key_id and secret; the key may have been created — check access-keys list"
+iam.accesskey.err.write: "key issued, but env file was not written: %s"
+iam.accesskey.get.short: "Access key (without secret)"
+iam.accesskey.list.short: "Access keys (without secrets)"
+iam.accesskey.revoked: "revoked %s"
+iam.accesskey.short: "Service account access keys"
+iam.long: |-
+  Project service accounts, their access keys and roles.
+  Requires a key with permission to manage project service accounts (for example, the
+  platform.project.admin role); otherwise the API returns 403.
+iam.role.err.need_yes: "revoking a role requires --yes"
+iam.role.get.short: "Role assignment"
+iam.role.grant.flag.expires: "expiry, RFC 3339 (2026-12-31T00:00:00Z)"
+iam.role.grant.flag.role: "role, for example dbaas.clickhouse.admin"
+iam.role.grant.flag.subject: "service account or user id"
+iam.role.grant.long: |-
+  Assign a role to an account or user in the project, for example
+  dbaas.clickhouse.admin, dbaas.redis.admin, dbaas.kafka.admin, vpc.admin.
+iam.role.grant.short: "Assign a role in the project"
+iam.role.granted: "assigned %s (id %s)"
+iam.role.list.flag.subject: "only roles assigned to this account or user (id)"
+iam.role.list.short: "Role assignments in the project"
+iam.role.revoke.flag.yes: "confirm revocation"
+iam.role.revoke.short: "Revoke a role assignment (id from roles list, requires --yes)"
+iam.role.revoked: "revoked %s"
+iam.role.short: "Project roles and their assignments"
+iam.serviceaccount.create.flag.name: "account name"
+iam.serviceaccount.create.short: "Create a service account in the project"
+iam.serviceaccount.created: "created %s %s"
+iam.serviceaccount.delete.short: "Delete a service account and its keys (requires --yes)"
+iam.serviceaccount.deleted: "deleted %s"
+iam.serviceaccount.get.short: "Service account"
+iam.serviceaccount.short: "Project service accounts"
+iam.short: "Service accounts, access keys and roles"
+kafka.cluster.create.flag.auto_rebalance: "automatically rebalance partitions (requires --cruise-control)"
+kafka.cluster.create.flag.brokers: "number of brokers (within the limits from specs list)"
+kafka.cluster.create.flag.cruise_control: "enable Cruise Control"
+kafka.cluster.create.flag.name: "cluster name (required)"
+kafka.cluster.create.flag.param: "cluster parameter key=value (see \"Cluster parameters\" in the documentation); can be repeated"
+kafka.cluster.create.flag.spec: "specification_id from specs list (required)"
+kafka.cluster.create.flag.storage_gib: "disk size in GiB (required; at least the minimum from specs list)"
+kafka.cluster.create.flag.subnet_id: "VPC subnet (required)"
+kafka.cluster.create.flag.ui: "enable the Kafka UI web interface"
+kafka.cluster.create.flag.version_id: "version id from versions list (required)"
+kafka.cluster.create.flag.wait: "wait for the cluster to become ready"
+kafka.cluster.create.long: |-
+  Create a cluster. Returns an operation; --wait waits for completion and prints the cluster.
+
+  Steps for a new cluster:
+    cloudru-dbaas kafka versions list                         # version id
+    cloudru-dbaas zones list                                  # availability_zone_id
+    cloudru-dbaas kafka specs list --version-id <VERSION_ID> --zone <ZONE>  # specification_id, brokers, minimum disk size
+    cloudru-dbaas kafka clusters create --name demo --version-id <VERSION_ID> --spec <SPEC_ID> \
+        --brokers 1 --storage-gib 40 --subnet-id <SUBNET_ID> --wait
+kafka.cluster.create.short: "Create a cluster"
+kafka.cluster.delete.short: "Delete a cluster (irreversible, requires --yes)"
+kafka.cluster.flag.wait: "wait for completion"
+kafka.cluster.get.short: "Cluster: status, broker addresses, configuration"
+kafka.cluster.list.short: "List project clusters"
+kafka.cluster.resize.err.no_changes: "specify what to change: --spec, --storage-gib, --param or --body"
+kafka.cluster.resize.flag.param: "cluster parameter key=value; can be repeated"
+kafka.cluster.resize.flag.spec: "new specification_id"
+kafka.cluster.resize.flag.storage_gib: "new disk size in GiB"
+kafka.cluster.resize.short: "Update a cluster: specification, disk, parameters"
+kafka.cluster.short: "Kafka clusters"
+kafka.flag.api_url: "Kafka Public API URL"
+kafka.operation.get.short: "Operation status"
+kafka.operation.list.short: "List cluster operations"
+kafka.operation.short: "Cluster operations"
+kafka.role.list.short: "List roles"
+kafka.role.short: "Cluster roles"
+kafka.short: "Managed Kafka"
+kafka.spec.err.filters_required: "--version-id and --zone are required (or --cluster-id for cluster resize specifications)"
+kafka.spec.flag.cluster_id: "instead of version and zone: specifications available for resizing this cluster (not verified live)"
+kafka.spec.flag.zone: "zone: name (ru.AZ-1) or id from zones list (required)"
+kafka.spec.list.short: "Specifications (vCPU/RAM), allowed number of brokers, minimum disk size"
+kafka.spec.short: "Cluster specifications"
+kafka.topic.create.flag.partitions: "number of partitions"
+kafka.topic.create.flag.replication: "replication factor"
+kafka.topic.create.long: |-
+  Create a topic. Kafka parameters: --param key=value, for example --param retention.ms=86400000.
+  The replication factor must not exceed the number of brokers in the cluster.
+kafka.topic.create.short: "Create a topic"
+kafka.topic.delete.short: "Delete a topic and its data (requires --yes)"
+kafka.topic.flag.param: "topic parameter key=value; can be repeated"
+kafka.topic.get.short: "Topic: partitions, replication, parameters"
+kafka.topic.list.flag.filter: "part of the topic name"
+kafka.topic.list.short: "List topics"
+kafka.topic.short: "Cluster topics"
+kafka.topic.summary: "%s\tpartitions=%d\treplication=%d"
+kafka.topic.update.err.no_changes: "specify what to change: --partitions, --replication or --param"
+kafka.topic.update.flag.partitions: "new number of partitions (must exceed the current count)"
+kafka.topic.update.flag.replication: "new replication factor"
+kafka.topic.update.long: |-
+  Update a topic. Kafka only supports increasing the number of partitions.
+  Parameters: --param key=value, can be repeated.
+kafka.topic.update.short: "Update a topic: partitions, replication, parameters"
+kafka.user.create.flag.role: "role; can be repeated"
+kafka.user.create.long: |-
+  Create a user. Pass the password through an environment variable or as the first line of stdin:
+    KAFKA_PASSWORD=... cloudru-dbaas kafka users create <CLUSTER_ID> app --password-env KAFKA_PASSWORD --role cloud_writer
+  A user without roles has no permissions; list roles with cloudru-dbaas kafka roles list <CLUSTER_ID>.
+kafka.user.create.short: "Create a user"
+kafka.user.delete.short: "Delete a user (requires --yes)"
+kafka.user.err.name: "user name %q: only lowercase Latin letters and digits are allowed (API requirement)"
+kafka.user.get.short: "User: roles"
+kafka.user.list.short: "List users"
+kafka.user.short: "Cluster users"
+kafka.user.update.err.no_changes: "specify what to change: --password-env / --password-stdin and/or --role"
+kafka.user.update.flag.role: "role; replaces the entire list; can be repeated"
+kafka.user.update.long: |-
+  Change the password (--password-env or --password-stdin) and/or replace the role list
+  entirely (--role, can be repeated).
+kafka.user.update.short: "Change the password and/or replace the role list"
+kafka.version.list.short: "Available versions; the id goes into clusters create --version-id"
+kafka.version.short: "Kafka versions"
+network.short: "Network: subnets and VPCs (needed to create clusters)"
+network.subnet.create.flag.cidr: "subnet address, e.g. 10.0.9.0/24"
+network.subnet.create.flag.dns: "DNS server; can be repeated"
+network.subnet.create.flag.gateway: "gateway address (default: the first address of the subnet)"
+network.subnet.create.flag.isolated: "no routing outside the subnet"
+network.subnet.create.flag.name: "name (Latin letters, digits, . - _)"
+network.subnet.create.flag.vpc_id: "VPC (default: the project's default VPC)"
+network.subnet.create.flag.wait: "wait until the subnet is ready"
+network.subnet.create.flag.zone: "zone: id or name (ru.AZ-1); the cluster and the subnet must be in the same zone"
+network.subnet.create.long: |-
+  Create a subnet in a zone. Without --vpc-id, in the project's default VPC.
+  CIDR is a private range that does not overlap other subnets of the VPC
+  (project subnets: network subnets list). The subnet is created in seconds.
+network.subnet.create.short: "Create a subnet"
+network.subnet.create.wait: "creating subnet %s"
+network.subnet.delete.flag.wait: "wait until the subnet is gone"
+network.subnet.delete.short: "Delete a subnet (requires --yes)"
+network.subnet.delete.wait: "deleting subnet %s"
+network.subnet.deleted: "deleted %s"
+network.subnet.err.state: "subnet %s is in state %s"
+network.subnet.get.short: "Show a subnet"
+network.subnet.list.flag.name: "only the subnet with this name"
+network.subnet.list.flag.vpc_id: "only subnets of this VPC"
+network.subnet.list.flag.zone: "only subnets in this zone (id or name, ru.AZ-1)"
+network.subnet.list.short: "List project subnets"
+network.subnet.short: "Subnets"
+network.vpc.create.short: "Create a VPC (the default VPC is usually enough)"
+network.vpc.delete.short: "Delete a VPC (requires --yes)"
+network.vpc.get.short: "Show a VPC"
+network.vpc.list.short: "List project VPCs"
+network.vpc.short: "Virtual networks (VPC)"
+operation.err.pending: "operation still running"
+output.auth.forbidden: "IAM returned 403: %s — key recognized, but no token issued: check whether the key or service account is disabled"
+output.auth.no_key: "access key not set: set CLOUDRU_KEY_ID and CLOUDRU_KEY_SECRET"
+output.auth.other: "IAM returned %d: %s"
+output.auth.rate_limited: "IAM returned 429: %s — too many requests; try again in a minute"
+output.auth.rejected: "IAM returned 401: %s — key rejected; check CLOUDRU_KEY_ID and CLOUDRU_KEY_SECRET"
+output.err.decode: "parse response: %w"
+output.err.encode_json: "encode JSON: %w"
+output.err.write_output: "write output: %w"
+output.err.write_table: "write table: %w"
+output.operation.canceled: "%s — waiting interrupted; it may still be running in the cloud; check its state before retrying"
+output.operation.canceled_hint: "%s — waiting interrupted; it may still be running in the cloud; wait with: `%s %s --wait`"
+output.operation.failed: "operation %s failed: %s"
+output.operation.name: "operation %s"
+output.operation.no_description: "no description"
+output.operation.poll: "%s — polling failed: %s; it may still be running in the cloud; check its state before retrying"
+output.operation.poll_hint: "%s — polling failed: %s; it may still be running in the cloud; wait with: `%s %s --wait`"
+output.operation.timeout: "%s did not finish within %s; it may still be running in the cloud; check its state before retrying"
+output.operation.timeout_hint: "%s did not finish within %s; it may still be running in the cloud; wait with: `%s %s --wait`"
+output.operation.timeout_operation: "%s did not finish within %s; it may still be running in the cloud; check its state before retrying"
+output.operation.timeout_operation_hint: "%s did not finish within %s; it may still be running in the cloud; wait with: `%s %s --wait`"
+redis.cluster.create.flag.name: "cluster name (required)"
+redis.cluster.create.flag.param: "cluster parameter key=value (see \"Cluster parameters\" in the documentation); can be repeated"
+redis.cluster.create.flag.replicas: "number of replica nodes; API requires ≥ 1 even for standalone (verified on 14 October)"
+redis.cluster.create.flag.shards: "number of shards"
+redis.cluster.create.flag.spec: "specification_id from specs list (required)"
+redis.cluster.create.flag.storage_gib: "disk size in GiB (at least the minimum in specs list)"
+redis.cluster.create.flag.subnet_id: "VPC subnet; can be repeated"
+redis.cluster.create.flag.type: "standalone | master-replica"
+redis.cluster.create.flag.version_id: "version id from versions list (required)"
+redis.cluster.create.flag.wait: "wait for the cluster to be ready"
+redis.cluster.create.long: |-
+  Create a cluster. Returns an operation; with --wait, waits for completion and prints the cluster.
+
+  Steps for a new cluster:
+    cloudru-dbaas redis versions list                         # version id
+    cloudru-dbaas zones list                                  # availability_zone_id
+    cloudru-dbaas redis specs list --version-id <VERSION_ID> --zone <ZONE>  # specification_id, minimum disk size
+    cloudru-dbaas redis clusters create --name demo --version-id <VERSION_ID> --spec <SPEC_ID> \
+        --type standalone --replicas 1 --storage-gib 15 --subnet-id <SUBNET_ID> --wait --timeout 60m
+
+  --type standalone means one node; master-replica means a primary and replicas. --replicas defaults to 1:
+  without it, the API returns 400 "replicas must be positive" even for standalone (verified on 14 October).
+redis.cluster.create.short: "Create a cluster"
+redis.cluster.delete.short: "Delete a cluster (irreversible, requires --yes)"
+redis.cluster.get.short: "Cluster: status, host addresses, configuration"
+redis.cluster.list.short: "List project clusters"
+redis.cluster.resize.err.conflicting_fields: "use separate calls for --spec and --storage-gib: first resize the disk (at least 2× RAM of the new specification), then use --spec"
+redis.cluster.resize.err.no_changes: "specify what to change: --spec, --storage-gib, --param or --body"
+redis.cluster.resize.flag.param: "cluster parameter key=value; can be repeated"
+redis.cluster.resize.flag.spec: "new specification_id"
+redis.cluster.resize.flag.storage_gib: "new disk size in GiB"
+redis.cluster.resize.short: "Update a cluster: specification, disk, parameters"
+redis.cluster.short: "Redis clusters"
+redis.flag.api_url: "Redis Public API URL"
+redis.operation.get.short: "Operation status"
+redis.operation.list.short: "Cluster operations"
+redis.operation.short: "Cluster operations"
+redis.role.list.short: "List roles"
+redis.role.short: "Cluster roles"
+redis.short: "Managed Redis"
+redis.spec.err.filter: "--version-id and --zone are required (or --cluster-id to list specifications available for resizing)"
+redis.spec.flag.cluster_id: "instead of version and zone: specifications available for resizing this cluster (not verified live)"
+redis.spec.flag.version_id: "version id from versions list (required)"
+redis.spec.flag.zone: "zone name (ru.AZ-1) or id from zones list (required)"
+redis.spec.list.short: "Specifications (vCPU/RAM) and minimum disk size"
+redis.spec.short: "Cluster specifications"
+redis.user.create.flag.role: "role; can be repeated"
+redis.user.create.long: |-
+  Create a user. Pass the password through an environment variable or the first line of stdin:
+    REDIS_PASSWORD=... cloudru-dbaas redis users create <CLUSTER_ID> app --password-env REDIS_PASSWORD --role <ROLE>
+  List roles with cloudru-dbaas redis roles list <CLUSTER_ID>.
+redis.user.create.short: "Create a user"
+redis.user.delete.short: "Delete a user (requires --yes)"
+redis.user.get.short: "User and their roles"
+redis.user.list.short: "List users"
+redis.user.short: "Cluster users"
+redis.user.update.err.no_changes: "specify what to change: --password-env / --password-stdin and/or --role"
+redis.user.update.flag.role: "role; replaces the entire list; can be repeated"
+redis.user.update.long: |-
+  Change the password (--password-env or --password-stdin) and/or replace the role list
+  entirely (--role, can be repeated).
+  The Redis API replaces the entire user (PUT): without --role, the current roles
+  are read and sent again.
+redis.user.update.short: "Change the password and/or replace the role list"
+redis.version.list.short: "Available versions; the id goes into clusters create --version-id"
+redis.version.short: "Redis versions"
+state.empty_body.bad_request: "empty response body — a required parameter is probably missing"
+state.empty_body.forbidden: "empty response body — access denied: check the project (--project, CLOUDRU_PROJECT_ID) and the service account roles in it"
+state.empty_body.not_found: "empty response body — resource not found: check the id and project"
+state.empty_body.other: "empty response body"
+state.empty_body.rate_limited: "empty response body — too many requests; try again in a minute"
+state.empty_body.server_error: "empty response body — API failure; try again later"
+state.empty_body.unauthorized: "empty response body — API rejected the token even after IAM refresh: the key is valid; check that the service account belongs to this project"
+state.err.insecure_url: "%s — no TLS: the key and token would be sent in plain text. Use https://; for a test environment without TLS, set CLOUDRU_ALLOW_HTTP=1"
+state.err.no_project: "project not set: --project or CLOUDRU_PROJECT_ID"
+state.warning.insecure_url: "warning: %s — no TLS; the key and token will be sent in plain text"
+transport.err.body_size: "API response exceeds %d MB — reading interrupted"
+transport.err.read_body: "read body: %w"
+transport.err.read_error_body: "read error body: %w"
+transport.err.token_refreshed: "API rejected the token; token refreshed; %s is not retried automatically to avoid running it twice — repeat the command"
+zones.err.list: "zones: %w"
+zones.err.parse: "cannot parse the zone list: %s"
+zones.list.short: "List availability zones"
+zones.short: "Availability zones (for specs list --zone)"

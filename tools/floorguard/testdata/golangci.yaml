@@ -1,0 +1,202 @@
+version: "2"
+
+# e2e живого уровня под тегом — без тега линтер файл не видит.
+run:
+  build-tags:
+    - e2e
+
+linters:
+  default: none
+  enable:
+    # Default linters.
+    - ineffassign
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+
+    # Extra linters.
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - errname
+    - errorlint
+    - copyloopvar
+    - gocritic
+    - misspell
+    - nolintlint
+    - embeddedstructfieldcheck
+    - exptostd
+    - funcorder
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecksumtype
+    - gocritic
+    - godox
+    - gosec
+    - gosmopolitan
+    - govet
+    - grouper
+    - iface
+    - makezero
+    - mirror
+    - misspell
+    - musttag
+    - nilnesserr
+    - nilnil
+    - predeclared
+    - testifylint
+    - unconvert
+    - usestdlibvars
+    - usetesting
+    - wastedassign
+    - wsl_v5
+    - wrapcheck
+
+    # Границы пакетов.
+    - depguard
+    - forbidigo
+
+    # Enable eventually.
+    # - err113
+  settings:
+    depguard:
+      rules:
+        # cobra и pflag — только в internal/cmd и main.
+        cobra-only-in-cmd:
+          files:
+            - "**/internal/{auth,config,transport,cloud,operation,output,gen,state}/**"
+          deny:
+            - pkg: github.com/spf13/cobra
+              desc: "cobra — только в internal/cmd"
+            - pkg: github.com/spf13/pflag
+              desc: "флаги — только в internal/cmd"
+        # Команды не знают про HTTP и JSON.
+        cmd-no-http-json:
+          files:
+            - "**/internal/cmd/**"
+            - "!$test"
+          deny:
+            - pkg: net/http
+              desc: "HTTP — в transport и cloud"
+            - pkg: encoding/json
+              desc: "JSON — в output и gen"
+        # Зависимости — только вниз.
+        lower-layers-no-upper:
+          files:
+            - "**/internal/{auth,config,transport,cloud,gen,output,operation}/**"
+          deny:
+            - pkg: github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd
+              desc: "нижний слой не импортирует команды"
+            - pkg: github.com/cloud-ru/evo-dbaas-cli-sdk/internal/state
+              desc: "нижний слой не импортирует state"
+        # Команды ходят в API только через cloud и operation.
+        cmd-through-cloud:
+          files:
+            - "**/internal/cmd/**"
+          deny:
+            - pkg: github.com/cloud-ru/evo-dbaas-cli-sdk/internal/gen
+              desc: "команды — через cloud"
+            - pkg: github.com/cloud-ru/evo-dbaas-cli-sdk/internal/transport
+              desc: "команды — через cloud"
+        # Сгенерированные клиенты ни от чего своего не зависят.
+        gen-standalone:
+          files:
+            - "**/internal/gen/**"
+          deny:
+            - pkg: github.com/cloud-ru/evo-dbaas-cli-sdk/internal
+              desc: "gen — только сгенерированный код"
+    forbidigo:
+      forbid:
+        - pattern: ^os\.(Getenv|LookupEnv|Environ)$
+          msg: "переменные окружения читает только internal/config"
+      analyze-types: true
+    errorlint:
+      asserts: false
+      comparison: false
+    gocritic:
+      disabled-checks:
+        - ifElseChain
+        - unlambda
+    misspell:
+      locale: US
+    staticcheck:
+      checks:
+        - all
+        - -S1016
+        - -SA1019
+        - -QF1008
+    govet:
+      disable:
+        - lostcancel
+    godox:
+      keywords:
+        - FIXME
+    gosec:
+      excludes:
+        - G306
+        - G110 # Potential DoS vulnerability via decompression bomb
+    wsl_v5:
+      allow-whole-block: true
+    wrapcheck:
+      extra-ignore-sigs:
+        - context.Cause(
+  exclusions:
+    generated: strict
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - scripts
+      - docs
+    rules:
+      - path: 'internal/config/'
+        linters:
+          - forbidigo
+      - path: '_test\.go$'
+        linters:
+          - forbidigo
+      # Легаси до переделки (CONSTRAINTS.md W1–W3): одно правило на пакет,
+      # снимается удалением правила вместе с переделкой пакета.
+      - path: 'internal/cli/' # W1
+        linters: &legacy
+          - wrapcheck
+          - nilnil
+          - musttag
+          - errcheck
+          - gosec
+          - staticcheck
+          - funcorder
+          - forbidigo
+      - path: 'internal/auth/' # W2
+        linters: *legacy
+      - path: 'internal/api/' # W3
+        linters: *legacy
+
+formatters:
+  enable:
+    - gci
+    - gofumpt
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/cloud-ru/evo-dbaas-cli-sdk)
+    gofumpt:
+      extra:
+        group-params: true
+        clothe-returns: true
+  exclusions:
+    generated: strict
+    paths:
+      - scripts
+      - docs
+      - third_party$
+      - builtin$
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

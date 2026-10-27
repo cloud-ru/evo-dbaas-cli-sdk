@@ -1,0 +1,15 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: API 500: internal
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+POST /vpc/v1/vpcs
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"name":"v","projectId":"proj-1"}

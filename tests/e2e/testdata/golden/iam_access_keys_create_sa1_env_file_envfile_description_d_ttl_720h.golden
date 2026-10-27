@@ -1,0 +1,15 @@
+exit: 0
+--- stdout
+key kid2 saved to TMP/key.env (secret omitted from output)
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+POST /iamapi/api/v2/serviceAccounts/sa1/accessKeys
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"description":"d","ttl":"720h"}

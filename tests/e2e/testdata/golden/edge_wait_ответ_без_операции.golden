@@ -1,0 +1,13 @@
+exit: 8
+--- stdout
+
+--- stderr
+error: --wait: API response has no operation — nothing to wait for; check the resource state before retrying
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+DELETE /redis/v1/clusters/c1
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1

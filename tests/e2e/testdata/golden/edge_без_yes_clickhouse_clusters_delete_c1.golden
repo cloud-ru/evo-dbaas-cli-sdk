@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: deletion cannot be undone: rerun with --yes
+--- requests

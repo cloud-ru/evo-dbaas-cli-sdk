@@ -1,0 +1,17 @@
+exit: 0
+--- stdout
+operation op1 — in progress
+resource  c1
+          Создание кластера
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+POST /clickhouse/v1/clusters
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"description":"d","keeper_mode":"KEEPER_MODE_EMBEDDED","name":"n","project_id":"proj-1","replicas":1,"shards":1,"specification_id":"s","storage_gib":40,"subnet_ids":["sn1"],"version":"25.8"}

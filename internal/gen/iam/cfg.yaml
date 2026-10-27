@@ -1,0 +1,7 @@
+package: iam
+output: internal/gen/iam/client.gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  skip-prune: true

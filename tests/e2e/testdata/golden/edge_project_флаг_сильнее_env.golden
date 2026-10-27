@@ -1,0 +1,13 @@
+exit: 0
+--- stdout
+ID  NAME  STATUS  HEALTH  TYPE  SHARDS  REPLICAS  STORAGE_GIB
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /redis/v1/clusters?page_size=100&project_id=p2
+  ua: ch-cloudru/VERSION
+  auth: Bearer tok1
