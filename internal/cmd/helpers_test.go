@@ -43,8 +43,8 @@ func newFakeCloud(t *testing.T) *fakeCloud {
 
 	pollDelay = time.Millisecond
 
-	t.Setenv("CH_CLOUDRU_IAM_URL", srv.URL+"/iam/token")
-	t.Setenv("CH_CLOUDRU_API_URL", srv.URL)
+	t.Setenv("CLOUDRU_IAM_AUTH_URL", srv.URL+"/iam/token")
+	t.Setenv("CLOUDRU_CLICKHOUSE_API_URL", srv.URL)
 	t.Setenv("CLOUDRU_REDIS_API_URL", srv.URL)
 	t.Setenv("CLOUDRU_KAFKA_API_URL", srv.URL)
 	t.Setenv("CLOUDRU_COMPUTE_API_URL", srv.URL)

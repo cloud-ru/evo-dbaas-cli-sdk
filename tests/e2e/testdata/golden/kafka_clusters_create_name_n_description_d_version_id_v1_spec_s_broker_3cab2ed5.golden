@@ -11,7 +11,7 @@ POST /iam/token
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
 POST /kafka/v1/clusters
-  ua: ch-cloudru/VERSION
+  ua: cloudru-dbaas/VERSION
   auth: Bearer tok1
   content-type: application/json
   body: {"brokers":3,"cruise_control_enabled":true,"cruise_control_rebalance_auto_enabled":true,"description":"d","name":"n","project_id":"proj-1","specification_id":"s","storage_gib":40,"subnet_id":"sn1","ui_enabled":true,"version_id":"v1"}

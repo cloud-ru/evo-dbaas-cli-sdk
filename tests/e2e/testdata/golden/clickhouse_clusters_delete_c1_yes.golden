@@ -11,5 +11,5 @@ POST /iam/token
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
 DELETE /clickhouse/v1/clusters/c1
-  ua: ch-cloudru/VERSION
+  ua: cloudru-dbaas/VERSION
   auth: Bearer tok1

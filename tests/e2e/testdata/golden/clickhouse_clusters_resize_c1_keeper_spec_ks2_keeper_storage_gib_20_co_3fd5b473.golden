@@ -11,7 +11,7 @@ POST /iam/token
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
 PATCH /clickhouse/v1/clusters/c1
-  ua: ch-cloudru/VERSION
+  ua: cloudru-dbaas/VERSION
   auth: Bearer tok1
   content-type: application/json
   body: {"cluster_id":"c1","config":{"max_connections":200},"standalone_keeper":{"specification_id":"ks2","storage_gib":20}}

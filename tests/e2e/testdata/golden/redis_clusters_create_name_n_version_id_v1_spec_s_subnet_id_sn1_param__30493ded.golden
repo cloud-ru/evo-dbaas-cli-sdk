@@ -11,7 +11,7 @@ POST /iam/token
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
 POST /redis/v1/clusters
-  ua: ch-cloudru/VERSION
+  ua: cloudru-dbaas/VERSION
   auth: Bearer tok1
   content-type: application/json
   body: {"logging":{"enabled":true,"log_group_id":"lg"},"name":"n","parameters":{"maxmemory-policy":"allkeys-lru"},"project_id":"proj-1","replicas":1,"shards":1,"specification_id":"s","subnet_ids":["sn1"],"type":"STANDALONE","version_id":"v1"}

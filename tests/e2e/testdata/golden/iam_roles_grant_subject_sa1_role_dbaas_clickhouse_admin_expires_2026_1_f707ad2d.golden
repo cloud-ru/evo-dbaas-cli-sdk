@@ -9,7 +9,7 @@ POST /iam/token
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
 POST /iamapi/api/v3/permissions
-  ua: ch-cloudru/VERSION
+  ua: cloudru-dbaas/VERSION
   auth: Bearer tok1
   content-type: application/json
   body: {"expiresAt":"2026-12-31T00:00:00Z","resourceId":"proj-1","role":"dbaas.clickhouse.admin","subjectId":"sa1"}

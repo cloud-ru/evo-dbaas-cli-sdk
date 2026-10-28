@@ -5,7 +5,9 @@
 #   scripts/generate.sh --fetch   — сначала скачать свежие спецификации
 #                                   с cloud.ru/docs и наложить локальные правки
 #
-# Локальных правок две. compute и iam чинит tools/specfix при каждой генерации.
+# Локальных правок три. compute и iam чинит tools/specfix при каждой генерации.
+# Ссылки на внутренний хост документации (dev.site.sbercloud.dev, есть в compute) заменяются
+# на публичный cloud.ru/docs сразу после скачивания — репо публичный, внутреннее имя не тиражируем.
 # api/openapi-clickhouse.patch: поля config в ответе
 # приходят строками ("100"), а в спецификации integer, поэтому им задан тип
 # FlexInt64 (internal/gen/clickhouse/flexint.go). После --fetch: git diff api/ и go test ./...
@@ -34,7 +36,12 @@ if [[ ${1:-} == --fetch ]]; then
   for p in "${!EXTRA_URL[@]}"; do
     curl -fsSL -A Mozilla/5.0 -o "api/openapi-$p.yaml" "${EXTRA_URL[$p]}"
   done
+  sed -i 's#https://dev\.site\.sbercloud\.dev/docs/#https://cloud.ru/docs/#g' api/openapi-*.yaml
   git apply -p0 api/openapi-clickhouse.patch
+fi
+if grep -l 'sbercloud\.dev' api/openapi-*.yaml; then
+  echo "generate: внутренний хост в спецификациях выше — заменить на cloud.ru/docs" >&2
+  exit 1
 fi
 
 for p in clickhouse redis kafka vpc; do

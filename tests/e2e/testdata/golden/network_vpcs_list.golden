@@ -9,5 +9,5 @@ POST /iam/token
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
 GET /vpc/v1/vpcs?pageSize=1000&projectId=proj-1
-  ua: ch-cloudru/VERSION
+  ua: cloudru-dbaas/VERSION
   auth: Bearer tok1

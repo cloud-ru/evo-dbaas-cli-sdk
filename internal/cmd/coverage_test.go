@@ -210,8 +210,8 @@ func TestAPICoverage(t *testing.T) {
 
 	pollDelay = time.Millisecond
 
-	t.Setenv("CH_CLOUDRU_IAM_URL", srv.URL+"/iam/token")
-	t.Setenv("CH_CLOUDRU_API_URL", srv.URL+"/clickhouse")
+	t.Setenv("CLOUDRU_IAM_AUTH_URL", srv.URL+"/iam/token")
+	t.Setenv("CLOUDRU_CLICKHOUSE_API_URL", srv.URL+"/clickhouse")
 	t.Setenv("CLOUDRU_REDIS_API_URL", srv.URL+"/redis")
 	t.Setenv("CLOUDRU_KAFKA_API_URL", srv.URL+"/kafka")
 	t.Setenv("CLOUDRU_COMPUTE_API_URL", srv.URL+"/compute")

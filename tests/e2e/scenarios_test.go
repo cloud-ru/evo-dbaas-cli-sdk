@@ -261,13 +261,13 @@ var edgeRuns = []scenario{
 		"GET /vpc/v1/vpcs/operations/vop1": {body: `{"id":"vop1","done":true,"resourceId":"v1"}`},
 	}},
 	// Адреса API по умолчанию: у продуктов DBaaS видны в --help, у остальных — хост CONNECT через прокси.
-	{name: "адрес по умолчанию clickhouse", args: "clickhouse clusters --help", unset: []string{"CH_CLOUDRU_API_URL"}},
+	{name: "адрес по умолчанию clickhouse", args: "clickhouse clusters --help", unset: []string{"CLOUDRU_CLICKHOUSE_API_URL"}},
 	{name: "адрес по умолчанию redis", args: "redis clusters --help", unset: []string{"CLOUDRU_REDIS_API_URL"}},
 	{name: "адрес по умолчанию kafka", args: "kafka clusters --help", unset: []string{"CLOUDRU_KAFKA_API_URL"}},
 	{name: "адрес по умолчанию compute", args: "network subnets delete " + cSN + " --yes", proxy: true, unset: []string{"CLOUDRU_COMPUTE_API_URL"}},
 	{name: "адрес по умолчанию vpc", args: "network vpcs delete v1 --yes", proxy: true, unset: []string{"CLOUDRU_VPC_API_URL"}},
 	{name: "адрес по умолчанию iam api", args: "iam service-accounts delete sa1 --yes", proxy: true, unset: []string{"CLOUDRU_IAM_API_URL"}},
-	{name: "адрес по умолчанию iam токен", args: "redis clusters list", proxy: true, unset: []string{"CH_CLOUDRU_IAM_URL"}},
+	{name: "адрес по умолчанию iam токен", args: "redis clusters list", proxy: true, unset: []string{"CLOUDRU_IAM_AUTH_URL"}},
 	// Флаг --project сильнее CLOUDRU_PROJECT_ID.
 	{name: "project флаг сильнее env", args: "redis clusters list --project p2"},
 }

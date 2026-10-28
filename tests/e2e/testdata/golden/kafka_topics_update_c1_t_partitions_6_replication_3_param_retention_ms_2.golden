@@ -11,7 +11,7 @@ POST /iam/token
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
 PATCH /kafka/v1/clusters/c1/topics/t
-  ua: ch-cloudru/VERSION
+  ua: cloudru-dbaas/VERSION
   auth: Bearer tok1
   content-type: application/json
   body: {"cluster_id":"c1","name":"t","num_partitions":6,"parameters":{"retention.ms":"2"},"replication_factor":3}

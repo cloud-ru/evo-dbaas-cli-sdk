@@ -31,9 +31,9 @@ func TestLoadEnvOverridesDefaults(t *testing.T) {
 
 	c, err := load(environ(
 		"CLOUDRU_KEY_ID=kid", "CLOUDRU_KEY_SECRET=sec", "CLOUDRU_PROJECT_ID=p1",
-		"CH_CLOUDRU_API_URL=http://ch", "CLOUDRU_REDIS_API_URL=http://redis", "CLOUDRU_KAFKA_API_URL=http://kafka",
+		"CLOUDRU_CLICKHOUSE_API_URL=http://ch", "CLOUDRU_REDIS_API_URL=http://redis", "CLOUDRU_KAFKA_API_URL=http://kafka",
 		"CLOUDRU_COMPUTE_API_URL=http://compute", "CLOUDRU_VPC_API_URL=http://vpc", "CLOUDRU_IAM_API_URL=http://iam",
-		"CH_CLOUDRU_IAM_URL=http://token", "CLOUDRU_ALLOW_HTTP=1",
+		"CLOUDRU_IAM_AUTH_URL=http://token", "CLOUDRU_ALLOW_HTTP=1",
 	))
 	require.NoError(t, err)
 
@@ -72,6 +72,18 @@ func TestLoadIgnoresForeignVars(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Empty(t, c.KeyID)
+}
+
+// Регрессия: CH_CLOUDRU_* убраны в v0.2.0 без псевдонимов — старое имя
+// не должно тихо перенаправлять запросы.
+func TestLoadIgnoresOldCHCloudruVars(t *testing.T) {
+	t.Parallel()
+
+	c, err := load(environ("CH_CLOUDRU_API_URL=http://old", "CH_CLOUDRU_IAM_URL=http://old"))
+	require.NoError(t, err)
+
+	assert.Equal(t, "https://clickhouse.api.cloud.ru", c.ClickHouseURL)
+	assert.Equal(t, "https://iam.api.cloud.ru/api/v1/auth/token", c.IAMAuthURL)
 }
 
 func TestLoadLangPOSIXOrder(t *testing.T) {

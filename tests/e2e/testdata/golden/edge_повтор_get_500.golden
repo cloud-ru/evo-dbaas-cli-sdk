@@ -9,8 +9,8 @@ POST /iam/token
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
 GET /redis/v1/clusters?page_size=100&project_id=proj-1
-  ua: ch-cloudru/VERSION
+  ua: cloudru-dbaas/VERSION
   auth: Bearer tok1
 GET /redis/v1/clusters?page_size=100&project_id=proj-1
-  ua: ch-cloudru/VERSION
+  ua: cloudru-dbaas/VERSION
   auth: Bearer tok1

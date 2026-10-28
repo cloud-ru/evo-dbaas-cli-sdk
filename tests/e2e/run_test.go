@@ -52,7 +52,7 @@ func (r result) String() string {
 
 var (
 	slugRe    = regexp.MustCompile(`[^a-z0-9а-яё]+`)
-	versionRe = regexp.MustCompile(`(cloudru-dbaas version |ch-cloudru/)\S+`) // версия из VCS меняется с каждым коммитом
+	versionRe = regexp.MustCompile(`(cloudru-dbaas version |cloudru-dbaas/)\S+`) // версия из VCS меняется с каждым коммитом
 )
 
 // goldenName — имя файла по аргументам: «redis clusters get c1» → redis_clusters_get_c1.

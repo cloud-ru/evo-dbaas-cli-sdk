@@ -9,5 +9,5 @@ POST /iam/token
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
 GET /iamapi/api/v3/permissions?filter=resource_id%3Dproj-1+AND+subject_id%3Dsa1&pageSize=1000
-  ua: ch-cloudru/VERSION
+  ua: cloudru-dbaas/VERSION
   auth: Bearer tok1

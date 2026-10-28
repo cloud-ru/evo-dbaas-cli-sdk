@@ -39,7 +39,7 @@ func (s *State) Connect(c Conn) error {
 
 	cacheDir := ""
 	if d, err := os.UserCacheDir(); err == nil {
-		cacheDir = filepath.Join(d, "ch-cloudru")
+		cacheDir = filepath.Join(d, "cloudru-dbaas")
 	}
 
 	iam := &auth.IAMSource{
@@ -65,7 +65,7 @@ func (s *State) Connect(c Conn) error {
 		}
 
 		req.Header.Set("Authorization", "Bearer "+tok)
-		req.Header.Set("User-Agent", "ch-cloudru/"+c.Version)
+		req.Header.Set("User-Agent", "cloudru-dbaas/"+c.Version)
 
 		return nil
 	}

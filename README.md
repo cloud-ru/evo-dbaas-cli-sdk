@@ -45,7 +45,7 @@ cloudru-dbaas clickhouse auth check
 ```
 
 CLI сам обменивает ключ на токен IAM и кеширует токен в пользовательском
-каталоге кеша (`ch-cloudru/`, права 0600). Пароли пользователей кластеров
+каталоге кеша (`cloudru-dbaas/`, права 0600). Пароли пользователей кластеров
 передаются только через stdin (`--password-stdin`) или переменную окружения
 (`--password-env`) — флага с самим паролем нет.
 
@@ -53,8 +53,8 @@ CLI сам обменивает ключ на токен IAM и кеширует
 |---|---|
 | `CLOUDRU_KEY_ID`, `CLOUDRU_KEY_SECRET` | ключ доступа |
 | `CLOUDRU_PROJECT_ID` | проект по умолчанию |
-| `CH_CLOUDRU_API_URL` | другой адрес Public API ClickHouse (по умолчанию `https://clickhouse.api.cloud.ru`) |
-| `CH_CLOUDRU_IAM_URL` | другой адрес выдачи токена IAM |
+| `CLOUDRU_CLICKHOUSE_API_URL` | другой адрес Public API ClickHouse (по умолчанию `https://clickhouse.api.cloud.ru`) |
+| `CLOUDRU_IAM_AUTH_URL` | другой адрес выдачи токена IAM |
 | `CLOUDRU_IAM_API_URL`, `CLOUDRU_VPC_API_URL`, `CLOUDRU_COMPUTE_API_URL` | другие адреса API IAM, VPC и виртуальных машин |
 
 Адрес `http://` не на localhost CLI отвергает: ключ и токен ушли бы без TLS.

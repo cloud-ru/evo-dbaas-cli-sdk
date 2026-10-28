@@ -9,5 +9,5 @@ POST /iam/token
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
 GET /clickhouse/v1/specifications?availability_zone_id=zone-1&role=SPECIFICATION_ROLE_CLICKHOUSE_SERVER&version=25.8
-  ua: ch-cloudru/VERSION
+  ua: cloudru-dbaas/VERSION
   auth: Bearer tok1

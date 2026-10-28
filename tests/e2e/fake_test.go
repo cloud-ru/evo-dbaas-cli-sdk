@@ -54,8 +54,8 @@ func (f *fakeCloud) env(unset []string) []string {
 
 	all := []string{
 		"CLOUDRU_ALLOW_HTTP=1",
-		"CH_CLOUDRU_IAM_URL=" + u + "/iam/token",
-		"CH_CLOUDRU_API_URL=" + u + "/clickhouse",
+		"CLOUDRU_IAM_AUTH_URL=" + u + "/iam/token",
+		"CLOUDRU_CLICKHOUSE_API_URL=" + u + "/clickhouse",
 		"CLOUDRU_REDIS_API_URL=" + u + "/redis",
 		"CLOUDRU_KAFKA_API_URL=" + u + "/kafka",
 		"CLOUDRU_COMPUTE_API_URL=" + u + "/compute",

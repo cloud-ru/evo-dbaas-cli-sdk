@@ -9174,7 +9174,7 @@ type VmRestoreConfig struct {
 	// Interfaces Интерфейсы, которые будут добавлены ВМ при восстановлении.
 	// Рекомендуется добавить хотя бы один интерфейс.
 	// Если не указывать этот параметр, ВМ будет создана без интерфейса и не будет иметь связи с внешними и внутренними сетями.
-	// Вы сможете назначить интерфейс позже через параметры ВМ в личном кабинете или  выполнив запрос [POST /api/v1/interfaces](https://dev.site.sbercloud.dev/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/Interfaces/operation/create_interface_svc_v1_interfaces_post).
+	// Вы сможете назначить интерфейс позже через параметры ВМ в личном кабинете или  выполнив запрос [POST /api/v1/interfaces](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/Interfaces/operation/create_interface_svc_v1_interfaces_post).
 	Interfaces *[]VmRestoreInterfaceConfig `json:"interfaces,omitempty"`
 
 	// Name Название ресурса.
@@ -9493,13 +9493,13 @@ type VmRestoreSubnetConfig struct {
 	// Id Идентификатор подсети.
 	// Укажите один из параметров: `id` или `name`.
 	// Нельзя указывать оба параметра одновременно.
-	// Идентификаторы подсетей можно получить, выполнив запрос [GET /api/v1/subnets](https://dev.site.sbercloud.dev/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/Subnets/operation/get_subnets_svc_v1_subnets_get).
+	// Идентификаторы подсетей можно получить, выполнив запрос [GET /api/v1/subnets](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/Subnets/operation/get_subnets_svc_v1_subnets_get).
 	Id *string `json:"id,omitempty"`
 
 	// Name Название подсети.
 	// Укажите один из параметров: `id` или `name`.
 	// Нельзя указывать оба параметра одновременно.
-	// Названия подсетей можно получить, выполнив запрос [GET /api/v1/subnets](https://dev.site.sbercloud.dev/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/Subnets/operation/get_subnets_svc_v1_subnets_get).
+	// Названия подсетей можно получить, выполнив запрос [GET /api/v1/subnets](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/Subnets/operation/get_subnets_svc_v1_subnets_get).
 	Name *string `json:"name,omitempty"`
 }
 

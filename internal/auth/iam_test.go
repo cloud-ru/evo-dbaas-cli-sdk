@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -85,7 +86,7 @@ func TestIAMSourceFetch(t *testing.T) {
 			var ie *IAMError
 
 			require.ErrorAs(t, err, &ie)
-			assert.Equal(t, &IAMError{Status: tc.status, Body: `{"message":"bad key"}`}, ie)
+			assert.Equal(t, &IAMError{Status: tc.status, Body: "bad key"}, ie)
 
 			if tc.want != nil {
 				require.ErrorIs(t, err, tc.want)
@@ -144,4 +145,35 @@ func TestIAMSourceEndpoint(t *testing.T) {
 
 	assert.Empty(t, (&IAMSource{}).Endpoint(), "адрес по умолчанию — в config, не в auth")
 	assert.Equal(t, "http://x", (&IAMSource{URL: "http://x"}).Endpoint())
+}
+
+// Регрессия: сырое тело ответа IAM снова уходит в текст ошибки — и с ним keyId, если IAM начнёт его возвращать.
+func TestIAMMessage(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		name string
+		body string
+		want string
+	}{
+		{"message", `{"message":"bad key","keyId":"kid-123"}`, "bad key"},
+		{"error_description раньше error", `{"error":"invalid_client","error_description":"unknown key"}`, "unknown key"},
+		{"только error", `{"error":"invalid_client"}`, "invalid_client"},
+		{"без текстового поля", `{"keyId":"kid-123","code":16}`, "Unauthorized"},
+		{"не JSON", "keyId=kid-123 rejected", "Unauthorized"},
+		{"пусто", "", "Unauthorized"},
+		{"пустой message — следующее поле", `{"message":"","error":"invalid_client"}`, "invalid_client"},
+		{"message из пробелов — следующее поле", `{"message":"   ","error":"invalid_client"}`, "invalid_client"},
+		{"управляющие символы вырезаны", `{"message":"\u001b[2J\u001b]0;t\u0007bad\nerror: fake"}`, "[2J]0;tbaderror: fake"},
+		{"длинный текст обрезан", `{"message":"` + strings.Repeat("я", maxIAMMessage+50) + `"}`, strings.Repeat("я", maxIAMMessage) + "…"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := iamMessage(http.StatusUnauthorized, []byte(tc.body))
+
+			assert.Equal(t, tc.want, got)
+			assert.NotContains(t, got, "kid-123")
+		})
+	}
 }

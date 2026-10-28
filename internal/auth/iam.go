@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/i18n"
 )
@@ -14,6 +16,7 @@ import (
 const (
 	defaultTTL      = time.Hour // если IAM не назвал срок
 	maxResponseSize = 1 << 20
+	maxIAMMessage   = 200 // рун текста ошибки IAM в stderr
 	requestTimeout  = 30 * time.Second
 )
 
@@ -66,7 +69,7 @@ func (s *IAMSource) Fetch(ctx context.Context) (Token, error) {
 
 	raw, _ := io.ReadAll(io.LimitReader(resp.Body, maxResponseSize))
 	if resp.StatusCode != http.StatusOK {
-		return Token{}, &IAMError{Status: resp.StatusCode, Body: string(bytes.TrimSpace(raw))}
+		return Token{}, &IAMError{Status: resp.StatusCode, Body: iamMessage(resp.StatusCode, raw)}
 	}
 
 	var r struct {
@@ -92,4 +95,39 @@ func (s *IAMSource) now() time.Time {
 	}
 
 	return time.Now()
+}
+
+// iamMessage оставляет от ответа IAM только текст ошибки (message, error_description или error из JSON): сырое тело
+// в stderr не печатаем — изменись API, туда попал бы keyId. Нет текстового поля или не JSON — название кода HTTP.
+func iamMessage(status int, raw []byte) string {
+	var m map[string]any
+	if json.Unmarshal(raw, &m) == nil {
+		for _, k := range []string{"message", "error_description", "error"} {
+			if s, ok := m[k].(string); ok {
+				if s = cleanMessage(s); s != "" {
+					return s
+				}
+			}
+		}
+	}
+
+	return http.StatusText(status)
+}
+
+// cleanMessage убирает управляющие символы — ESC-последовательности и перевод строки подделали бы вывод
+// терминала — и режет текст до maxIAMMessage рун.
+func cleanMessage(s string) string {
+	s = strings.TrimSpace(strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) {
+			return -1
+		}
+
+		return r
+	}, s))
+
+	if r := []rune(s); len(r) > maxIAMMessage {
+		s = string(r[:maxIAMMessage]) + "…"
+	}
+
+	return s
 }

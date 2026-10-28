@@ -44,20 +44,20 @@ var defaults = map[string]any{
 	"iam_auth_url":   "https://iam.api.cloud.ru/api/v1/auth/token",
 }
 
-// envKeys — имена переменных окружения. Исторические CH_CLOUDRU_* остались
-// от ch-cloudru: их уже вписали в скрипты пользователей.
+// envKeys — имена переменных окружения. Все с префиксом CLOUDRU_; старые
+// CH_CLOUDRU_* убраны в v0.2.0 без псевдонимов.
 var envKeys = map[string]string{
-	"CLOUDRU_KEY_ID":          "key_id",
-	"CLOUDRU_KEY_SECRET":      "key_secret",
-	"CLOUDRU_PROJECT_ID":      "project_id",
-	"CH_CLOUDRU_API_URL":      "clickhouse_url",
-	"CLOUDRU_REDIS_API_URL":   "redis_url",
-	"CLOUDRU_KAFKA_API_URL":   "kafka_url",
-	"CLOUDRU_COMPUTE_API_URL": "compute_url",
-	"CLOUDRU_VPC_API_URL":     "vpc_url",
-	"CLOUDRU_IAM_API_URL":     "iam_url",
-	"CH_CLOUDRU_IAM_URL":      "iam_auth_url",
-	"CLOUDRU_ALLOW_HTTP":      "allow_http",
+	"CLOUDRU_KEY_ID":             "key_id",
+	"CLOUDRU_KEY_SECRET":         "key_secret",
+	"CLOUDRU_PROJECT_ID":         "project_id",
+	"CLOUDRU_CLICKHOUSE_API_URL": "clickhouse_url",
+	"CLOUDRU_REDIS_API_URL":      "redis_url",
+	"CLOUDRU_KAFKA_API_URL":      "kafka_url",
+	"CLOUDRU_COMPUTE_API_URL":    "compute_url",
+	"CLOUDRU_VPC_API_URL":        "vpc_url",
+	"CLOUDRU_IAM_API_URL":        "iam_url",
+	"CLOUDRU_IAM_AUTH_URL":       "iam_auth_url",
+	"CLOUDRU_ALLOW_HTTP":         "allow_http",
 }
 
 // Load читает окружение процесса.

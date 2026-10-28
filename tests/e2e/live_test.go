@@ -38,6 +38,7 @@ type liveProduct struct {
 	specs   func(version, zone string) []string
 	fits    func(spec map[string]any) bool
 	create  func(name, version, spec, storage, subnet string) []string
+	fields  []string // поля спецификации, на которых держится fits: пропадут — fits пропустит всё
 }
 
 var liveProducts = []liveProduct{
@@ -61,7 +62,8 @@ var liveProducts = []liveProduct{
 		specs: func(version, zone string) []string {
 			return []string{"kafka", "specs", "list", "--version-id", version, "--zone", zone}
 		},
-		fits: func(s map[string]any) bool { return num(s["min_brokers"]) <= 1 },
+		fits:   func(s map[string]any) bool { return num(s["min_brokers"]) <= 1 },
+		fields: []string{"min_brokers"},
 		create: func(name, version, spec, storage, subnet string) []string {
 			return []string{
 				"kafka", "clusters", "create", "--name", name, "--version-id", version, "--spec", spec,
@@ -76,7 +78,8 @@ var liveProducts = []liveProduct{
 		specs: func(version, zone string) []string {
 			return []string{"clickhouse", "specs", "list", "--version", version, "--zone", zone, "--role", "server"}
 		},
-		fits: func(s map[string]any) bool { return num(s["min_replicas"]) <= 1 && num(s["min_shards"]) <= 1 },
+		fits:   func(s map[string]any) bool { return num(s["min_replicas"]) <= 1 && num(s["min_shards"]) <= 1 },
+		fields: []string{"min_replicas", "min_shards"},
 		create: func(name, version, spec, storage, subnet string) []string {
 			return []string{
 				"clickhouse", "clusters", "create", "--name", name, "--version", version, "--spec", spec,
@@ -166,6 +169,71 @@ var _ = Describe("живой cloud.ru", Label("live"), func() {
 		})
 	}
 })
+
+// Канарейка — только чтение против того же cloud.ru: принимает ли API наши запросы и
+// не поменялась ли форма ответов, на которой держится живой уровень. Падение — вероятно,
+// новость API (или ключ, сеть, окружение), не регрессия кода: код проверяет сетка на фейке.
+// Кластеров не создаёт, бесплатна, секунды; раз в неделю по расписанию:
+//
+//	go run github.com/onsi/ginkgo/v2/ginkgo --tags e2e --label-filter canary ./tests/e2e
+//
+// Нужны CLOUDRU_KEY_ID, CLOUDRU_KEY_SECRET, CLOUDRU_PROJECT_ID, E2E_ZONE_ID и E2E_SUBNET_ID.
+var _ = Describe("канарейка cloud.ru", Label("canary"), func() {
+	BeforeEach(func() {
+		for _, k := range []string{"CLOUDRU_KEY_ID", "CLOUDRU_KEY_SECRET", "CLOUDRU_PROJECT_ID", "E2E_ZONE_ID", "E2E_SUBNET_ID"} {
+			liveEnv(k)
+		}
+	})
+
+	for _, p := range liveProducts {
+		It(p.name+": версии, спецификации и список кластеров читаются", func() {
+			versions := liveList(liveCall, "versions", p.name, "versions", "list")
+			Expect(versions).NotTo(BeEmpty(), "API не вернул версий")
+
+			// Та же выборка, что у живого create. Пропавшее поле str/num молча читают как "" и 0 —
+			// поэтому поля проверяются явно, а не только итог выборки.
+			specs := liveList(liveCall, "specifications", p.specs(p.version(versions), liveEnv("E2E_ZONE_ID"))...)
+			Expect(specs).NotTo(BeEmpty(), "API не вернул спецификаций")
+
+			for _, sp := range specs {
+				for _, f := range append([]string{"id", "cpu", "memory", "min_storage_gigs"}, p.fields...) {
+					Expect(sp).To(HaveKey(f), "в спецификации нет поля %s", f)
+				}
+			}
+
+			spec, storage := smallestSpec(specs, p.fits)
+			Expect(spec).NotTo(BeEmpty(), "у выбранной спецификации пустой id")
+			Expect(storage).NotTo(Equal("0"), "у спецификации %s нулевой min_storage_gigs", spec)
+
+			// На ключе clusters держатся findByName и уборка живого create; пустой список законен.
+			Expect(liveBody(p.name, "clusters", "list")).To(HaveKey("clusters"))
+		})
+	}
+
+	It("network: подсеть живого create на месте", func() {
+		items, _ := liveBody("network", "subnets", "list")["items"].([]any)
+
+		var ids []any
+		for _, it := range items {
+			if m, ok := it.(map[string]any); ok {
+				ids = append(ids, m["id"])
+			}
+		}
+
+		Expect(ids).To(ContainElement(liveEnv("E2E_SUBNET_ID")), "подсети E2E_SUBNET_ID нет в проекте")
+	})
+})
+
+// liveBody — ответ --json целиком: для проверки ключей, которые liveList не отличит от пустых.
+func liveBody(args ...string) map[string]any {
+	s := live(liveCall, args...)
+	Expect(s.ExitCode()).To(Equal(0), "%v: %s", args, s.Err.Contents())
+
+	var body map[string]any
+	Expect(json.Unmarshal(s.Out.Contents(), &body)).To(Succeed())
+
+	return body
+}
 
 // live — run с проверкой, что бинарник запустился и вышел до limit.
 func live(limit time.Duration, args ...string) *gexec.Session {
