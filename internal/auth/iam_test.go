@@ -43,7 +43,7 @@ func TestIAMSourceFetch(t *testing.T) {
 		t.Parallel()
 
 		srv := fakeIAM(t, http.StatusOK, `{"access_token":"tok-1","expires_in":7200}`)
-		got, err := (&IAMSource{KeyID: "kid", Secret: "sec", URL: srv.URL, Now: clock}).Fetch(t.Context())
+		got, err := (&IAMSource{KeyID: "kid", Secret: "sec", URL: srv.URL, Now: clock, HTTP: srv.Client()}).Fetch(t.Context())
 
 		require.NoError(t, err)
 		assert.Equal(t, Token{AccessToken: "tok-1", ExpiresAt: now.Add(2 * time.Hour)}, got)
@@ -53,7 +53,7 @@ func TestIAMSourceFetch(t *testing.T) {
 		t.Parallel()
 
 		srv := fakeIAM(t, http.StatusOK, `{"access_token":"tok","expires_in":0}`)
-		got, err := (&IAMSource{KeyID: "kid", Secret: "sec", URL: srv.URL, Now: clock}).Fetch(t.Context())
+		got, err := (&IAMSource{KeyID: "kid", Secret: "sec", URL: srv.URL, Now: clock, HTTP: srv.Client()}).Fetch(t.Context())
 
 		require.NoError(t, err)
 		assert.Equal(t, now.Add(time.Hour), got.ExpiresAt)
@@ -63,7 +63,7 @@ func TestIAMSourceFetch(t *testing.T) {
 		t.Parallel()
 
 		srv := fakeIAM(t, http.StatusOK, `{"expires_in":3600}`)
-		_, err := (&IAMSource{KeyID: "kid", Secret: "sec", URL: srv.URL}).Fetch(t.Context())
+		_, err := (&IAMSource{KeyID: "kid", Secret: "sec", URL: srv.URL, HTTP: srv.Client()}).Fetch(t.Context())
 
 		require.ErrorIs(t, err, errNoToken)
 	})
@@ -81,7 +81,7 @@ func TestIAMSourceFetch(t *testing.T) {
 			t.Parallel()
 
 			srv := fakeIAM(t, tc.status, " {\"message\":\"bad key\"}\n")
-			_, err := (&IAMSource{KeyID: "kid", Secret: "sec", URL: srv.URL}).Fetch(t.Context())
+			_, err := (&IAMSource{KeyID: "kid", Secret: "sec", URL: srv.URL, HTTP: srv.Client()}).Fetch(t.Context())
 
 			var ie *IAMError
 
@@ -95,6 +95,21 @@ func TestIAMSourceFetch(t *testing.T) {
 	}
 }
 
+// redirectIAM отвечает редиректом code на сервер, который отмечает в leaked, что ключ ушёл по Location.
+func redirectIAM(t *testing.T, code int, leaked *atomic.Bool) *httptest.Server {
+	t.Helper()
+
+	target := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { leaked.Store(true) }))
+	t.Cleanup(target.Close)
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, target.URL, code)
+	}))
+	t.Cleanup(srv.Close)
+
+	return srv
+}
+
 func TestIAMSourceNoRedirect(t *testing.T) {
 	t.Parallel()
 
@@ -104,30 +119,39 @@ func TestIAMSourceNoRedirect(t *testing.T) {
 
 			var leaked atomic.Bool
 
-			target := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { leaked.Store(true) }))
-			t.Cleanup(target.Close)
-
-			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				http.Redirect(w, r, target.URL, code)
-			}))
-			t.Cleanup(srv.Close)
+			srv := redirectIAM(t, code, &leaked)
 
 			// Свой клиент вызывающего тоже не должен ходить по редиректу.
-			for _, hc := range []*http.Client{nil, {}} {
-				_, err := (&IAMSource{KeyID: "kid", Secret: "sec", URL: srv.URL, HTTP: hc}).Fetch(t.Context())
+			hc := srv.Client()
+			_, err := (&IAMSource{KeyID: "kid", Secret: "sec", URL: srv.URL, HTTP: hc}).Fetch(t.Context())
 
-				var ie *IAMError
-				if assert.ErrorAs(t, err, &ie) {
-					assert.Equal(t, code, ie.Status)
-				}
-
-				if hc != nil {
-					assert.Nil(t, hc.CheckRedirect, "клиент вызывающего не меняется")
-				}
+			var ie *IAMError
+			if assert.ErrorAs(t, err, &ie) {
+				assert.Equal(t, code, ie.Status)
 			}
 
+			assert.Nil(t, hc.CheckRedirect, "клиент вызывающего не меняется")
 			assert.False(t, leaked.Load(), "ключ ушёл по Location")
 		})
+	}
+}
+
+// Без t.Parallel: клиент по умолчанию ходит через http.DefaultTransport, а Close любого
+// httptest.Server рвёт его соединения — параллельно с другими тестами пакета это флак
+// «CloseIdleConnections called».
+func TestIAMSourceNoRedirectDefaultClient(t *testing.T) {
+	for _, code := range []int{http.StatusTemporaryRedirect, http.StatusPermanentRedirect} {
+		var leaked atomic.Bool
+
+		srv := redirectIAM(t, code, &leaked)
+		_, err := (&IAMSource{KeyID: "kid", Secret: "sec", URL: srv.URL}).Fetch(t.Context())
+
+		var ie *IAMError
+		if assert.ErrorAs(t, err, &ie) {
+			assert.Equal(t, code, ie.Status)
+		}
+
+		assert.False(t, leaked.Load(), "ключ ушёл по Location")
 	}
 }
 

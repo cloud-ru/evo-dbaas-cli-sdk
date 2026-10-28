@@ -1,0 +1,7 @@
+exit: 0
+--- stdout
+clusters	Redis clusters
+:4
+--- stderr
+Completion ended with directive: ShellCompDirectiveNoFileComp
+--- requests

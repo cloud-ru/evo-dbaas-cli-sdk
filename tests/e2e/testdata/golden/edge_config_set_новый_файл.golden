@@ -1,0 +1,11 @@
+exit: 0
+--- stdout
+
+--- stderr
+key_id written to profile stand (TMP/.config/cloudru-dbaas/config.yaml)
+--- requests
+--- config.yaml
+mode -rw-------
+profiles:
+  stand:
+    key_id: "0123"

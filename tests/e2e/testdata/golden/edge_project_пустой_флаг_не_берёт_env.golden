@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: project not set: --project or CLOUDRU_PROJECT_ID
+--- requests

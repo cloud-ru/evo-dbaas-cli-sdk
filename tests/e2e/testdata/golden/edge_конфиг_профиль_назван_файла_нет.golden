@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: config: profile "stand" is set but file "TMP/.config/cloudru-dbaas/config.yaml" does not exist
+--- requests

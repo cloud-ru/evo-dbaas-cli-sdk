@@ -1,0 +1,12 @@
+exit: 0
+--- stdout
+
+--- stderr
+redis_url written to profile default (TMP/.config/cloudru-dbaas/config.yaml)
+warning: CLOUDRU_REDIS_API_URL is set and overrides this value
+--- requests
+--- config.yaml
+mode -rw-------
+profiles:
+  default:
+    redis_url: http://10.0.0.5:8080

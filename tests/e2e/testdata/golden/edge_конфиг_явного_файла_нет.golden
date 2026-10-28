@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: config: open TMP/key.env: no such file or directory
+--- requests

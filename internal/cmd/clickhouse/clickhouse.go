@@ -16,7 +16,8 @@ import (
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/state"
 )
 
-// NewCmd — clickhouse; defaultURL — адрес API по умолчанию из конфига.
+// NewCmd — clickhouse; defaultURL — значение --api-url по умолчанию. Корень передаёт пустое
+// и берёт адрес из конфига при выполнении: файл и профиль — флаги (DESIGN §8.12).
 func NewCmd(s *state.State, defaultURL string) *cobra.Command {
 	c := &cobra.Command{Use: "clickhouse", Aliases: []string{"ch"}, Short: i18n.T("clickhouse.short")}
 	c.PersistentFlags().StringVar(&s.ClickHouseURL, "api-url", defaultURL, i18n.T("clickhouse.flag.api_url"))

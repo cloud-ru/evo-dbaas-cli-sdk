@@ -19,7 +19,7 @@ import (
 // scenario — один вызов бинарника против фейка.
 type scenario struct {
 	name      string             // имя golden; у commandRuns — args
-	args      string             // аргументы через пробел; ENVFILE — путь во временной папке
+	args      string             // аргументы через пробел; ENVFILE — путь во временной папке, FAKEURL — адрес фейка
 	stdin     string             // что подать на вход
 	env       []string           // дополнительные ИМЯ=значение
 	unset     []string           // адреса фейка, которые не задавать: бинарник берёт умолчание
@@ -28,6 +28,8 @@ type scenario struct {
 	overrides map[string]reply   // «МЕТОД /продукт/путь» → ответ
 	seq       map[string][]reply // «МЕТОД /продукт/путь» → ответы по очереди, последний повторяется
 	interrupt string             // когда в stderr появится эта строка — SIGINT, как Ctrl-C
+	config    string             // файл конфига по умолчанию (HOME/.config/cloudru-dbaas/config.yaml), права 0600
+	showFile  bool               // golden фиксирует файл конфига после запуска: config set, use-profile
 }
 
 // result — то, что фиксирует golden-файл.
@@ -36,6 +38,7 @@ type result struct {
 	stdout   string
 	stderr   string
 	requests []string
+	file     string
 }
 
 func (r result) String() string {
@@ -47,12 +50,16 @@ func (r result) String() string {
 		b.WriteString(q + "\n")
 	}
 
+	if r.file != "" {
+		fmt.Fprintf(&b, "--- config.yaml\n%s", r.file)
+	}
+
 	return b.String()
 }
 
 var (
 	slugRe    = regexp.MustCompile(`[^a-z0-9а-яё]+`)
-	versionRe = regexp.MustCompile(`(cloudru-dbaas version |cloudru-dbaas/)\S+`) // версия из VCS меняется с каждым коммитом
+	versionRe = regexp.MustCompile(`(cloudru-dbaas version |cloudru-dbaas/)(?:v[0-9]|dev|\(devel\))\S*`) // версия из VCS меняется с каждым коммитом
 )
 
 // goldenName — имя файла по аргументам: «redis clusters get c1» → redis_clusters_get_c1.
@@ -71,7 +78,13 @@ func runScenario(s scenario) result {
 	DeferCleanup(f.close)
 
 	tmp := GinkgoT().TempDir()
-	args := strings.Fields(strings.ReplaceAll(s.args, "ENVFILE", filepath.Join(tmp, "key.env")))
+	args := strings.Fields(strings.NewReplacer("ENVFILE", filepath.Join(tmp, "key.env"), "FAKEURL", f.srv.URL).Replace(s.args))
+
+	path := filepath.Join(tmp, ".config", "cloudru-dbaas", "config.yaml")
+	if s.config != "" {
+		Expect(os.MkdirAll(filepath.Dir(path), 0o700)).To(Succeed())
+		Expect(os.WriteFile(path, []byte(s.config), 0o600)).To(Succeed())
+	}
 
 	cmd := exec.Command(binPath, args...)
 	cmd.Stdin = strings.NewReader(s.stdin)
@@ -117,12 +130,24 @@ func runScenario(s scenario) result {
 		reqs[i] = clean(reqs[i])
 	}
 
-	return result{
+	r := result{
 		exit:     session.ExitCode(),
 		stdout:   clean(string(session.Out.Contents())),
 		stderr:   clean(string(session.Err.Contents())),
 		requests: reqs,
 	}
+
+	if s.showFile {
+		raw, err := os.ReadFile(path)
+		Expect(err).NotTo(HaveOccurred())
+
+		fi, err := os.Stat(path)
+		Expect(err).NotTo(HaveOccurred())
+
+		r.file = fmt.Sprintf("mode %v\n%s", fi.Mode().Perm(), raw)
+	}
+
+	return r
 }
 
 // matchGolden сравнивает с testdata/golden/<name>.golden; при E2E_UPDATE=1 перезаписывает.

@@ -1,0 +1,14 @@
+exit: 0
+--- stdout
+
+--- stderr
+key_secret written to profile stand (TMP/.config/cloudru-dbaas/config.yaml)
+--- requests
+--- config.yaml
+mode -rw-------
+# стенд
+profile: stand
+profiles:
+  stand:
+    key_id: kid # ключ стенда
+    key_secret: s3cret

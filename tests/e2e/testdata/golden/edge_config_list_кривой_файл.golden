@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: config TMP/.config/cloudru-dbaas/config.yaml: unknown key profiles.default.clikhouse_url
+--- requests

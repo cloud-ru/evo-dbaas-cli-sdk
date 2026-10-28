@@ -12,7 +12,7 @@ func environ(vars ...string) func() []string { return func() []string { return v
 func TestLoadDefaults(t *testing.T) {
 	t.Parallel()
 
-	c, err := load(environ())
+	c, err := load(Options{}, environ())
 	require.NoError(t, err)
 
 	assert.Equal(t, Config{
@@ -29,7 +29,7 @@ func TestLoadDefaults(t *testing.T) {
 func TestLoadEnvOverridesDefaults(t *testing.T) {
 	t.Parallel()
 
-	c, err := load(environ(
+	c, err := load(Options{}, environ(
 		"CLOUDRU_KEY_ID=kid", "CLOUDRU_KEY_SECRET=sec", "CLOUDRU_PROJECT_ID=p1",
 		"CLOUDRU_CLICKHOUSE_API_URL=http://ch", "CLOUDRU_REDIS_API_URL=http://redis", "CLOUDRU_KAFKA_API_URL=http://kafka",
 		"CLOUDRU_COMPUTE_API_URL=http://compute", "CLOUDRU_VPC_API_URL=http://vpc", "CLOUDRU_IAM_API_URL=http://iam",
@@ -48,7 +48,7 @@ func TestLoadEnvOverridesDefaults(t *testing.T) {
 func TestLoadEmptyEnvKeepsDefault(t *testing.T) {
 	t.Parallel()
 
-	c, err := load(environ("CLOUDRU_VPC_API_URL=", "CLOUDRU_PROJECT_ID="))
+	c, err := load(Options{}, environ("CLOUDRU_VPC_API_URL=", "CLOUDRU_PROJECT_ID="))
 	require.NoError(t, err)
 
 	assert.Equal(t, "https://vpc.api.cloud.ru", c.VPCURL)
@@ -59,7 +59,7 @@ func TestLoadAllowHTTPOnlyOne(t *testing.T) {
 	t.Parallel()
 
 	for _, v := range []string{"true", "yes", "0", "01"} {
-		c, err := load(environ("CLOUDRU_ALLOW_HTTP=" + v))
+		c, err := load(Options{}, environ("CLOUDRU_ALLOW_HTTP="+v))
 		require.NoError(t, err)
 		assert.False(t, c.AllowHTTP, v)
 	}
@@ -68,7 +68,7 @@ func TestLoadAllowHTTPOnlyOne(t *testing.T) {
 func TestLoadIgnoresForeignVars(t *testing.T) {
 	t.Parallel()
 
-	c, err := load(environ("HOME=/root", "CLOUDRU_UNKNOWN=x", "key_id=leak"))
+	c, err := load(Options{}, environ("HOME="+t.TempDir(), "CLOUDRU_UNKNOWN=x", "key_id=leak"))
 	require.NoError(t, err)
 
 	assert.Empty(t, c.KeyID)
@@ -79,7 +79,7 @@ func TestLoadIgnoresForeignVars(t *testing.T) {
 func TestLoadIgnoresOldCHCloudruVars(t *testing.T) {
 	t.Parallel()
 
-	c, err := load(environ("CH_CLOUDRU_API_URL=http://old", "CH_CLOUDRU_IAM_URL=http://old"))
+	c, err := load(Options{}, environ("CH_CLOUDRU_API_URL=http://old", "CH_CLOUDRU_IAM_URL=http://old"))
 	require.NoError(t, err)
 
 	assert.Equal(t, "https://clickhouse.api.cloud.ru", c.ClickHouseURL)
@@ -99,8 +99,6 @@ func TestLoadLangPOSIXOrder(t *testing.T) {
 		{[]string{"LANG=en_US.UTF-8", "LC_MESSAGES=en_US.UTF-8", "LC_ALL=ru_RU.UTF-8"}, "ru_RU.UTF-8"},
 		{[]string{"LC_ALL=", "LANG=ru_RU"}, "ru_RU"},
 	} {
-		c, err := load(environ(tc.env...))
-		require.NoError(t, err)
-		assert.Equal(t, tc.want, c.Lang, tc.env)
+		assert.Equal(t, tc.want, lang(vars(tc.env)), tc.env)
 	}
 }

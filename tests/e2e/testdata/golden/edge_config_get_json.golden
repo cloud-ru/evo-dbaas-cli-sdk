@@ -1,0 +1,6 @@
+exit: 0
+--- stdout
+{"key":"key_secret","value":"****","source":"env CLOUDRU_KEY_SECRET"}
+--- stderr
+
+--- requests

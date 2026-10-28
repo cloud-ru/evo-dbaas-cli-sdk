@@ -1,0 +1,6 @@
+exit: 0
+--- stdout
+{"file":"TMP/.config/cloudru-dbaas/config.yaml","file_exists":true,"profile":"stand","profile_source":"flag","settings":[{"key":"key_id","value":"kid-file","source":"file stand"},{"key":"key_secret","value":"****WXYZ","source":"file stand"},{"key":"project_id","value":"p-flag","source":"flag"},{"key":"clickhouse_url","value":"http://10.0.0.5:8080","source":"file stand"},{"key":"redis_url","value":"http://FAKE/redis","source":"env CLOUDRU_REDIS_API_URL"},{"key":"kafka_url","value":"http://FAKE/kafka","source":"env CLOUDRU_KAFKA_API_URL"},{"key":"compute_url","value":"http://FAKE/compute","source":"env CLOUDRU_COMPUTE_API_URL"},{"key":"vpc_url","value":"http://FAKE/vpc","source":"env CLOUDRU_VPC_API_URL"},{"key":"iam_url","value":"http://FAKE/iamapi","source":"env CLOUDRU_IAM_API_URL"},{"key":"iam_auth_url","value":"http://FAKE/iam/token","source":"env CLOUDRU_IAM_AUTH_URL"},{"key":"allow_http","value":"true","source":"env CLOUDRU_ALLOW_HTTP"}]}
+--- stderr
+
+--- requests

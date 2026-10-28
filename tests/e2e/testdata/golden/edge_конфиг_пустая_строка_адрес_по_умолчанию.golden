@@ -1,0 +1,11 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: Delete "https://vpc.api.cloud.ru/v1/vpcs/v1": Forbidden
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+CONNECT vpc.api.cloud.ru:443

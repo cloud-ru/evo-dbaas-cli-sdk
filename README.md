@@ -60,6 +60,62 @@ CLI сам обменивает ключ на токен IAM и кеширует
 Адрес `http://` не на localhost CLI отвергает: ключ и токен ушли бы без TLS.
 Стенд без TLS — `CLOUDRU_ALLOW_HTTP=1`, тогда только предупреждение.
 
+### Файл конфига и профили
+
+То же можно держать в файле `~/.config/cloudru-dbaas/config.yaml` (или
+`$XDG_CONFIG_HOME/cloudru-dbaas/config.yaml`; другой путь — `--config` или
+`CLOUDRU_CONFIG`). Ключи: `key_id`, `key_secret`, `project_id`,
+`clickhouse_url`, `redis_url`, `kafka_url`, `compute_url`, `vpc_url`, `iam_url`,
+`iam_auth_url`, `allow_http`.
+
+```yaml
+profile: stand            # профиль по умолчанию; без строки — default
+profiles:
+  default:
+    key_id: …
+    project_id: …
+  stand:
+    key_id: …
+    key_secret: …
+    clickhouse_url: http://10.0.0.5:8080
+    allow_http: true
+```
+
+Профиль выбирают `--profile` > `CLOUDRU_PROFILE` > `profile:` в файле > `default`.
+Значение берётся по порядку: флаг > переменная окружения > профиль > встроенное.
+Незаданное в профиле — встроенное, не из `default`; пустое значение (`""` или ключ
+без значения) — как незаданное.
+Неизвестный ключ или неверный тип — ошибка с путём файла: опечатка не уведёт молча
+на адрес по умолчанию. Файл с `key_secret` держите с правами 0600, иначе CLI
+предупредит. `help` и дополнение по Tab файл не читают.
+
+Что возьмёт команда и откуда — `config list`: каждый ключ со значением и
+источником (`flag`, `env CLOUDRU_…`, `file <профиль>`, `default`; нигде не задан —
+`none`), `key_secret` маской. Одно значение — `config get <ключ>`. Обе работают без
+ключа доступа и понимают `--profile`, `--config`, `--project`, `--json`. Флаг
+продукта `--api-url` `config list` не видит: адрес из него команда возьмёт, а список
+покажет env, файл или умолчание.
+
+```bash
+cloudru-dbaas config list --profile stand
+cloudru-dbaas config get clickhouse_url
+```
+
+Править файл можно и из CLI. `config set <ключ> <значение>` пишет в профиль из
+`--profile` (иначе в текущий) и создаёт профиль, файл и каталог, если их нет:
+каталог с правами 0700, файл 0600. Запись идёт через временный файл; комментарии
+остаются, отступы и пустые строки выравниваются. Файл с якорями YAML или
+несколькими документами CLI не правит. Значение `-` читается из stdin, так `key_secret` не попадёт в историю
+команд. Если ключ задан переменной окружения, она по-прежнему сильнее файла, и CLI
+об этом предупредит. `config use-profile <имя>` меняет строку `profile:`. Кривой
+файл CLI не перезаписывает, а показывает ошибку.
+
+```bash
+cloudru-dbaas config set clickhouse_url http://10.0.0.5:8080 --profile stand
+printf '%s\n' "$SECRET" | cloudru-dbaas config set key_secret - --profile stand
+cloudru-dbaas config use-profile stand
+```
+
 Отдельный ключ для агента можно выпустить из CLI ключом с правом управлять
 сервисными аккаунтами проекта:
 
@@ -125,7 +181,11 @@ in `skills/`. Help texts and skills are in Russian.
 Install a binary from Releases or `go install
 github.com/cloud-ru/evo-dbaas-cli-sdk/cmd/cloudru-dbaas@latest`. Set
 `CLOUDRU_KEY_ID`, `CLOUDRU_KEY_SECRET` and `CLOUDRU_PROJECT_ID`, then run
-`cloudru-dbaas clickhouse auth check`. Add `--json` to any command for
+`cloudru-dbaas clickhouse auth check`. The same keys can live in
+`~/.config/cloudru-dbaas/config.yaml` under named profiles (`--profile`,
+`CLOUDRU_PROFILE`); flags win over env, env over the file; `config list` shows
+each value with its source (except the per-product `--api-url` flag). `config set <key> <value>` and `config use-profile <name>` edit
+the file (0600, comments kept; value `-` reads stdin). Add `--json` to any command for
 machine-readable output. Run `go test ./...` before sending changes.
 
 Licensed under MIT, see [LICENSE](LICENSE).

@@ -1,0 +1,15 @@
+exit: 0
+--- stdout
+operation op1 — in progress
+resource  c1
+          Создание кластера
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+DELETE /clickhouse/v1/clusters/c1
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1

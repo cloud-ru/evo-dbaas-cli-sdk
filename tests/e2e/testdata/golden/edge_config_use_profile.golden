@@ -1,0 +1,12 @@
+exit: 0
+--- stdout
+
+--- stderr
+default profile is now stand (TMP/.config/cloudru-dbaas/config.yaml)
+--- requests
+--- config.yaml
+mode -rw-------
+profiles:
+  default: {}
+  stand: {}
+profile: stand

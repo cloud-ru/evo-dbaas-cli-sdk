@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: --api-url is empty: give an address or drop the flag
+--- requests

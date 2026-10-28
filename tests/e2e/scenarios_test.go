@@ -104,6 +104,10 @@ var commandRuns = []scenario{
 	{args: "kafka operations list c1"},
 	// Общее
 	{args: "zones list"},
+	{args: "config list --json"}, // таблица в golden не годится: ширина колонок — по настоящему адресу фейка и пути, до замены на FAKE/TMP
+	{args: "config get redis_url"},
+	{args: "config set redis_url http://10.0.0.5:8080", showFile: true},
+	{args: "config use-profile default", showFile: true},
 	// Сеть
 	{args: "network subnets list --zone " + cZone + " --vpc-id " + cVPC + " --name sn " + cProj},
 	{args: "network subnets get " + cSN},
@@ -261,15 +265,61 @@ var edgeRuns = []scenario{
 		"GET /vpc/v1/vpcs/operations/vop1": {body: `{"id":"vop1","done":true,"resourceId":"v1"}`},
 	}},
 	// Адреса API по умолчанию: у продуктов DBaaS видны в --help, у остальных — хост CONNECT через прокси.
-	{name: "адрес по умолчанию clickhouse", args: "clickhouse clusters --help", unset: []string{"CLOUDRU_CLICKHOUSE_API_URL"}},
-	{name: "адрес по умолчанию redis", args: "redis clusters --help", unset: []string{"CLOUDRU_REDIS_API_URL"}},
-	{name: "адрес по умолчанию kafka", args: "kafka clusters --help", unset: []string{"CLOUDRU_KAFKA_API_URL"}},
+	{name: "адрес по умолчанию clickhouse", args: "clickhouse clusters delete c1 --yes", proxy: true, unset: []string{"CLOUDRU_CLICKHOUSE_API_URL"}},
+	{name: "адрес по умолчанию redis", args: "redis clusters delete c1 --yes", proxy: true, unset: []string{"CLOUDRU_REDIS_API_URL"}},
+	{name: "адрес по умолчанию kafka", args: "kafka clusters delete c1 --yes", proxy: true, unset: []string{"CLOUDRU_KAFKA_API_URL"}},
 	{name: "адрес по умолчанию compute", args: "network subnets delete " + cSN + " --yes", proxy: true, unset: []string{"CLOUDRU_COMPUTE_API_URL"}},
 	{name: "адрес по умолчанию vpc", args: "network vpcs delete v1 --yes", proxy: true, unset: []string{"CLOUDRU_VPC_API_URL"}},
 	{name: "адрес по умолчанию iam api", args: "iam service-accounts delete sa1 --yes", proxy: true, unset: []string{"CLOUDRU_IAM_API_URL"}},
-	{name: "адрес по умолчанию iam токен", args: "redis clusters list", proxy: true, unset: []string{"CLOUDRU_IAM_AUTH_URL"}},
+	{name: "адрес по умолчанию iam токен", args: "redis clusters delete c1 --yes", proxy: true, unset: []string{"CLOUDRU_IAM_AUTH_URL"}},
 	// Флаг --project сильнее CLOUDRU_PROJECT_ID.
 	{name: "project флаг сильнее env", args: "redis clusters list --project p2"},
+	// Конфиг файлом (DESIGN §8.12): флаги --profile и --config доходят до config.Load, ошибка файла — код 1.
+	{
+		name: "конфиг ключ из профиля", args: "redis clusters list --profile stand", noKey: true,
+		config: "profiles:\n  default:\n    key_id: kid-default\n  stand:\n    key_id: kid-file\n    key_secret: sec-file\n",
+	},
+	{name: "конфиг неизвестный ключ", args: "redis clusters list", config: "profiles:\n  default:\n    clikhouse_url: http://typo\n"},
+	{name: "конфиг явного файла нет", args: "redis clusters list --config ENVFILE"}, // ENVFILE — путь во временной папке, файла там нет
+	// Ревью PR 74: help и дополнение без конфига, явно пустой флаг не берёт env, пустая строка в файле — умолчание.
+	{name: "конфиг кривой help", args: "help redis", config: "profiles:\n  default:\n    clikhouse_url: http://typo\n"},
+	{name: "конфиг кривой дополнение", args: "__complete redis cl", config: "profiles:\n  default:\n    clikhouse_url: http://typo\n"},
+	{name: "project пустой флаг не берёт env", args: "redis clusters list --project="},
+	{name: "api-url пустой флаг не берёт env", args: "redis --api-url= clusters delete c1 --yes"},
+	{
+		name: "конфиг пустая строка — адрес по умолчанию", args: "network vpcs delete v1 --yes", proxy: true,
+		unset: []string{"CLOUDRU_VPC_API_URL"}, config: "profiles:\n  default:\n    vpc_url: \"\"\n",
+	},
+	{name: "конфиг профиль назван, файла нет", args: "redis clusters list --profile stand"},
+	// Непустой --api-url сильнее env и профиля — у каждого продукта свой, и через алиас ch.
+	{name: "api-url флаг сильнее env clickhouse", args: "ch --api-url FAKEURL/clickhouse clusters delete c1 --yes", env: []string{"CLOUDRU_CLICKHOUSE_API_URL=http://127.0.0.1:1"}},
+	{
+		name: "api-url флаг сильнее профиля redis", args: "redis --api-url FAKEURL/redis clusters delete c1 --yes",
+		unset: []string{"CLOUDRU_REDIS_API_URL"}, config: "profiles:\n  default:\n    redis_url: http://127.0.0.1:1\n",
+	},
+	{name: "api-url флаг сильнее env kafka", args: "kafka --api-url FAKEURL/kafka clusters delete c1 --yes", env: []string{"CLOUDRU_KAFKA_API_URL=http://127.0.0.1:1"}},
+	// config list/get (§8.12, PR 2/3): без ключа, источник каждого значения, key_secret маской, ошибки — код 1.
+	{
+		name: "config list профиль без ключа", args: "config list --json --profile stand --project p-flag", noKey: true,
+		unset:  []string{"CLOUDRU_CLICKHOUSE_API_URL"},
+		config: "profile: default\nprofiles:\n  stand:\n    key_id: kid-file\n    key_secret: abcdefghijklmnopWXYZ\n    clickhouse_url: http://10.0.0.5:8080\n    allow_http: true\n",
+	},
+	{name: "config list без ключа", args: "config list --json", noKey: true},
+	{name: "config get json", args: "config get key_secret --json"},
+	{name: "config get неизвестный ключ", args: "config get clikhouse_url"},
+	{name: "config list кривой файл", args: "config list", config: "profiles:\n  default:\n    clikhouse_url: http://typo\n"},
+	{name: "config list явного файла нет", args: "config list --config ENVFILE"},
+	// config set и use-profile (§8.12, PR 3/3): создают файл 0600, комментарии сохраняют, секрет — из stdin.
+	{name: "config set новый файл", args: "config set key_id 0123 --profile stand", noKey: true, showFile: true},
+	{
+		name: "config set секрет из stdin", args: "config set key_secret -", stdin: "s3cret\n", noKey: true, showFile: true,
+		config: "# стенд\nprofile: stand\nprofiles:\n  stand:\n    key_id: kid # ключ стенда\n",
+	},
+	{name: "config set перекрыт env", args: "config set project_id p-file", showFile: true},
+	{name: "config set неизвестный ключ", args: "config set clikhouse_url http://x"},
+	{name: "config set кривой файл", args: "config set key_id k", config: "profiles:\n  default:\n    clikhouse_url: http://typo\n", showFile: true},
+	{name: "config use-profile", args: "config use-profile stand", config: "profiles:\n  default: {}\n  stand: {}\n", showFile: true},
+	{name: "config use-profile нет профиля", args: "config use-profile nope", config: "profiles:\n  stand: {}\n"},
 }
 
 // noYesRuns — отказ без --yes для каждой команды удаления из commandRuns.

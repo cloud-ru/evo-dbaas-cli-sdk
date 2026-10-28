@@ -27,12 +27,12 @@ import (
 var Version = "dev"
 
 type app struct {
-	cfg     config.Config
-	cfgErr  error
-	jsonOut bool
-	project string
-	timeout time.Duration
-	st      *state.State
+	jsonOut    bool
+	project    string
+	configPath string
+	profile    string
+	timeout    time.Duration
+	st         *state.State
 }
 
 // NewDBaaSRoot — один бинарник на три продукта: clickhouse, redis, kafka.
@@ -51,19 +51,26 @@ func NewDBaaSRoot() *cobra.Command {
 				return err
 			}
 
+			if withoutConfig(cmd) {
+				return nil
+			}
+
 			return a.init(cmd)
 		},
 	}
 	a.commonFlags(root)
 
-	root.AddCommand(clickhousecmd.NewCmd(a.st, a.cfg.ClickHouseURL), rediscmd.NewCmd(a.st, a.cfg.RedisURL), kafkacmd.NewCmd(a.st, a.cfg.KafkaURL), iamcmd.NewCmd(a.st), networkcmd.NewCmd(a.st), zonescmd.NewCmd(a.st))
+	// Адреса продуктов — из конфига при выполнении (init): файл и профиль известны только после разбора флагов.
+	root.AddCommand(clickhousecmd.NewCmd(a.st, ""), rediscmd.NewCmd(a.st, ""), kafkacmd.NewCmd(a.st, ""), iamcmd.NewCmd(a.st), networkcmd.NewCmd(a.st), zonescmd.NewCmd(a.st), a.configCmd())
 
 	return root
 }
 
 func (a *app) commonFlags(root *cobra.Command) {
 	root.PersistentFlags().BoolVar(&a.jsonOut, "json", false, i18n.T("cmd.flag.json"))
-	root.PersistentFlags().StringVar(&a.project, "project", a.cfg.ProjectID, i18n.T("cmd.flag.project"))
+	root.PersistentFlags().StringVar(&a.project, "project", "", i18n.T("cmd.flag.project"))
+	root.PersistentFlags().StringVar(&a.configPath, "config", "", i18n.T("cmd.flag.config"))
+	root.PersistentFlags().StringVar(&a.profile, "profile", "", i18n.T("cmd.flag.profile"))
 	root.PersistentFlags().DurationVar(&a.timeout, "timeout", 30*time.Minute, i18n.T("cmd.flag.timeout"))
 }
 
@@ -81,13 +88,24 @@ func rejectNegative(cmd *cobra.Command) error {
 	return err
 }
 
-// newApp читает конфиг один раз: из него — значения флагов по умолчанию и адреса API.
-// Ошибку конфига вернёт init, у NewDBaaSRoot нет своего пути для ошибки.
-func newApp() *app {
-	cfg, err := config.Load()
-	i18n.SetLanguage(cfg.Lang)
+// withoutConfig — help и дополнение работают без конфига (§8.7): кривой файл
+// или опечатка в --profile не должны ломать справку и Tab. config читает файл сам и без ключа.
+func withoutConfig(cmd *cobra.Command) bool {
+	for c := cmd; c != nil; c = c.Parent() {
+		switch c.Name() {
+		case "help", "completion", "config", cobra.ShellCompRequestCmd, cobra.ShellCompNoDescRequestCmd:
+			return true
+		}
+	}
 
-	return &app{cfg: cfg, cfgErr: err, st: &state.State{Printer: &output.Printer{Out: os.Stdout, Err: os.Stderr}}}
+	return false
+}
+
+// newApp выбирает язык до сборки дерева команд: тексты --help — уже на нём.
+func newApp() *app {
+	i18n.SetLanguage(config.Lang())
+
+	return &app{st: &state.State{Printer: &output.Printer{Out: os.Stdout, Err: os.Stderr}}}
 }
 
 func init() {
@@ -97,15 +115,44 @@ func init() {
 	}
 }
 
+// init читает конфиг после разбора флагов (--config, --profile) и заполняет
+// то, что не задано флагом: флаг > env > файл > значение по умолчанию.
+// Флаг, заданный явно пустым (--project "$P" при пустой P), остаётся пустым:
+// иначе скрипт молча уйдёт в проект из env или профиля.
 func (a *app) init(cmd *cobra.Command) error {
-	if a.cfgErr != nil {
-		return a.cfgErr
+	cfg, err := config.Load(config.Options{Path: a.configPath, Profile: a.profile, Warn: cmd.ErrOrStderr()})
+	if err != nil {
+		return err
+	}
+
+	product := ""
+	for c := cmd; c.HasParent(); c = c.Parent() {
+		product = c.Name()
+	}
+
+	for _, f := range []struct {
+		v   *string
+		def string
+		set bool
+	}{
+		{&a.project, cfg.ProjectID, cmd.Flags().Changed("project")},
+		{&a.st.ClickHouseURL, cfg.ClickHouseURL, product == "clickhouse" && cmd.Flags().Changed("api-url")},
+		{&a.st.RedisURL, cfg.RedisURL, product == "redis" && cmd.Flags().Changed("api-url")},
+		{&a.st.KafkaURL, cfg.KafkaURL, product == "kafka" && cmd.Flags().Changed("api-url")},
+	} {
+		if !f.set {
+			*f.v = f.def
+		}
+	}
+
+	if cmd.Flags().Changed("api-url") && cmd.Flag("api-url").Value.String() == "" {
+		return &base.ExitError{Code: 1, Msg: i18n.T("cmd.err.empty_api_url")}
 	}
 
 	a.st.Printer = &output.Printer{Out: cmd.OutOrStdout(), Err: cmd.ErrOrStderr(), JSON: a.jsonOut}
 	a.st.Project, a.st.Timeout, a.st.PollDelay, a.st.Env = a.project, a.timeout, pollDelay, config.Env
 
-	return a.st.Connect(state.Conn{Config: a.cfg, Version: Version, RetryDelays: retryDelays, MaxBody: maxBody})
+	return a.st.Connect(state.Conn{Config: cfg, Version: Version, RetryDelays: retryDelays, MaxBody: maxBody})
 }
 
 // pollDelay — шаг опроса операции; тесты уменьшают его.

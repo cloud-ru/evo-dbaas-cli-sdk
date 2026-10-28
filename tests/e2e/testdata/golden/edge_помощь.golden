@@ -17,6 +17,7 @@ Usage:
 Available Commands:
   clickhouse  Managed ClickHouse
   completion  Generate the autocompletion script for the specified shell
+  config      settings: what a command will use and where it comes from; edit the config file
   help        Help about any command
   iam         Service accounts, access keys and roles
   kafka       Managed Kafka
@@ -25,9 +26,11 @@ Available Commands:
   zones       Availability zones (for specs list --zone)
 
 Flags:
+      --config string      config file (default $XDG_CONFIG_HOME/cloudru-dbaas/config.yaml or ~/.config/cloudru-dbaas/config.yaml; also CLOUDRU_CONFIG)
   -h, --help               help for cloudru-dbaas
       --json               output JSON (for scripts and agents)
-      --project string     cloud.ru project id (default "proj-1")
+      --profile string     profile from the config file (also CLOUDRU_PROFILE; default: profile: in the file, then default)
+      --project string     cloud.ru project id
       --timeout duration   time limit for --wait (default 30m0s)
   -v, --version            version for cloudru-dbaas
 

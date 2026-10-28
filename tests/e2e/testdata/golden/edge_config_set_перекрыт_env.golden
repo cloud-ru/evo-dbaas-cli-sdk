@@ -1,0 +1,12 @@
+exit: 0
+--- stdout
+
+--- stderr
+project_id written to profile default (TMP/.config/cloudru-dbaas/config.yaml)
+warning: CLOUDRU_PROJECT_ID is set and overrides this value
+--- requests
+--- config.yaml
+mode -rw-------
+profiles:
+  default:
+    project_id: p-file

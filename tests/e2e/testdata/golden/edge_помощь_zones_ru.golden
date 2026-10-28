@@ -12,8 +12,10 @@ Flags:
   -h, --help   help for zones
 
 Global Flags:
+      --config string      файл конфига (по умолчанию $XDG_CONFIG_HOME/cloudru-dbaas/config.yaml или ~/.config/cloudru-dbaas/config.yaml; также CLOUDRU_CONFIG)
       --json               вывод в JSON (для скриптов и агентов)
-      --project string     идентификатор проекта cloud.ru (default "proj-1")
+      --profile string     профиль из файла конфига (также CLOUDRU_PROFILE; по умолчанию — profile: в файле, затем default)
+      --project string     идентификатор проекта cloud.ru
       --timeout duration   предел ожидания для --wait (default 30m0s)
 
 Use "cloudru-dbaas zones [command] --help" for more information about a command.

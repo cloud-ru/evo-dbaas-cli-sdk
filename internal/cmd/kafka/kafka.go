@@ -15,7 +15,8 @@ import (
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/state"
 )
 
-// NewCmd — kafka; defaultURL — адрес API по умолчанию из конфига.
+// NewCmd — kafka; defaultURL — значение --api-url по умолчанию. Корень передаёт пустое
+// и берёт адрес из конфига при выполнении: файл и профиль — флаги (DESIGN §8.12).
 func NewCmd(s *state.State, defaultURL string) *cobra.Command {
 	c := &cobra.Command{Use: "kafka", Short: i18n.T("kafka.short")}
 	c.PersistentFlags().StringVar(&s.KafkaURL, "api-url", defaultURL, i18n.T("kafka.flag.api_url"))

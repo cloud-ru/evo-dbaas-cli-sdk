@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: config TMP/.config/cloudru-dbaas/config.yaml: no profile "nope" (available: stand)
+--- requests

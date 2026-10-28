@@ -14,7 +14,8 @@ import (
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/state"
 )
 
-// NewCmd — redis; defaultURL — адрес API по умолчанию из конфига.
+// NewCmd — redis; defaultURL — значение --api-url по умолчанию. Корень передаёт пустое
+// и берёт адрес из конфига при выполнении: файл и профиль — флаги (DESIGN §8.12).
 func NewCmd(s *state.State, defaultURL string) *cobra.Command {
 	c := &cobra.Command{Use: "redis", Short: i18n.T("redis.short")}
 	c.PersistentFlags().StringVar(&s.RedisURL, "api-url", defaultURL, i18n.T("redis.flag.api_url"))

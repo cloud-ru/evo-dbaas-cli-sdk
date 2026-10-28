@@ -1,0 +1,9 @@
+exit: 0
+--- stdout
+
+--- stderr
+default profile is now default (TMP/.config/cloudru-dbaas/config.yaml)
+--- requests
+--- config.yaml
+mode -rw-------
+profile: default
