@@ -242,3 +242,30 @@ func TestListReportsRequestAndDecodeErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestListFiltersByClusterWithoutZone(t *testing.T) {
+	t.Parallel()
+
+	f := newFake(map[string]string{"GET /v1/specifications": `{"specifications":[]}`})
+	_, err := run(t, f, false, "list", "--cluster-id", "c1")
+	require.NoError(t, err)
+	q, err := url.ParseQuery(f.query("GET /v1/specifications"))
+	require.NoError(t, err)
+	assert.Equal(t, url.Values{"cluster_id": {"c1"}, "role": {"SPECIFICATION_ROLE_CLICKHOUSE_SERVER"}}, q)
+	assert.Equal(t, []string{"GET /v1/specifications"}, f.requests())
+}
+
+func TestListRejectsClusterWithVersionOrZoneBeforeHTTP(t *testing.T) {
+	t.Parallel()
+
+	for _, flag := range []string{"--version", "--zone"} {
+		t.Run(flag, func(t *testing.T) {
+			t.Parallel()
+
+			f := newFake(map[string]string{"GET /v1/specifications": `{"specifications":[]}`})
+			_, err := run(t, f, false, "list", "--cluster-id", "c1", flag, "x")
+			require.ErrorContains(t, err, "cluster-id")
+			assert.Empty(t, f.requests())
+		})
+	}
+}

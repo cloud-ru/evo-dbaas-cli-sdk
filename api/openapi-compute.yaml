@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: SVC Public API
-  version: 0.1.0
+  version: 0.0.1
   description: '[Документация сервиса «Виртуальные машины»](https://cloud.ru/docs/virtual-machines/ug/index.html)'
   contact:
     email: support@cloud.ru
@@ -13,117 +13,133 @@ paths:
       summary: Получение списка флейворов
       operationId: get_flavors_svc_v1_flavors_get
       parameters:
-        - required: false
+        - name: order_by
+          in: query
+          required: false
           schema:
+            const: created_time
             type: string
-            enum:
-              - created_time
             default: created_time
-          name: order_by
           description: |
             Определяет параметр, по которому будут отсортированы результаты:
             - `created_time` — дата и время создания флейвора.
+        - name: order_desc
           in: query
-        - required: false
+          required: false
           schema:
             type: boolean
             default: true
-          name: order_desc
           description: |
             Направление сортировки:
             - `true` — по убыванию.
             - `false` — по возрастанию.
+        - name: offset
           in: query
-        - required: false
+          required: false
           schema:
             type: integer
             minimum: 0
             default: 0
-          name: offset
           description: "Количество элементов с начала списка, которые будут пропущены."
+        - name: limit
           in: query
-        - required: false
+          required: false
           schema:
             type: integer
-            maximum: 100
-            minimum: 0
-            exclusiveMinimum: true
+            maximum: 1000
+            minimum: 1
             default: 50
-          name: limit
           description: "Максимальное количество элементов в списке."
+        - name: availability_zone_id
           in: query
-        - required: false
+          required: false
           schema:
-            type: string
-            format: uuid4
-          name: availability_zone_id
+            anyOf:
+            - type: string
+              format: uuid4
+            - type: 'null'
           description: "Фильтр по зоне доступности. Идентификаторы зон доступности можно получить, выполнив запрос [GET /api/v1/availability-zones](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/Availability-Zones)."
+        - name: project_id
           in: query
-        - required: false
+          required: false
           schema:
-            type: string
-            format: uuid4
-          name: project_id
+            anyOf:
+            - type: string
+              format: uuid4
+            - type: 'null'
           description: "Идентификатор проекта. [Узнать идентификатор проекта](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref__project-id?source-platform=Evolution) вы можете в личном кабинете или через API-запрос."
+        - name: name
           in: query
-        - required: false
+          required: false
           schema:
-            type: string
-            maxLength: 64
-            minLength: 1
-          name: name
+            anyOf:
+            - type: string
+              minLength: 1
+              maxLength: 64
+              pattern: "^[a-zA-Z][a-zA-Z0-9.\\-_]*$"
+            - type: 'null'
           description: "Фильтр по названию флейвора."
+        - name: cpu
           in: query
-        - required: false
+          required: false
           schema:
-            type: integer
-            maximum: 128
-            minimum: 0
-            exclusiveMinimum: true
-          name: cpu
+            anyOf:
+            - type: integer
+              maximum: 256
+              minimum: 1
+            - type: 'null'
           description: "Фильтр по количеству виртуальных процессоров — vCPU."
+        - name: ram
           in: query
-        - required: false
+          required: false
           schema:
-            type: integer
-            maximum: 1024
-            minimum: 0
-            exclusiveMinimum: true
-          name: ram
+            anyOf:
+            - type: integer
+              maximum: 2048
+              minimum: 1
+            - type: 'null'
           description: "Фильтр по объему оперативной памяти (RAM) в ГБ."
+        - name: gpu
           in: query
-        - required: false
+          required: false
           schema:
-            type: integer
-            maximum: 16
-            minimum: 0
-          name: gpu
+            anyOf:
+            - type: integer
+              maximum: 16
+              minimum: 0
+            - type: 'null'
           description: "Фильтр по количеству графических процессоров — GPU."
-          in: query
-        - required: false
-          schema:
-            type: string
-          name: flavor_type
-          description: "Фильтр по названию типа флейвора. Узнать доступные типы флейворов можно, выполнив запрос `GET api/v1/flavor-types`. Названию соответствует поле `name`."
-          in: query
         - name: type
           in: query
           required: false
-          deprecated: true
           schema:
-            type: string
-          description: "Фильтр по названию типа флейвора. Узнать доступные типы флейворов можно, выполнив запрос `GET api/v1/flavor-types`. Названию соответствует поле `old_name`."
-        - required: false
-          schema:
-            type: string
-          name: oversubscription
-          description: "Фильтр по гарантированной доле vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%."
+            anyOf:
+            - type: string
+            - type: 'null'
+          title: Type
+        - name: flavor_type
           in: query
+          required: false
+          schema:
+            anyOf:
+            - type: string
+            - type: 'null'
+          description: "Фильтр по названию типа флейвора. Узнать доступные типы флейворов можно, выполнив запрос `GET api/v1/flavor-types`. Названию соответствует поле `name`."
+        - name: oversubscription
+          in: query
+          required: false
+          schema:
+            anyOf:
+            - type: string
+            - type: 'null'
+          description: "Фильтр по гарантированной доле vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%."
         - name: free_tier
           in: query
           required: false
           schema:
-            type: boolean
+            anyOf:
+            - type: boolean
+            - type: 'null'
           description: |
             Фильтр по флейворам для бесплатных виртуальных машин (free tier):
             - `true` — только флейворы для бесплатных виртуальных машин.
@@ -132,63 +148,39 @@ paths:
           in: query
           required: false
           schema:
-            type: boolean
+            anyOf:
+            - type: boolean
+            - type: 'null'
           description: |
             Фильтр по флейворам с поддержкой [прерываемых виртуальных машин](https://cloud.ru/docs/virtual-machines/ug/topics/concepts__spot):
             - `true` — только флейворы с поддержкой прерываемых виртуальных машин.
             - `false` — только флейворы без поддержки прерываемых виртуальных машин.
+        - name: display_groups
+          in: query
+          required: false
+          schema:
+            anyOf:
+            - type: array
+              items:
+                type: string
+            - type: 'null'
+          description: Фильтр по группам флейворов.
       responses:
         '200':
           description: Запрос выполнен успешно
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginationResponse_PublicFlavorResponse_'
-        '401':
-          description: Ошибка аутентификации
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/AuthUnauthorizedExceptionSchema'
-                type: array
-                title: Response 401 Get Flavors Svc V1 Flavors Get
-        '403':
-          description: Доступ запрещен
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/AuthForbiddenExceptionSchema'
-                type: array
-                title: Response 403 Get Flavors Svc V1 Flavors Get
-        '404':
-          description: Не удалось найти зону доступности с указанным идентификатором
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/AvailabilityZoneNotFoundExceptionSchema'
-                type: array
-                title: Response 404 Get Flavors Svc V1 Flavors Get
+                $ref: '#/components/schemas/ListFlavorsResponseSchema'
         '422':
-          description: Не удалось найти проект с указанным идентификатором
+          description: Ошибка валидации
           content:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/WrongProjectExceptionSchema'
+                  $ref: '#/components/schemas/HTTPValidationError'
                 type: array
                 title: Response 422 Get Flavors Svc V1 Flavors Get
-        '500':
-          description: Внутренняя ошибка сервера
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/APIExceptionSchema'
-                type: array
-                title: Response 500 Get Flavors Svc V1 Flavors Get
       security:
         - userPlaneApiToken: []
   /api/v1/flavors/{flavor_id}:
@@ -198,65 +190,26 @@ paths:
       summary: Получение информации о флейворе
       operationId: get_flavor_by_id_svc_v1_flavors__flavor_id__get
       parameters:
-        - required: true
+        - name: flavor_id
+          in: path
+          required: true
           schema:
             type: string
             format: uuid4
-          name: flavor_id
           description: Идентификатор флейвора.
-          in: path
       responses:
         '200':
           description: Запрос выполнен успешно
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PublicFlavorResponse'
-        '401':
-          description: Ошибка аутентификации
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/AuthUnauthorizedExceptionSchema'
-                type: array
-                title: Response 401 Get Flavor By Id Svc V1 Flavors  Flavor Id  Get
-        '403':
-          description: Доступ запрещен
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/AuthForbiddenExceptionSchema'
-                type: array
-                title: Response 403 Get Flavor By Id Svc V1 Flavors  Flavor Id  Get
-        '404':
-          description: Не удалось найти флейвор с указанным идентификатором
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/FlavorNotFoundExceptionSchema'
-                type: array
-                title: Response 404 Get Flavor By Id Svc V1 Flavors  Flavor Id  Get
+                $ref: '#/components/schemas/FlavorSchema'
         '422':
-          description: Ошибка валидации
+          description: Validation Error
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/CustomRequestValidationErrorSchema'
-                type: array
-                title: Response 422 Get Flavor By Id Svc V1 Flavors  Flavor Id  Get
-        '500':
-          description: Внутренняя ошибка сервера
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/APIExceptionSchema'
-                type: array
-                title: Response 500 Get Flavor By Id Svc V1 Flavors  Flavor Id  Get
+                "$ref": "#/components/schemas/HTTPValidationError"
       security:
         - userPlaneApiToken: []
   /api/v1/availability-zones:
@@ -2817,7 +2770,7 @@ paths:
           schema:
             type: string
             format: uuid4
-          description: Идентификатор виртуальной машины.
+          description: Идентификатор виртуальной машины.  
       requestBody:
         required: true
         content:
@@ -6944,7 +6897,7 @@ paths:
                   - created_at
                   - updated_at
                 type: string
-              - type: null
+              - type: 'null'
             description: |
               Определяет параметр, по которому будут отсортированы результаты:
 
@@ -6969,7 +6922,8 @@ paths:
               - type: string
                 minLength: 1
                 maxLength: 64
-              - type: null
+                pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
+              - type: 'null'
             description: Фильтр по названию резервной копии.
         - name: state
           in: query
@@ -6977,7 +6931,7 @@ paths:
           schema:
             anyOf:
               - $ref: '#/components/schemas/BackupState'
-              - type: null
+              - type: 'null'
             description: Фильтр по статусам резервных копий. Каждый статус указывается отдельной строкой.
         - name: tag_ids
           in: query
@@ -6988,7 +6942,7 @@ paths:
                 items:
                   type: string
                   format: uuid4
-              - type: null
+              - type: 'null'
             description: |
               Фильтр по идентификаторам тегов. 
               Идентификаторы тегов можно получить, выполнив запрос ``GET /api/v1/tags``. 
@@ -7002,7 +6956,7 @@ paths:
                 items:
                   type: string
                   format: uuid4
-              - type: null
+              - type: 'null'
             description: |
               Фильтр по идентификаторам ресурсов в резервной копии. 
               Идентификаторы можно получить, выполнив запрос [GET /api/v1/vms](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/VMs/operation/get_vms_svc_v1_vms_get) для виртуальных машин и [GET /api/v1/disks](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/Disks/operation/get_disks_svc_v1_disks_get) для дисков.
@@ -7014,7 +6968,7 @@ paths:
               - type: array
                 items:
                   $ref: '#/components/schemas/ResourceType'
-              - type: null
+              - type: 'null'
             description: Фильтр по типам ресурсов в резервной копии.
         - name: project_id
           in: query
@@ -7023,36 +6977,36 @@ paths:
             type: string
             format: uuid4
             description: "Идентификатор проекта. [Узнать идентификатор проекта](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref__project-id?source-platform=Evolution) вы можете в личном кабинете или через API-запрос."
-        - name: type
-          in: query
-          required: false
-          schema:
-            anyOf:
-              - $ref: '#/components/schemas/BackupType'
-              - type: null
-            description: |
-              Фильтр по типу резервных копий:
-
-              - `full` — полная копия;
-              - `incremental` — инкрементальная копия.
-        - name: parent_full_backup_id
+        - name: protection_plan_id
           in: query
           required: false
           schema:
             anyOf:
               - type: string
                 format: uuid4
-              - type: null
+              - type: 'null'
             description: |
-              Фильтр по идентификатору предыдущей полной копии в том же плане резервного копирования.
-              Идентификатор можно получить, выполнив этот же запрос с фильтром ``"type": "full"``.      
+              Фильтр по идентификаторам плана резервного копирования.
+              Идентификатор плана копирования можно получить, выполнив запрос [GET /api/v1/protection-plans](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/ProtectionPlans/operation/get_protection_plan_svc_v1_protection_plans__protection_plan_id__get).
+        - name: type
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - $ref: '#/components/schemas/BackupType'
+              - type: 'null'
+            description: |
+              Фильтр по типу резервных копий:
+
+              - `full` — полная копия;
+              - `incremental` — инкрементальная копия.
       responses:
         '200':
           description: Запрос выполнен успешно
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PublicBackupResponse'
+                $ref: '#/components/schemas/PaginationResponse_BackupListItemResponse_'
         '401':
           description: Ошибка аутентификации
           content:
@@ -7492,7 +7446,7 @@ paths:
             anyOf:
               - type: string
                 format: uuid4
-              - type: null
+              - type: 'null'
             description: "Фильтр по идентификатору резервной копии."
         - name: name
           in: query
@@ -7502,7 +7456,8 @@ paths:
               - type: string
                 minLength: 1
                 maxLength: 64
-              - type: null
+                pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
+              - type: 'null'
             description: "Фильтр по названию плана копирования. Названия планов копирования можно получить, выполнив этот же запрос без фильтрации."
         - name: state
           in: query
@@ -7536,7 +7491,7 @@ paths:
           schema:
             anyOf:
               - $ref: '#/components/schemas/BackupType'
-              - type: null
+              - type: 'null'
             description: |
               Фильтр по типу резервных копий:
 
@@ -7735,6 +7690,38 @@ components:
       example:
         message: Unauthorized
         code: unauthorized
+    AvailabilityZoneFlavorSchema:
+      properties:
+        availability_zone_id:
+          type: string
+          format: uuid4
+          description: Идентификатор зоны доступности.
+        availability_zone_name:
+          type: string
+          maxLength: 64
+          minLength: 1
+          pattern: "^[a-zA-Z][a-zA-Z0-9.\\-_]*$"
+          description: Название зоны доступности.
+        default:
+          type: boolean
+          description: "`true` - является зоной доступности по умолчанию, `false` - не является зоной доступности по умолчанию."
+        enabled:
+          type: boolean
+          description: "Указывает, включена ли зона доступности: `true` - включена, `false` - выключена."
+        state:
+          "$ref": "#/components/schemas/FlavorState"
+        available:
+          type: boolean
+          description: "Указывает, доступна ли зона: `true` - доступна, `false` - недоступна."
+      type: object
+      required:
+      - availability_zone_id
+      - availability_zone_name
+      - default
+      - enabled
+      - state
+      - available
+      title: AvailabilityZoneFlavorSchema    
     AvailabilityZoneMiniResponse:
       properties:
         id:
@@ -8186,12 +8173,9 @@ components:
           type: string
           format: date-time
           description: Дата и время последнего восстановления.
-        parent_full_backup_id:
-          anyOf:
-            - type: string
-              format: uuid4
-            - type: null
-          description: Идентификатор предыдущей полной копии.
+        retention_policy:
+          type: 'null'
+          description: Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
         size:
           type: integer
           description: Размер резервной копии в МБ.
@@ -8236,24 +8220,7 @@ components:
         - resource_state
       title: BackupListItemResourceSection
       description: Ресурс.
-    BackupResourceSchema:
-      properties:
-        resource_id:
-          type: string
-          format: uuid4
-          title: Идентификатор ресурса.
-        resource_type:
-          $ref: '#/components/schemas/ResourceType'
-        resource_state:
-          type: object
-          title: Статус ресурса.
-      type: object
-      required:
-        - resource_id
-        - resource_type
-        - resource_state
-      title: BackupResourceSchema  
-    BackupSchema:
+    BackupListItemResponse:
       properties:
         id:
           type: string
@@ -8261,69 +8228,54 @@ components:
           description: Идентификатор резервной копии.
         name:
           type: string
-          pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           description: Название резервной копии.
         description:
-          anyOf:
-            - type: string
-              maxLength: 255
-              minLength: 0
-            - type: null
+          type: string
+          maxLength: 255
+          minLength: 0
           description: Описание резервной копии.
         project_id:
           type: string
           format: uuid4
           description: Идентификатор проекта.
         state:
-          $ref: '#/components/schemas/BackupState'
-        type:
-          $ref: '#/components/schemas/BackupType'
-        tags:
-          items:
-            $ref: '#/components/schemas/TagLiteSchema'
-          type: array
-          title: Теги  
+          $ref: '#/components/schemas/CheckpointState'
         created_at:
           type: string
           format: date-time
           description: Дата и время создания.
         updated_at:
-          anyOf:
-            - type: string
-              format: date-time
-            - type: null
+          type: string
+          format: date-time
           description: Дата и время изменения.
-        resource:
-          $ref: '#/components/schemas/BackupResourceSchema'
-        protection_plan:
-          anyOf:
-            - $ref: '#/components/schemas/ProtectionPlanLiteSchema'
-            - type: null
-        size:
-          type: integer
-          title: Размер резервной копии в MБ. 
         last_restore_time:
           type: string
           format: date-time
           description: Дата и время последнего восстановления.
-        parent_full_backup_id:
-          anyOf:
-            - type: string
-              format: uuid4
-            - type: null
-          description: Идентификатор предыдущей полной копии.
+        retention_policy:
+          type: 'null'
+          description: Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
+        size:
+          type: integer
+          description: Размер резервной копии в MБ.
+          default: 0
+        tags:
+          items:
+            $ref: '#/components/schemas/BackupTagItemSection'
+          type: array
+          description: Теги.
+        resource:
+          $ref: '#/components/schemas/BackupListItemResourceSection'
       type: object
       required:
         - id
         - name
         - project_id
         - state
-        - type
-        - tags
         - created_at
+        - tags
         - resource
-        - size
-      title: BackupSchema
+      title: BackupListItemResponse
     BackupMetadataFieldSection:
       properties:
         id:
@@ -8665,6 +8617,7 @@ components:
         - ip_address
         - primary
         - type
+        - interface_security_enabled
         - state
         - security_groups
       title: BackupVmResourceStateInterfaceSection
@@ -9019,6 +8972,7 @@ components:
         - ip_address
         - primary
         - type
+        - interface_security_enabled
         - state
         - security_groups
         - exists_ip_addresses
@@ -9442,24 +9396,25 @@ components:
           type: string
           maxLength: 64
           minLength: 1
+          pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           description: Название диска.
         disk_type_id:
           anyOf:
             - type: string
               format: uuid4
-            - type: null
+            - type: 'null'
           description: Идентификатор типа диска.
         disk_type_name:
           anyOf:
             - type: string
-            - type: null
+            - type: 'null'
           description: Название типа диска.
         description:
           anyOf:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание.
       additionalProperties: false
       type: object
@@ -9588,15 +9543,329 @@ components:
         - new
       title: FipPriceEnum
       description: Действие с IP-адресом.
-    FlavorEnum:
+    FlavorExtendedWithFlavorTypeSchema:
+      properties:
+        id:
+          type: string
+          format: uuid4
+          description: Идентификатор флейвора.
+        name:
+          type: string
+          maxLength: 64
+          minLength: 1
+          pattern: "^[a-zA-Z][a-zA-Z0-9.\\-_]*$"
+          description: Название флейвора.
+        cpu:
+          type: integer
+          maximum: 256
+          minimum: 1
+          description: Количество виртуальных процессоров — vCPU.
+        ram:
+          type: integer
+          maximum: 2048
+          minimum: 1
+          description: Объем оперативной памяти (RAM) в ГБ.
+        gpu:
+          type: integer
+          maximum: 16
+          minimum: 0
+          description: Количество графических процессоров — GPU.
+        oversubscription:
+          type: string
+          description: "Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%."
+        free_tier:
+          type: boolean
+          description: "Если указано `true`, флейвор можно использовать для бесплатной ВМ (free tier)."
+        flavor_type:
+          "$ref": "#/components/schemas/FlavorTypeSchema"
+        available:
+          type: boolean
+          description: "Если указано `true`, флейвор доступен для создания ВМ."
+      type: object
+      required:
+      - id
+      - name
+      - cpu
+      - ram
+      - gpu
+      - oversubscription
+      - free_tier
+      - flavor_type
+      - available
+      title: FlavorExtendedWithFlavorTypeSchema
+    FlavorLiteSchema:
+      properties:
+        id:
+          type: string
+          format: uuid4
+          description: Идентификатор флейвора.
+        name:
+          type: string
+          maxLength: 64
+          minLength: 1
+          pattern: "^[a-zA-Z][a-zA-Z0-9.\\-_]*$"
+          description: Название флейвора.
+        cpu:
+          type: integer
+          maximum: 256
+          minimum: 1
+          description: Количество виртуальных процессоров — vCPU.
+        ram:
+          type: integer
+          maximum: 2048
+          minimum: 1
+          description: Объем оперативной памяти (RAM) в ГБ.
+        gpu:
+          type: integer
+          maximum: 16
+          minimum: 0
+          description: Количество графических процессоров — GPU.
+        oversubscription:
+          type: string
+          description: "Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%."
+        free_tier:
+          type: boolean
+          description: "Если указано `true`, флейвор можно использовать для бесплатной ВМ (free tier)."
+      type: object
+      required:
+      - id
+      - name
+      - cpu
+      - ram
+      - gpu
+      - oversubscription
+      - free_tier
+      title: FlavorLiteSchema
+    FlavorSchema:
+      properties:
+        id:
+          type: string
+          format: uuid4
+          description: Идентификатор флейвора.
+        name:
+          type: string
+          maxLength: 64
+          minLength: 1
+          pattern: "^[a-zA-Z][a-zA-Z0-9.\\-_]*$"
+          description: Название флейвора.
+        description:
+          type: string
+          maxLength: 255
+          minLength: 0
+          description: Описание флейвора.
+        type:
+          type: string
+          maxLength: 64
+          minLength: 1
+          pattern: "^[a-zA-Z][a-zA-Z0-9.\\-_]*$"
+          description: "Название типа флейвора. Используется для обратной совместимости и соответствует значению поля `old_name` объекта `flavor_type`."
+        flavor_type:
+          "$ref": "#/components/schemas/FlavorTypeSchema"
+        cpu:
+          type: integer
+          maximum: 256
+          minimum: 1
+          description: Количество виртуальных процессоров — vCPU.
+        ram:
+          type: integer
+          maximum: 2048
+          minimum: 1
+          description: Объем оперативной памяти (RAM) в ГБ.
+        gpu:
+          type: integer
+          maximum: 16
+          minimum: 0
+          description: Количество графических процессоров — GPU.
+        pci_device_limit:
+          type: integer
+          maximum: 32
+          minimum: 5
+          description: "Количество доступных [слотов PCI](https://cloud.ru/docs/virtual-machines/ug/topics/concepts__flavors#concepts-flavors-pci) для подключения виртуальных устройств."
+        pci_device_available:
+          type: integer
+          minimum: 0
+          description: "Количество свободных слотов PCI."
+        oversubscription:
+          type: string
+          description: "Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%."
+        assured_bandwidth:
+          type: integer
+          minimum: 0
+          description: "Гарантированная полоса пропускания сетевых интерфейсов виртуальной машины в Мбит/с. Если указано `0`, параметр не используется."
+        maximum_bandwidth:
+          type: integer
+          minimum: 0
+          description: "Максимальная полоса пропускания сетевых интерфейсов виртуальной машины в Мбит/с. Если указано `0`, параметр не используется."
+        pps:
+          type: integer
+          minimum: 0
+          description: "Количество пакетов в секунду, которое может получать виртуальная машина. Если указано `0`, параметр не используется."
+        availability_zones:
+          items:
+            "$ref": "#/components/schemas/AvailabilityZoneFlavorSchema"
+          type: array
+          description: "Зоны доступности, в которых доступен флейвор."
+        free_tier:
+          type: boolean
+          description: "Если указано `true`, флейвор можно использовать для бесплатной ВМ (free tier)."
+        display_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Название флейвора, которое отображается в личном кабинете пользователя.
+      type: object
+      required:
+      - id
+      - name
+      - description
+      - type
+      - flavor_type
+      - cpu
+      - ram
+      - gpu
+      - pci_device_limit
+      - pci_device_available
+      - oversubscription
+      - assured_bandwidth
+      - maximum_bandwidth
+      - pps
+      - availability_zones
+      - free_tier
+      title: FlavorSchema
+    FlavorState:
       type: string
       enum:
-        - general
-        - memory-optimized
-        - gpu_v100
-        - gpu_h100
-      title: FlavorEnum
-      description: An enumeration.
+      - created
+      - error_creating
+      - error_deleting
+      - creating
+      - deleting
+      description: |
+        Статус флейлора:
+        
+        - `created` — флейвор создан.
+        - `error_creating` — ошибка создания флейвора.
+        - `error_deleting` — ошибка удаления флейвора.
+        - `creating` — флейвор создается.
+        - `deleting` — флейвор удаляется.
+    FlavorTypeSchema:
+      properties:
+        id:
+          type: string
+          format: uuid4
+          description: "Идентификатор типа флейвора."
+        name:
+          type: string
+          maxLength: 64
+          minLength: 1
+          pattern: "^[a-zA-Z][a-zA-Z0-9.\\-_]*$"
+          description: "Системное название типа флейвора."
+        old_name:
+          type: string
+          maxLength: 64
+          minLength: 1
+          pattern: "^[a-zA-Z][a-zA-Z0-9.\\-_]*$"
+          description: "Системное название типа флейвора. Используется для обратной совместимости и соответствует значению поля `type`."
+        display_name:
+          type: string
+          maxLength: 64
+          minLength: 1
+          description: "Название типа флейвора, которое отображается в интерфейсе личного кабинете пользователя."
+        description:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 0
+          - type: 'null'
+          description: "Описание типа флейвора."
+        cpu_type:
+          type: string
+          description: "Модель процессора."
+        gpu_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: "Модель графического процессора."
+        oversubscription:
+          type: string
+          description: "Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%."
+        is_spot:
+          type: boolean
+          description: "Если указано `true`, тип флейвора поддерживает создание прерываемых виртуальных машин."
+        display_group:
+          type: string
+          description: Группа отображения — название вкладки, на которой отображаются флейворы этого типа на форме создания виртуальной машины.
+        display_group_type:
+          "$ref": "#/components/schemas/FlavorTypeDisplayGroupType"
+          description: Тип группы отображения — позволяет выбирать одинаковые флейворы разного типа в одной вкладке.
+        display_group_position:
+          type: integer
+          description: Порядковый номер вкладки в личном кабинете.
+        display_group_description:
+          type: string
+          description: Описание группы, которое отображается внутри вкладки.
+      type: object
+      required:
+      - id
+      - name
+      - old_name
+      - display_name
+      - description
+      - cpu_type
+      - gpu_type
+      - oversubscription
+      - is_spot
+      - display_group
+      - display_group_type
+      - display_group_position
+      - display_group_description
+      title: FlavorTypeSchema
+    FlavorWithFlavorTypeSchema:
+      properties:
+        id:
+          type: string
+          format: uuid4
+          description: Идентификатор флейвора.
+        name:
+          type: string
+          maxLength: 64
+          minLength: 1
+          pattern: "^[a-zA-Z][a-zA-Z0-9.\\-_]*$"
+          description: Название флейвора.
+        cpu:
+          type: integer
+          maximum: 256
+          minimum: 1
+          description: Количество виртуальных процессоров — vCPU.
+        ram:
+          type: integer
+          maximum: 2048
+          minimum: 1
+          description: Объем оперативной памяти (RAM) в ГБ.
+        gpu:
+          type: integer
+          maximum: 16
+          minimum: 0
+          description: Количество графических процессоров — GPU.
+        oversubscription:
+          type: string
+          description: "Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%."
+        free_tier:
+          type: boolean
+          description: "Если указано `true`, флейвор можно использовать для бесплатной ВМ (free tier)."
+        flavor_type:
+          "$ref": "#/components/schemas/FlavorTypeSchema"
+      type: object
+      required:
+      - id
+      - name
+      - cpu
+      - ram
+      - gpu
+      - oversubscription
+      - free_tier
+      - flavor_type
+      title: FlavorWithFlavorTypeSchema
     FlavorMiniResponse:
       properties:
         id:
@@ -9622,7 +9891,7 @@ components:
           type: boolean
           description: "Если указано `true`, флейвор можно использовать для бесплатной ВМ (free tier)."
         flavor_type:
-          $ref: '#/components/schemas/PublicFlavorTypeResponse'
+          $ref: '#/components/schemas/FlavorTypeSchema'
       type: object
       required:
         - id
@@ -9656,16 +9925,18 @@ components:
         - oversubscription
         - flavor-type
       description: Тип параметра.
-    FlavorState:
+    FlavorTypeDisplayGroupType:
       type: string
       enum:
-        - created
-        - error_creating
-        - error_deleting
-        - creating
-        - deleting
-      title: FlavorState
-      description: Статус флейвора.
+        - general1:1
+        - general1:3
+        - general1:10
+        - gpu
+        - spot
+        - custom
+        - high_frequency
+      title: FlavorTypeDisplayGroupType
+      description: Тип группы, который позволяет выбирать одинаковые флейворы разного типа в одной вкладке.
     FloatingIpAddressIsUsedByNATGatewayExceptionSchema:
       properties:
         code:
@@ -10040,6 +10311,8 @@ components:
           description: Идентификатор резервной копии
         name:
           type: string
+          maxLength: 64
+          minLength: 1
           pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           description: Название резервной копии.
         description:
@@ -10047,7 +10320,7 @@ components:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание.
         project_id:
           type: string
@@ -10070,15 +10343,17 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время обновления резервной копии.
         resource:
-          $ref: '#/components/schemas/BackupResourceSchema'
-          description: Ресурс.
+          anyOf:
+            - $ref: '#/components/schemas/VmBackupItem'
+            - $ref: '#/components/schemas/DiskBackupItem'
+          description: Resource
         protection_plan:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProtectionPlanLiteSchema'
+          anyOf:
+            - $ref: '#/components/schemas/ProtectionPlanLiteSchema'
+            - type: 'null'
         size:
           type: integer
           description: Размер копии в МБ.
@@ -10086,14 +10361,11 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время последнего восстановления ресурса из копии.
-        parent_full_backup_id:
-          anyOf:
-            - type: string
-              format: uuid4
-            - type: null
-          description: Идентификатор предыдущей полной копии.
+        retention_policy:
+          type: 'null'
+          description: Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
       type: object
       required:
         - id
@@ -10114,6 +10386,8 @@ components:
           description: Идентификатор плана.
         name:
           type: string
+          maxLength: 64
+          minLength: 1
           pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           description: Название плана.
         description:
@@ -10136,7 +10410,10 @@ components:
           type: array
           description: Расписание.
         state:
-          $ref: '#/components/schemas/ProtectionPlanState' 
+          $ref: '#/components/schemas/ProtectionPlanState'
+        retention_policy:
+          type: 'null'
+          description: Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
         availability_zone:
           $ref: '#/components/schemas/AvailabilityZoneLiteSchema'
         backups:
@@ -10149,15 +10426,11 @@ components:
           format: date-time
           description: Дата и время создания резервной копии.
         updated_at:
-          anyOf:
-            - type: string
-              format: date-time
-            - type: null
+          type: string
+          format: date-time
           description: Дата и время обновления резервной копии, если есть.
         type:
           $ref: '#/components/schemas/BackupType'
-        execution_type:
-          $ref: '#/components/schemas/BackupType'  
       type: object
       required:
         - id
@@ -10170,7 +10443,6 @@ components:
         - backups
         - created_at
         - type
-        - execution_type
       title: GetProtectionPlanResponseSchema  
     ImageAlreadyExistsExceptionSchema:
       properties:
@@ -10763,11 +11035,11 @@ components:
       example:
         message: Offset out of bounds
         code: offset_out_of_bounds
-    ListBackupsResponseSchema:
+    PaginationResponse_BackupListItemResponse_:
       properties:
         items:
           items:
-            $ref: '#/components/schemas/PublicBackupResponse'
+            $ref: '#/components/schemas/BackupListItemResponse'
           type: array
           description: Список резервных копий.
         offset:
@@ -10785,7 +11057,7 @@ components:
       required:
         - items
         - total
-      title: ListBackupsResponseSchema
+      title: PaginationResponse[BackupListItemResponse]
     PaginationResponse_IPv4Address_:
       properties:
         items:
@@ -10857,29 +11129,34 @@ components:
         - items
         - total
       title: PaginationResponse[PublicDiskResponse]
-    PaginationResponse_PublicFlavorResponse_:
+    ListFlavorsResponseSchema:
       properties:
         items:
           items:
-            $ref: '#/components/schemas/PublicFlavorResponse'
+            "$ref": "#/components/schemas/FlavorSchema"
           type: array
+          title: Items
           description: Массив объектов.
         offset:
           type: integer
+          minimum: 0
           description: Количество элементов с начала списка, которые будут пропущены.
-          default: 0
         limit:
           type: integer
+          maximum: 1000
+          minimum: 1
           description: Максимальное количество элементов в списке.
-          default: 10
         total:
           type: integer
+          minimum: 0
           description: Общее количество доступных элементов.
       type: object
       required:
-        - items
-        - total
-      title: PaginationResponse[PublicFlavorResponse]
+      - items
+      - offset
+      - limit
+      - total
+      title: ListFlavorsResponseSchema  
     PaginationResponse_PublicFloatingIpResponse_:
       properties:
         items:
@@ -11559,31 +11836,6 @@ components:
         - default
         - enabled
       title: PublicAvailabilityZoneDiskTypeResponse
-    PublicAvailabilityZoneFlavorResponse:
-      properties:
-        availability_zone_id:
-          type: string
-          format: uuid4
-          description: Идентификатор зоны доступности.
-        availability_zone_name:
-          type: string
-          description: Название зоны доступности.
-        default:
-          type: boolean
-          description: "`true` - является зоной доступности по умолчанию, `false` - не является зоной доступности по умолчанию."
-        enabled:
-          type: boolean
-          description: "Указывает, включена ли зона доступности: `true` - включена, `false` - выключена."
-        state:
-          $ref: '#/components/schemas/FlavorState'
-      type: object
-      required:
-        - availability_zone_id
-        - availability_zone_name
-        - default
-        - enabled
-        - state
-      title: PublicAvailabilityZoneFlavorResponse
     PublicAvailabilityZoneImageCreateRequest:
       properties:
         availability_zone_id:
@@ -12091,134 +12343,6 @@ components:
       additionalProperties: false
       type: object
       title: PublicDiskUpdateRequest
-    PublicFlavorResponse:
-      properties:
-        id:
-          type: string
-          format: uuid4
-          description: Идентификатор флейвора.
-        name:
-          type: string
-          description: Название флейвора.
-        description:
-          type: string
-          description: Описание флейвора.
-        type:
-          type: string
-          description: "Название типа флейвора. Используется для обратной совместимости и соответствует значению поля `old_name` объекта `flavor_type`."
-        flavor_type:
-          $ref: '#/components/schemas/PublicFlavorTypeResponse'
-        cpu:
-          type: integer
-          maximum: 256
-          minimum: 1
-          description: Количество виртуальных процессоров — vCPU.
-        ram:
-          type: integer
-          maximum: 2048
-          minimum: 1
-          description: Объем оперативной памяти (RAM) в ГБ.
-        gpu:
-          type: integer
-          maximum: 16
-          minimum: 0
-          description: Количество графических процессоров — GPU.
-        pci_device_limit:
-          type: integer
-          maximum: 32
-          minimum: 5
-          description: "Количество доступных [слотов PCI](https://cloud.ru/docs/virtual-machines/ug/topics/concepts__flavors#concepts-flavors-pci) для подключения виртуальных устройств."
-        pci_device_available:
-          type: integer
-          minimum: 0
-          description: "Количество свободных слотов PCI."
-        oversubscription:
-          type: string
-          description: "Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%."
-        assured_bandwidth:
-          type: integer
-          description: "Гарантированная полоса пропускания сетевых интерфейсов виртуальной машины в Мбит/с. Если указано `0`, параметр не используется."
-        maximum_bandwidth:
-          type: integer
-          description: "Максимальная полоса пропускания сетевых интерфейсов виртуальной машины в Мбит/с. Если указано `0`, параметр не используется."
-        pps:
-          type: integer
-          description: "Количество пакетов в секунду, которое может получать виртуальная машина. Если указано `0`, параметр не используется."
-        availability_zones:
-          items:
-            $ref: '#/components/schemas/PublicAvailabilityZoneFlavorResponse'
-          type: array
-          description: "Зоны доступности, в которых доступен флейвор."
-        free_tier:
-          type: boolean
-          description: "Если указано `true`, флейвор можно использовать для бесплатной ВМ (free tier)."
-      type: object
-      required:
-        - id
-        - name
-        - description
-        - type
-        - cpu
-        - ram
-        - gpu
-        - oversubscription
-        - assured_bandwidth
-        - maximum_bandwidth
-        - pps
-        - availability_zones
-      title: PublicFlavorResponse
-    PublicFlavorTypeResponse:
-      properties:
-        id:
-          type: string
-          format: uuid4
-          description: "Идентификатор типа флейвора."
-        name:
-          type: string
-          maxLength: 64
-          minLength: 1
-          pattern: ^[a-zA-Z][a-zA-Z0-9.\-_]*$
-          description: "Системное название типа флейвора."
-        old_name:
-          type: string
-          maxLength: 64
-          minLength: 1
-          pattern: ^[a-zA-Z][a-zA-Z0-9.\-_]*$
-          description: "Системное название типа флейвора. Используется для обратной совместимости и соответствует значению поля `type`."
-        display_name:
-          type: string
-          maxLength: 64
-          minLength: 1
-          description: "Название типа флейвора, которое отображается в графическом интерфейсе."
-        description:
-          type: string
-          maxLength: 255
-          minLength: 0
-          description: "Описание типа флейвора."
-        cpu_type:
-          type: string
-          description: "Модель процессора."
-        gpu_type:
-          type: string
-          description: "Модель графического процессора."
-        oversubscription:
-          type: string
-          description: "Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%."
-        is_spot:
-          type: boolean
-          description: "Если указано `true`, тип флейвора поддерживает создание прерываемых виртуальных машин."
-      type: object
-      required:
-        - id
-        - name
-        - old_name
-        - display_name
-        - description
-        - cpu_type
-        - gpu_type
-        - oversubscription
-        - is_spot
-      description: Тип флейвора.
     PublicFloatingIpCreateRequest:
       properties:
         name:
@@ -12744,7 +12868,7 @@ components:
           $ref: '#/components/schemas/FloatingIpWithNameMiniResponse'
         primary:
           type: boolean
-          description: "Если укаазно `true`, интерфейс является основным для ВМ."
+          description: "Если указано `true`, интерфейс является основным для ВМ."
         created_time:
           type: string
           format: date-time
@@ -12770,6 +12894,7 @@ components:
         - security_groups
         - primary
         - created_time
+        - interface_security_enabled
       title: PublicInterfaceResponse
     PublicNATGatewayCreateRequest:
       properties:
@@ -14534,6 +14659,7 @@ components:
             Укажите один из параметров: `subnet_id` или `subnet_name`. 
             Нельзя указывать оба параметра одновременно или оставлять оба пустыми.
             Название подсети можно получить, выполнив запрос [GET /api/v1/subnets](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/Subnets/operation/get_subnets_svc_v1_subnets_get). 
+          default: true  
         security_groups:
           items:
             type: string
@@ -14936,7 +15062,7 @@ components:
           $ref: '#/components/schemas/FloatingIpWithNameMiniResponse'
         primary:
           type: boolean
-          description: "Если укаазно `true`, интерфейс является основным для ВМ."
+          description: "Если указано `true`, интерфейс является основным для ВМ."
         type:
           $ref: '#/components/schemas/InterfaceType'
         state:
@@ -14949,6 +15075,7 @@ components:
         - security_groups
         - primary
         - type
+        - interface_security_enabled
         - state
       title: VmResponseFreeTierInterfaceSection
     VmResponseInterfaceSection:
@@ -14976,7 +15103,7 @@ components:
           $ref: '#/components/schemas/FloatingIpWithNameMiniResponse'
         primary:
           type: boolean
-          description: "Если укаазно `true`, интерфейс является основным для ВМ."
+          description: "Если указано `true`, интерфейс является основным для ВМ."
         type:
           $ref: '#/components/schemas/InterfaceType'
         state:
@@ -14991,6 +15118,7 @@ components:
         - security_groups
         - primary
         - type
+        - interface_security_enabled
         - state
       title: VmResponseInterfaceSection
     VmResponseItemInterfaceSection:
@@ -15013,7 +15141,7 @@ components:
           $ref: '#/components/schemas/FloatingIpWithNameMiniResponse'
         primary:
           type: boolean
-          description: "Если укаазно `true`, интерфейс является основным для ВМ."
+          description: "Если указано `true`, интерфейс является основным для ВМ."
         state:
           $ref: '#/components/schemas/InterfaceState'
         type:
@@ -15031,11 +15159,6 @@ components:
       title: VmResponseItemInterfaceSection
     VmSetPasswordRequest:
       properties:
-        login:
-          anyOf:
-            - type: string
-            - type: 'null'
-          description: Логин пользователя, для которого устанавливается пароль.
         password:
           type: string
           minLength: 8
@@ -15963,7 +16086,7 @@ components:
           anyOf:
             - type: string
               format: uuid4
-            - type: null
+            - type: 'null'
           description: |
             Идентификатор образа.
 
@@ -15973,7 +16096,7 @@ components:
         image_name:
           anyOf:
             - type: string
-            - type: null
+            - type: 'null'
           description: |
             Название образа.
 
@@ -15983,7 +16106,7 @@ components:
         image_metadata:    
           anyOf:
             - type: object
-            - type: null
+            - type: 'null'
           description: |
             Метаданные образа.
             В метаданных передаются учетные данные пользователя, ключи, имя хоста ВМ и другие параметры.
@@ -16030,7 +16153,7 @@ components:
         additional_properties:
           anyOf:
             - type: object
-            - type: null
+            - type: 'null'
           description: Дополнительные параметры
         created_time:
           type: string
@@ -16040,40 +16163,40 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время изменения.
         vnc_url:
           anyOf:
             - type: string
               minLength: 1
               format: uri
-            - type: null
+            - type: 'null'
           description: URL виртуальной консоли.
         vnc_ws:
           anyOf:
             - type: string
               minLength: 1
               format: uri
-            - type: null
+            - type: 'null'
           description: WebSocket URL виртуальной консоли.
         remote_console_url:
           anyOf:
             - type: string
               minLength: 1
               format: uri
-            - type: null
+            - type: 'null'
           description: URL удаленной консоли.
         remote_console_ws:
           anyOf:
             - type: string
               minLength: 1
               format: uri
-            - type: null
+            - type: 'null'
           description: WebSocket URL удаленной консоли.
         remote_console_protocol:
           anyOf:
             - $ref: '#/components/schemas/RemoteConsoleProtocol'
-            - type: null
+            - type: 'null'
           description: Протокол удаленной консоли.  
         project:
           $ref: '#/components/schemas/ProjectLiteSchema'
@@ -16087,7 +16210,7 @@ components:
         image:
           anyOf:
             - $ref: '#/components/schemas/VmImageLiteSchema'
-            - type: null
+            - type: 'null'
           description: Образ. 
         image_metadata:
           items:
@@ -16097,7 +16220,7 @@ components:
         placement_group:
           anyOf:
             - $ref: '#/components/schemas/PlacementGroupLiteSchema'
-            - type: null
+            - type: 'null'
         tags:
           items:
             $ref: '#/components/schemas/TagLiteSchema'
@@ -16150,7 +16273,7 @@ components:
         delete_attachments:
           anyOf:
             - $ref: '#/components/schemas/VmDeleteAttachmentsRequest'
-            - type: null
+            - type: 'null'
           description: Ресурсы, которые удаляются вместе с виртуальной машиной.  
         virtual_machine_id:
           type: string
@@ -16171,7 +16294,7 @@ components:
             - items:
                 $ref: '#/components/schemas/BulkDeleteVmError'
               type: array
-            - type: null
+            - type: 'null'
           description: Ошибки.
       type: object
       required:
@@ -16186,43 +16309,12 @@ components:
         error_msg:
           anyOf:
             - type: string
-            - type: null
+            - type: 'null'
           description: Ошибка удаления.
       type: object
       required:
         - virtual_machine_id
       title: BulkDeleteVmError
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          description: Описание ошибки.
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-              - type: string
-              - type: integer
-          type: array
-          description: Расположение ошибки.
-        msg:
-          type: string
-          description: Сообщение об ошибке.
-        type:
-          type: string
-          description: Тип ошибки.
-      type: object
-      required:
-        - loc
-        - msg
-        - type
-      title: ValidationError
     ProjectLiteSchema:
       properties:
         id:
@@ -16259,49 +16351,6 @@ components:
         - name
         - enabled
       description: Зона доступности.
-    FlavorLiteSchema:
-      properties:
-        id:
-          type: string
-          format: uuid4
-          description: Идентификатор флейвора.
-        name:
-          type: string
-          maxLength: 64
-          minLength: 1
-          pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
-          description: Название флейвора.
-        cpu:
-          type: integer
-          maximum: 256
-          minimum: 1
-          description: Количество виртуальных процессоров — vCPU.
-        ram:
-          type: integer
-          maximum: 2048
-          minimum: 1
-          description: Объем оперативной памяти (RAM) в ГБ.
-        gpu:
-          type: integer
-          maximum: 16
-          minimum: 0
-          description: Количество графических процессоров — GPU.
-        oversubscription:
-          type: string
-          description: "Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%."
-        free_tier:
-          type: boolean
-          description: "Если указано `true`, флейвор можно использовать для бесплатной ВМ (free tier)."
-      type: object
-      required:
-        - id
-        - name
-        - cpu
-        - ram
-        - gpu
-        - oversubscription
-        - free_tier
-      description: Флейвор.
     VmImageLiteSchema:
       properties:
         id:
@@ -16317,12 +16366,12 @@ components:
         type:
           anyOf:
             - type: string
-            - type: null
+            - type: 'null'
           description: Тип образа.
         display_name:
           anyOf:
             - type: string
-            - type: null
+            - type: 'null'
           description: Отображаемое название.
         icon:
           type: string
@@ -16406,7 +16455,7 @@ components:
         serial_id:
           anyOf:
             - type: string
-            - type: null
+            - type: 'null'
           description: Серийный номер диска.
         name:
           type: string
@@ -16461,7 +16510,7 @@ components:
           description: IP-адрес.
         primary:
           type: boolean
-          description: "Если укаазно `true`, интерфейс является основным для ВМ."
+          description: "Если указано `true`, интерфейс является основным для ВМ."
         type:
           type: string
           title: Type
@@ -16471,11 +16520,11 @@ components:
         subnet:
           anyOf:
             - $ref: '#/components/schemas/SubnetLiteSchema'
-            - type: null
+            - type: 'null'
         floating_ip:
           anyOf:
             - $ref: '#/components/schemas/InterfaceFloatingIpLiteSchema'
-            - type: null
+            - type: 'null'
         security_groups:
           items:
             $ref: '#/components/schemas/SecurityGroupLiteSchema'
@@ -16489,6 +16538,7 @@ components:
         - primary
         - type
         - state
+        - interface_security_enabled
         - subnet
         - floating_ip
         - security_groups
@@ -16515,7 +16565,7 @@ components:
           anyOf:
             - type: string
               format: uuid4
-            - type: null
+            - type: 'null'
           description: Идентификатор виртуальной сети (VPC).
       type: object
       required:
@@ -16647,6 +16697,9 @@ components:
           description: Расписание плана резервного копирования.
         state:
           $ref: '#/components/schemas/ProtectionPlanState'
+        retention_policy:
+          type: 'null'
+          description: Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
         availability_zone:
           $ref: '#/components/schemas/AvailabilityZoneLiteSchema'
         backups:
@@ -16662,12 +16715,8 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время обновления плана резервного копирования.
-        type:
-          $ref: '#/components/schemas/BackupType'
-        execution_type:
-          $ref: '#/components/schemas/BackupType'
       type: object
       required:
         - id
@@ -16686,13 +16735,14 @@ components:
           type: string
           maxLength: 64
           minLength: 1
+          pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           description: Название плана резервного копирования.
         description:
           anyOf:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание плана резервного копирования.
         project_id:
           type: string
@@ -16709,6 +16759,9 @@ components:
             $ref: '#/components/schemas/ProtectionPlanScheduleRequestSchema'
           type: array
           description: Расписание плана резервного копирования.
+        retention_policy:
+          type: 'null'
+          description: Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
         execute_immediately:
           type: boolean
           description: |
@@ -16744,7 +16797,7 @@ components:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание плана резервного копирования.
         project_id:
           type: string
@@ -16762,6 +16815,9 @@ components:
           description: Расписание плана резервного копирования.
         state:
           $ref: '#/components/schemas/ProtectionPlanState'
+        retention_policy:
+          type: 'null'
+          description: Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
         availability_zone:
           $ref: '#/components/schemas/AvailabilityZoneLiteSchema'
         backups:
@@ -16777,12 +16833,10 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время обновления плана резервного копирования.
         type:
           $ref: '#/components/schemas/BackupType'
-        execution_type:
-          $ref: '#/components/schemas/BackupType'  
       required:
         - id
         - name
@@ -16802,29 +16856,33 @@ components:
             - type: string
               maxLength: 64
               minLength: 1
-            - type: null
+              pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
+            - type: 'null'
           description: Название плана резервного копирования.
         description:
           anyOf:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание плана резервного копирования.
         resources:
           anyOf:
             - items:
                 $ref: '#/components/schemas/ProtectionPlanResourceRequestSchema'
               type: array
-            - type: null
+            - type: 'null'
           description: Ресурсы, включенные в план.
         schedules:
           anyOf:
             - items:
                 $ref: '#/components/schemas/ProtectionPlanScheduleRequestSchema'
               type: array
-            - type: null
+            - type: 'null'
           description: Расписание плана резервного копирования.
+        retention_policy:
+          type: 'null'
+          description: Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
       additionalProperties: false
       type: object
       title: UpdateProtectionPlanRequestBody
@@ -16845,7 +16903,7 @@ components:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание плана резервного копирования.
         project_id:
           type: string
@@ -16863,6 +16921,9 @@ components:
           description: Расписание плана резервного копирования.
         state:
           $ref: '#/components/schemas/ProtectionPlanState'
+        retention_policy:
+          type: 'null'
+          description: Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
         availability_zone:
           $ref: '#/components/schemas/AvailabilityZoneLiteSchema'
         backups:
@@ -16878,7 +16939,7 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время обновления плана резервного копирования.
         type:
           $ref: '#/components/schemas/BackupType'
@@ -16902,15 +16963,20 @@ components:
           description: Идентификатор плана резервного копирования.
         name:
           type: string
+          maxLength: 64
+          minLength: 1
           pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           description: Название плана резервного копирования.
         state:
           $ref: '#/components/schemas/ProtectionPlanState'
+        type:
+          $ref: '#/components/schemas/BackupType'
       type: object
       required:
         - id
         - name
         - state
+        - type
       title: ProtectionPlanLiteSchema
       description: План резервного копирования.
     ProtectionPlanResourceRequestSchema:
@@ -16958,7 +17024,7 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время последнего запуска копирования по расписанию.
         days_of_week:
           items:
@@ -16978,33 +17044,6 @@ components:
         enabled:
           type: boolean
           description: Если ``true`` — расписание активное и выполняется, если ``false`` — расписание отключено и не выполняется.
-        backup_mode:
-          $ref: '#/components/schemas/BackupType'
-          default: 'full'
-        retention_policy:
-          anyOf:
-            - type: integer
-              maximum: 365
-              minimum: 1
-            - type: null
-          description: |
-            Срок хранения резервной копии в сервисе. 
-            Указывается количество дней с момента создания копии. 
-            Если указано значение ``null``, копия хранится бессрочно.
-
-            Если указаны оба параметра ``max_backups`` и ``retention_policy``, первым учитывается ``max_backups``. 
-        max_backups:
-          anyOf:
-            - type: integer
-              maximum: 1000
-              minimum: 1
-            - type: null
-          description: |
-            Максимальное количество копий одного ресурса, которые могут храниться в сервисе. 
-            Если количество созданных копий превышает этот параметр, перед созданием новой копии будет удалена самая старая из созданных копий. 
-            Если указано значение ``null``, все созданные копии хранятся бессрочно.
-
-            Если указаны оба параметра ``max_backups`` и ``retention_policy``, первым учитывается ``max_backups``. 
       additionalProperties: false
       type: object
       required:
@@ -17041,30 +17080,6 @@ components:
           description: Если ``true`` — расписание активное и выполняется, если ``false`` — расписание отключено и не выполняется.
         backup_mode:
           $ref: '#/components/schemas/BackupType'
-        retention_policy:
-          anyOf:
-            - type: integer
-              maximum: 365
-              minimum: 1
-            - type: null
-          description: |
-            Срок хранения резервной копии в сервисе. 
-            Указывается количество дней с момента создания копии. 
-            Если указано значение ``null``, копия хранится бессрочно.
-
-            Если указаны оба параметра ``max_backups`` и ``retention_policy``, первым учитывается ``max_backups``. 
-        max_backups:
-          anyOf:
-            - type: integer
-              maximum: 1000
-              minimum: 1
-            - type: null
-          description: |
-            Максимальное количество копий одного ресурса, которые могут храниться в сервисе. 
-            Если количество созданных копий превышает этот параметр, перед созданием новой копии будет удалена самая старая из созданных копий. 
-            Если указано значение ``null``, все созданные копии хранятся бессрочно.
-
-            Если указаны оба параметра ``max_backups`` и ``retention_policy``, первым учитывается ``max_backups``. 
       type: object
       required:
         - start_time
@@ -17072,7 +17087,6 @@ components:
         - days_of_month
         - months
         - enabled
-        - backup_mode
       title: ProtectionPlanScheduleResponseSchema
     ProtectionPlanState:
       type: string
@@ -17100,13 +17114,14 @@ components:
           type: string
           maxLength: 64
           minLength: 1
+          pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           description: Название резервной копии.
         description:
           anyOf:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание резервной копии.
         project_id:
           type: string
@@ -17124,6 +17139,7 @@ components:
             type: string
             maxLength: 64
             minLength: 1
+            pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           type: array
           description: "Названия тегов. Укажите один из параметров: ``tag_ids`` или ``tag_names``. Нельзя указывать оба параметра одновременно. Названия можно получить, выполнив запрос `GET /api/tags/v1/tags`."
           default: []
@@ -17134,7 +17150,7 @@ components:
           anyOf:
             - type: string
               format: uuid4
-            - type: null
+            - type: 'null'
           description: "Идентификатор плана копирования. Идентификатор можно получить, выполнив запрос [GET /api/v1/protection-plans](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/ProtectionPlans/operation/get_protection_plan_svc_v1_protection_plans__protection_plan_id__get)."
       additionalProperties: false
       type: object
@@ -17151,6 +17167,8 @@ components:
           description: Идентификатор резервной копии.
         name:
           type: string
+          maxLength: 64
+          minLength: 1
           pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           description: Название резервной копии.
         description:
@@ -17158,7 +17176,7 @@ components:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание резервной копии.
         project_id:
           type: string
@@ -17181,15 +17199,17 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время обновления резервной копии.
         resource:
-          $ref: '#/components/schemas/BackupResourceSchema'
-          description: Ресурс.
+          anyOf:
+            - $ref: '#/components/schemas/VmBackup'
+            - $ref: '#/components/schemas/DiskBackup'
+          description: Ресурсы.
         protection_plan:
           anyOf:
             - $ref: '#/components/schemas/ProtectionPlanLiteSchema'
-            - type: null
+            - type: 'null'
           description: План резервного копирования.
         size:
           type: integer
@@ -17198,14 +17218,11 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время последнего восстановления ресурса из копии.
-        parent_full_backup_id:
-          anyOf:
-            - type: string
-              format: uuid4
-            - type: null
-          description: Идентификатор предыдущей полной копии. 
+        retention_policy:
+          type: 'null'
+          description: Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
       type: object
       required:
         - id
@@ -17225,14 +17242,15 @@ components:
             - type: string
               maxLength: 64
               minLength: 1
-            - type: null
+              pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
+            - type: 'null'
           description: Название резервной копии.
         description:
           anyOf:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание резервной копии.
         tag_ids:
           anyOf:
@@ -17240,7 +17258,7 @@ components:
                 type: string
                 format: uuid4
               type: array
-            - type: null
+            - type: 'null'
           description: "Идентификаторы тегов. Идентификаторы можно получить, выполнив запрос `GET /api/tags/v1/tags`."
         tag_names:
           anyOf:
@@ -17248,8 +17266,9 @@ components:
                 type: string
                 maxLength: 64
                 minLength: 1
+                pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
               type: array
-            - type: null
+            - type: 'null'
           description: "Названия тегов. Названия можно получить, выполнив запрос `GET /api/tags/v1/tags`."
       additionalProperties: false
       type: object
@@ -17262,6 +17281,8 @@ components:
           description: Идентификатор резервной копии.
         name:
           type: string
+          maxLength: 64
+          minLength: 1
           pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           description: Название резервной копии.
         description:
@@ -17269,7 +17290,7 @@ components:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание резервной копии.
         project_id:
           type: string
@@ -17292,15 +17313,17 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время обновления резервной копии.
         resource:
-          $ref: '#/components/schemas/BackupResourceSchema'
-          description: Ресурсы.
+          anyOf:
+            - $ref: '#/components/schemas/VmBackup'
+            - $ref: '#/components/schemas/DiskBackup'
+          description: Ресурсы
         protection_plan:
           anyOf:
             - $ref: '#/components/schemas/ProtectionPlanLiteSchema'
-            - type: null
+            - type: 'null'
         size:
           type: integer
           description: Размер резервной копии в МБ.
@@ -17308,14 +17331,11 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время последнего восстановления ресурса из копии.
-        parent_full_backup_id:
-          anyOf:
-            - type: string
-              format: uuid4
-            - type: null
-          description: Идентификатор предыдущей полной копии. 
+        retention_policy:
+          type: 'null'
+          description: Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
       type: object
       required:
         - id
@@ -17349,6 +17369,8 @@ components:
           description: Идентификатор резервной копии.
         name:
           type: string
+          maxLength: 64
+          minLength: 1
           pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           description: Название резервной копии.
         state:
@@ -17509,19 +17531,20 @@ components:
           type: string
           maxLength: 64
           minLength: 1
+          pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           description: Название ресурса.
         description:
           anyOf:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание ресурса.
         flavor_id:
           anyOf:
             - type: string
               format: uuid4
-            - type: null
+            - type: 'null'
           description: |
             Идентификатор флейвора. 
             Укажите только один из параметров: `flavor_id` или `flavor_name`. 
@@ -17530,7 +17553,7 @@ components:
         flavor_name:
           anyOf:
             - type: string
-            - type: null
+            - type: 'null'
           description: |
             Название флейвора. 
             Укажите только один из параметров: `flavor_id` или `flavor_name`. 
@@ -17573,24 +17596,24 @@ components:
         serial_id:
           anyOf:
             - type: string
-            - type: null
+            - type: 'null'
           description: Серийный номер диска.
         disk_type:
           $ref: '#/components/schemas/VmRestoreDiskType'          
         limit_bw:
           anyOf:
             - type: integer
-            - type: null
+            - type: 'null'
           description: Ограничение пропускной способности (bandwidth) в Мбит/с.
         limit_rate:
           anyOf:
             - type: integer
-            - type: null
+            - type: 'null'
           description: Ограничение скорости передачи данных в МБ/с.
         limit_lock:
           anyOf:
             - type: boolean
-            - type: null
+            - type: 'null'
           description: |
             Параметр влияет на автоматическое изменение значений `limit_bw` и `limit_rate` при изменении размера диска:
             - Если указано `true`, значения `limit_bw` и `limit_rate` не изменяются.
@@ -17645,13 +17668,13 @@ components:
         subnet:
           anyOf:
             - $ref: '#/components/schemas/VmRestoreSubnetConfig'
-            - type: null
+            - type: 'null'
           description: Подсеть.  
         ip_address:
           anyOf:
             - type: string
               format: ipv4
-            - type: null
+            - type: 'null'
           description: IP-адрес интерфейса.
         security_group_ids:
           items:
@@ -17676,7 +17699,7 @@ components:
           anyOf:
             - type: string
               format: uuid4
-            - type: null
+            - type: 'null'
           description: |
             Идентификатор публичного IP-адреса, который будет назначен ВМ при восстановлении.
             Укажите один из параметров: ``attach_floating_ip_id`` или ``attach_floating_ip_name``. 
@@ -17686,7 +17709,7 @@ components:
           anyOf:
             - type: string
               format: uuid4
-            - type: null
+            - type: 'null'
           description: |
             Название публичного IP-адреса, который будет назначен ВМ при восстановлении.
             Укажите один из параметров: ``attach_floating_ip_id`` или ``attach_floating_ip_name``. 
@@ -17705,18 +17728,19 @@ components:
           type: string
           maxLength: 64
           minLength: 1
+          pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
           description: Название диска, который будет прикреплен к ВМ при восстановлении.
         related_disk_id:
           anyOf:
             - type: string
               format: uuid4
-            - type: null
+            - type: 'null'
           description: Идентификатор диска, который будет прикреплен к ВМ при восстановлении.
         disk_type_id:
           anyOf:
             - type: string
               format: uuid4
-            - type: null
+            - type: 'null'
           description: |
             Идентификатор типа диска, который будет прикреплен к ВМ при восстановлении.
             Укажите один из параметров: ``disk_type_id`` или ``disk_type_name``. 
@@ -17725,7 +17749,7 @@ components:
         disk_type_name:
           anyOf:
             - type: string
-            - type: null
+            - type: 'null'
           description: |
             Название типа диска, который будет прикреплен к ВМ при восстановлении.
             Укажите один из параметров: ``disk_type_id`` или ``disk_type_name``. 
@@ -17736,7 +17760,7 @@ components:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание диска.
       additionalProperties: false
       type: object
@@ -17770,7 +17794,7 @@ components:
           anyOf:
             - type: string
               format: uuid4
-            - type: null
+            - type: 'null'
           description: |
             Идентификатор подсети.
             Укажите один из параметров: `id` или `name`. 
@@ -17782,7 +17806,7 @@ components:
               maxLength: 64
               minLength: 1
               pattern: '^[a-zA-Z][a-zA-Z0-9.\-_]*$'
-            - type: null
+            - type: 'null'
           description: |
             Название подсети.
             Укажите один из параметров: `id` или `name`. 
@@ -17812,7 +17836,53 @@ components:
         - name
         - can_create_more
         - exists
-      title: VmRestorePlacementGroup                                 
+      title: VmRestorePlacementGroup      
+    VmBackup:
+      properties:
+        resource_id:
+          type: string
+          format: uuid4
+          description: Идентификатор ресурса.
+        resource_type:
+          $ref: '#/components/schemas/ResourceType'
+        resource_state:
+          $ref: '#/components/schemas/VmResource'
+          description: Конфигурация ресурса в копии.
+        resource_exists:
+          type: boolean
+          description: Если `false`, то ресурс удален.
+      type: object
+      required:
+        - resource_id
+        - resource_type
+        - resource_state
+        - resource_exists
+      title: VmBackup
+    VmBackupItem:
+      properties:
+        resource_id:
+          type: string
+          format: uuid4
+          description: Идентификатор ресурса
+        resource_type:
+          $ref: '#/components/schemas/ResourceType'
+        resource_state:
+          $ref: '#/components/schemas/VmResource'
+        resource_exists:
+          type: boolean
+          description: Если `false`, то ресурс удален.
+        restore_configuration:
+          $ref: '#/components/schemas/VmRestore'
+      type: object
+      required:
+        - resource_id
+        - resource_type
+        - resource_state
+        - resource_exists
+        - restore_configuration
+      title: VmBackupItem
+      description: |
+        Ресурс: виртуальная машина или диск.                               
     VmRestore:
       properties:
         id:
@@ -17827,7 +17897,7 @@ components:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание восстановленного ресурса.
         created_time:
           type: string
@@ -17837,7 +17907,7 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Время и дата обновления.
         metadata_fields:
           items:
@@ -17870,7 +17940,7 @@ components:
         placement_group:
           anyOf:
             - $ref: '#/components/schemas/VmRestorePlacementGroup'
-            - type: null
+            - type: 'null'
         project:
           $ref: '#/components/schemas/ResourceProjectSchema'
         availability_zone:
@@ -18022,11 +18092,11 @@ components:
         floating_ip:
           anyOf:
             - $ref: '#/components/schemas/VmRestoreFloatingIp'
-            - type: null
+            - type: 'null'
         subnet:
           anyOf:
             - $ref: '#/components/schemas/VmRestoreSubnet'
-            - type: null
+            - type: 'null'
         exists_ip_addresses:
           type: boolean
           description: "Если `true`, IP-адреса существуют."
@@ -18066,7 +18136,7 @@ components:
           anyOf:
             - type: string
               format: uuid4
-            - type: null
+            - type: 'null'
           description: Идентификатор виртуальной сети (VPC).
         available_addresses:
           type: boolean
@@ -18099,7 +18169,7 @@ components:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание.
         hidden:
           type: boolean
@@ -18112,7 +18182,7 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время последнего изменения ресурса.
         metadata_fields:
           items:
@@ -18147,7 +18217,7 @@ components:
         placement_group:
           anyOf:
             - $ref: '#/components/schemas/VmResourcePlacementGroup'
-            - type: null
+            - type: 'null'
           description: Группы размещения.
         project:
           $ref: '#/components/schemas/ResourceProjectSchema'
@@ -18212,14 +18282,14 @@ components:
           description: Название диска.
         primary:
           type: boolean
-          description: "Если укаазно `true`, интерфейс является основным для ВМ."
+          description: "Если указано `true`, интерфейс является основным для ВМ."
         size:
           type: integer
           description: Размер диска в ГБ.
         serial_id:
           anyOf:
             - type: string
-            - type: null
+            - type: 'null'
           description: Серийный номер диска.
         disk_type:
           $ref: '#/components/schemas/VmResourceDiskType'
@@ -18227,17 +18297,17 @@ components:
         limit_bw:
           anyOf:
             - type: integer
-            - type: null
+            - type: 'null'
           description: Ограничение пропускной способности (bandwidth) в Мбит/с.
         limit_rate:
           anyOf:
             - type: integer
-            - type: null
+            - type: 'null'
           description: Ограничение скорости передачи данных в МБ/с.
         limit_lock:
           anyOf:
             - type: boolean
-            - type: null
+            - type: 'null'
           description: |
             Параметр влияет на автоматическое изменение значений `limit_bw` и `limit_rate` при изменении размера диска:
             - Если указано `true`, значения `limit_bw` и `limit_rate` не изменяются.
@@ -18307,12 +18377,12 @@ components:
         floating_ip:
           anyOf:
             - $ref: '#/components/schemas/VmResourceFloatingIp'
-            - type: null
+            - type: 'null'
           description: Публичный IP-адрес.  
         subnet:
           anyOf:
             - $ref: '#/components/schemas/VmResourceSubnet'
-            - type: null
+            - type: 'null'
           description: Подсеть.  
       type: object
       required:
@@ -18366,6 +18436,52 @@ components:
         - name
         - subnet_address
       title: VmResourceSubnet  
+    DiskBackup:
+      properties:
+        resource_id:
+          type: string
+          format: uuid4
+          description: Идентификатор ресурса.
+        resource_type:
+          $ref: '#/components/schemas/ResourceType'
+        resource_state:
+          $ref: '#/components/schemas/DiskResource'
+          description: Конфигурация ресурса в копии.
+        resource_exists:
+          type: boolean
+          description: Если `false`, то ресурс удален.
+      type: object
+      required:
+        - resource_id
+        - resource_type
+        - resource_state
+        - resource_exists
+      title: DiskBackup
+    DiskBackupItem:
+      properties:
+        resource_id:
+          type: string
+          format: uuid4
+          description: Идентификатор ресурса.
+        resource_type:
+          $ref: '#/components/schemas/ResourceType'
+        resource_state:
+          $ref: '#/components/schemas/DiskResource'
+        resource_exists:
+          type: boolean
+          description: Если `false`, то ресурс удален.
+        restore_configuration:
+          $ref: '#/components/schemas/DiskRestore'
+      type: object
+      required:
+        - resource_id
+        - resource_type
+        - resource_state
+        - resource_exists
+        - restore_configuration
+      title: DiskBackupItem
+      description: |
+        Ресурс: виртуальная машина или диск.
     DiskResource:
       properties:
         id:
@@ -18384,7 +18500,7 @@ components:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание ресурса.
         size:
           type: integer
@@ -18416,7 +18532,7 @@ components:
         serial_id:
           anyOf:
             - type: string
-            - type: null
+            - type: 'null'
           description: Серийный номер диска.
         created_time:
           type: string
@@ -18426,7 +18542,7 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время изменения.
         tags:
           items:
@@ -18437,7 +18553,7 @@ components:
         image:
           anyOf:
             - $ref: '#/components/schemas/DiskResourceImage'
-            - type: null
+            - type: 'null'
           description: Образ диска.  
         disk_mounts:
           items:
@@ -18591,7 +18707,7 @@ components:
             - type: string
               maxLength: 255
               minLength: 0
-            - type: null
+            - type: 'null'
           description: Описание.
         size:
           type: integer
@@ -18623,7 +18739,7 @@ components:
         serial_id:
           anyOf:
             - type: string
-            - type: null
+            - type: 'null'
           description: Серийный номер диска.
         created_time:
           type: string
@@ -18633,7 +18749,7 @@ components:
           anyOf:
             - type: string
               format: date-time
-            - type: null
+            - type: 'null'
           description: Дата и время изменения.
         tags:
           items:
@@ -18644,7 +18760,7 @@ components:
         image:
           anyOf:
             - $ref: '#/components/schemas/DiskRestoreImage'
-            - type: null
+            - type: 'null'
         disk_mounts:
           items:
             $ref: '#/components/schemas/DiskRestoreDiskMount'
@@ -18777,8 +18893,33 @@ components:
         - id
         - name
         - display_name
-      title: DiskRestoreImage  
-    
+      title: DiskRestoreImage
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            "$ref": "#/components/schemas/ValidationError"
+          type: array
+          description: Детали.
+      type: object
+      description: Ошибка валидации.
+    ValidationError:
+      properties:
+        message:
+          type: string
+          description: Описание ошибки.
+        code:
+          type: string
+          description: Код ошибки.
+        field:
+          type: string
+          description: Поле, с которым связана ошибка.
+      type: object
+      required:
+      - message
+      - code
+      - field
+      title: ValidationError  
   securitySchemes:
     userPlaneApiToken:
       type: http

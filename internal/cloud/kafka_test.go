@@ -218,19 +218,20 @@ func TestKafkaCreateClusterBuildsBody(t *testing.T) {
 		{"логи без группы", func(c *KafkaClusterCreate) { c.Logging = Logging{Enabled: true} }, `{"logging":{"enabled":true}}`},
 		{"логи с группой", func(c *KafkaClusterCreate) { c.Logging = Logging{Enabled: true, GroupID: "lg1"} }, `{"logging":{"enabled":true,"log_group_id":"lg1"}}`},
 		{"Body заменяет поля целиком", func(c *KafkaClusterCreate) {
+			c.Controller = KafkaController{Spec: "cs", StorageGiB: 10}
 			c.Params = map[string]string{"old": "value"}
 			c.Logging = Logging{Enabled: true}
-			c.Body = []byte(`{"name":"override","parameters":{"new":"value"},"logging":null,"ui_enabled":true,"future":12345678901234567890}`)
-		}, `{"name":"override","parameters":{"new":"value"},"logging":null,"ui_enabled":true,"future":12345678901234567890}`},
+			c.Body = []byte(`{"name":"override","subnet_ids":["sn2","sn3","sn4"],"controller_spec":{"specification_id":"cs2","storage_gib":20},"parameters":{"new":"value"},"logging":null,"ui_enabled":true,"future":12345678901234567890}`)
+		}, `{"name":"override","subnet_ids":["sn2","sn3","sn4"],"controller_spec":{"specification_id":"cs2","storage_gib":20},"parameters":{"new":"value"},"logging":null,"ui_enabled":true,"future":12345678901234567890}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			c := KafkaClusterCreate{Project: "p1", Name: "events", Version: "v1", Spec: "s1", Brokers: 3, StorageGiB: 40, Subnet: "sn1"}
+			c := KafkaClusterCreate{Project: "p1", Name: "events", Version: "v1", Spec: "s1", Brokers: 3, StorageGiB: 40, Subnets: []string{"sn1"}}
 			tc.change(&c)
 
 			var want, extra map[string]json.RawMessage
-			require.NoError(t, json.Unmarshal([]byte(`{"project_id":"p1","name":"events","version_id":"v1","specification_id":"s1","brokers":3,"storage_gib":40,"subnet_id":"sn1","ui_enabled":false,"cruise_control_enabled":false,"cruise_control_rebalance_auto_enabled":false}`), &want))
+			require.NoError(t, json.Unmarshal([]byte(`{"project_id":"p1","name":"events","version_id":"v1","specification_id":"s1","brokers":3,"storage_gib":40,"subnet_ids":["sn1"],"ui_enabled":false,"cruise_control_enabled":false,"cruise_control_rebalance_auto_enabled":false}`), &want))
 			require.NoError(t, json.Unmarshal([]byte(tc.fields), &extra))
 
 			for key, value := range extra {

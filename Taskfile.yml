@@ -39,10 +39,10 @@ tasks:
       - tools/gencheck.sh
 
   ratchet:
-    desc: Строки и покрытие против CONSTRAINTS.md
+    desc: Строки против базы PR, тесты и покрытие против CONSTRAINTS.md
     deps: [test]
     cmds:
-      - go run ./tools/ratchet -cover cover.out -tests test.json
+      - go run ./tools/ratchet -base {{.BASE | default "origin/main"}} -pr-body "$RATCHET_PR_BODY" -cover cover.out -tests test.json
 
   check:
     desc: Все гейты PR

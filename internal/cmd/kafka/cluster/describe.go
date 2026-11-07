@@ -14,7 +14,7 @@ import (
 
 func describeCmd(s *state.State) *cobra.Command {
 	return base.DescribeCmd{
-		Use: "get CLUSTER_ID", Short: i18n.T("kafka.cluster.get.short"), Args: cobra.ExactArgs(1),
+		Use: "get CLUSTER_ID", Aliases: []string{"describe"}, Short: i18n.T("kafka.cluster.get.short"), Args: cobra.ExactArgs(1),
 		List: func(ctx context.Context, s *state.State, args []string) ([]byte, error) {
 			return operation.With(s, func(r *cloud.Kafka) ([]byte, error) { return r.Cluster(ctx, args[0]) })
 		},

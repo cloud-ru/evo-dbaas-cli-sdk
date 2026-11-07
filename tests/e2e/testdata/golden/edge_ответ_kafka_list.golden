@@ -1,7 +1,7 @@
 exit: 0
 --- stdout
-ID  NAME  STATUS  HEALTH  BROKERS  STORAGE_GIB
-k2  bus2                  1        40
+ID  NAME  STATUS  HEALTH  BROKERS  STORAGE_GIB  SUBNET_IDS  CONTROLLER_SPEC  CONTROLLER_STORAGE_GIB
+k2  bus2                  1        40           sn1                          
 --- stderr
 
 --- requests

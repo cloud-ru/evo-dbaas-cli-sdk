@@ -189,3 +189,36 @@ paths:
 	assert.Empty(t, log)
 	assert.Equal(t, load(t, s), doc)
 }
+
+func TestKafkaSubnet(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		name, schema, want string
+		fixed              bool
+	}{
+		{"сломанный required", "{required: [name, subnet_id], properties: {subnet_id: {type: array, deprecated: true}}}", "{required: [name], properties: {subnet_id: {type: string, deprecated: true}}}", true},
+		{"последний required", "{required: [subnet_id], properties: {subnet_id: {type: array, deprecated: true}}}", "{properties: {subnet_id: {type: string, deprecated: true}}}", true},
+		{"уже необязательный", "{properties: {subnet_id: {type: array, deprecated: true}}}", "{properties: {subnet_id: {type: string, deprecated: true}}}", true},
+		{"уже строка", "{properties: {subnet_id: {type: string, deprecated: true}}}", "{properties: {subnet_id: {type: string, deprecated: true}}}", false},
+		{"поле удалено", "{required: [name], properties: {name: {type: string}}}", "{required: [name], properties: {name: {type: string}}}", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			const prefix = "components:\n  schemas:\n    cloudru.dbaas.kafka.v1.CreateClusterRequest: "
+
+			doc, log := mustFix(t, load(t, prefix+tc.schema))
+			assert.Equal(t, load(t, prefix+tc.want), doc)
+
+			if tc.fixed {
+				assert.Equal(t, []string{"Kafka CreateClusterRequest.subnet_id → необязательная строка: 1"}, log)
+			} else {
+				assert.Empty(t, log)
+			}
+
+			_, log = mustFix(t, doc)
+			assert.Empty(t, log)
+		})
+	}
+}

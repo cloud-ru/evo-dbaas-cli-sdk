@@ -6026,7 +6026,6 @@ paths:
                 - PermissionServiceV3
 produces:
     - application/json
-swagger: "2.0"
 tags:
     - name: UserService
     - name: AuthService

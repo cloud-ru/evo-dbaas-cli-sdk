@@ -1,6 +1,8 @@
 name: ci
 on:
   pull_request:
+    # edited — правка описания PR («Рост строк: …») перезапускает храповик.
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
 # Гейту хватает чтения; запись есть только у release.yml.
@@ -25,4 +27,7 @@ jobs:
       # floorguard — на PR; на push в main база — сам HEAD (пустой дифф): правку уже проверил PR,
       # а в снимке релиза дифф между релизами — не ход, опускающий планку.
       - name: task check
+        # Описание PR — через env, не подстановкой в скрипт (инъекция).
+        env:
+          RATCHET_PR_BODY: ${{ github.event.pull_request.body }}
         run: task check BASE=${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || 'HEAD' }}

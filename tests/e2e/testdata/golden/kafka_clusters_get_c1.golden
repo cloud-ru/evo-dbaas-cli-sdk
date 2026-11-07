@@ -8,6 +8,7 @@ version_id:
 specification_id:  
 brokers:           0
 storage_gib:       0
+subnet_ids:        
 --- stderr
 
 --- requests

@@ -1,15 +1,18 @@
 exit: 0
 --- stdout
-id:                k9
-name:              events
-status:            READY
-health:            
-version_id:        v
-specification_id:  s
-brokers:           3
-storage_gib:       40
-hosts:             10.0.1.8:9092
-ui_host:           10.0.1.9
+id:                                k9
+name:                              events
+status:                            READY
+health:                            
+version_id:                        v
+specification_id:                  s
+brokers:                           3
+storage_gib:                       40
+subnet_ids:                        sn1, sn2, sn3
+controller_spec.specification_id:  cs
+controller_spec.storage_gib:       10
+hosts:                             10.0.1.8:9092
+ui_host:                           10.0.1.9
 --- stderr
 
 --- requests

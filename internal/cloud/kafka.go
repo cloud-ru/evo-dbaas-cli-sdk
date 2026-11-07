@@ -33,20 +33,37 @@ type KafkaSpecFilter struct {
 // KafkaClusterCreate — новый кластер.
 // Body — сырой JSON поверх собранного: ключи верхнего уровня заменяют поля.
 type KafkaClusterCreate struct {
-	Project, Name, Description, Version, Spec, Subnet string
-	Brokers, StorageGiB                               int32
-	UI, CruiseControl, AutoRebalance                  bool
-	Params                                            map[string]string
-	Logging                                           Logging
-	Body                                              []byte
+	Project, Name, Description, Version, Spec string
+	Subnets                                   []string
+	Controller                                KafkaController
+	Brokers, StorageGiB                       int32
+	UI, CruiseControl, AutoRebalance          bool
+	Params                                    map[string]string
+	Logging                                   Logging
+	Body                                      []byte
 }
 
 // KafkaClusterUpdate — изменение кластера; нулевые поля не отправляются.
 type KafkaClusterUpdate struct {
+	Controller KafkaController
 	Spec       string
 	StorageGiB int32
 	Params     map[string]string
 	Body       []byte
+}
+
+// KafkaController — спецификация и диск выделенных контроллеров; пустой — комбинированный режим.
+type KafkaController struct {
+	Spec       string
+	StorageGiB int32
+}
+
+func (c KafkaController) request() *kafka.CloudruDbaasKafkaV1ControllerSpec {
+	if c.Spec == "" {
+		return nil
+	}
+
+	return &kafka.CloudruDbaasKafkaV1ControllerSpec{SpecificationId: c.Spec, StorageGib: c.StorageGiB}
 }
 
 // KafkaTopicUpdate — изменение топика; нулевые поля не отправляются.
@@ -82,7 +99,7 @@ func (k *Kafka) Cluster(ctx context.Context, id string) ([]byte, error) {
 func (k *Kafka) CreateCluster(ctx context.Context, c KafkaClusterCreate) ([]byte, error) {
 	req := kafka.CloudruDbaasKafkaV1CreateClusterRequest{
 		ProjectId: c.Project, Name: c.Name, Description: optional(c.Description), VersionId: c.Version,
-		SpecificationId: c.Spec, Brokers: c.Brokers, StorageGib: c.StorageGiB, SubnetId: c.Subnet,
+		SpecificationId: c.Spec, Brokers: c.Brokers, StorageGib: c.StorageGiB, SubnetIds: &c.Subnets, ControllerSpec: c.Controller.request(),
 		UiEnabled: c.UI, CruiseControlEnabled: c.CruiseControl, CruiseControlRebalanceAutoEnabled: c.AutoRebalance,
 	}
 	if len(c.Params) > 0 {
@@ -103,7 +120,7 @@ func (k *Kafka) CreateCluster(ctx context.Context, c KafkaClusterCreate) ([]byte
 
 // UpdateCluster возвращает операцию изменения.
 func (k *Kafka) UpdateCluster(ctx context.Context, id string, u KafkaClusterUpdate) ([]byte, error) {
-	req := kafka.CloudruDbaasKafkaV1UpdateClusterRequest{ClusterId: id, SpecificationId: optional(u.Spec)}
+	req := kafka.CloudruDbaasKafkaV1UpdateClusterRequest{ClusterId: id, SpecificationId: optional(u.Spec), ControllerSpec: u.Controller.request()}
 	if u.StorageGiB > 0 {
 		req.StorageGib = &u.StorageGiB
 	}

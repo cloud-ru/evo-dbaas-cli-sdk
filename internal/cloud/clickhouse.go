@@ -104,11 +104,16 @@ func (h *ClickHouse) Versions(ctx context.Context) ([]byte, error) {
 	return read(h.c.VersionServiceList(ctx))
 }
 
-// Specs — спецификации; role — server | keeper | "" (не отправлять).
-func (h *ClickHouse) Specs(ctx context.Context, version, zone, role string) ([]byte, error) {
-	p := &clickhouse.SpecificationServiceListParams{Version: optional(version), AvailabilityZoneId: &zone}
-	if role != "" {
-		p.Role = ptr(clickhouse.SpecificationServiceListParamsRole("SPECIFICATION_ROLE_CLICKHOUSE_" + strings.ToUpper(role)))
+// ClickHouseSpecFilter — версия, зона и роль либо кластер для вертикального масштабирования.
+type ClickHouseSpecFilter struct {
+	Version, Zone, Role, Cluster string
+}
+
+// Specs — спецификации; Role — server | keeper | "" (не отправлять).
+func (h *ClickHouse) Specs(ctx context.Context, f ClickHouseSpecFilter) ([]byte, error) {
+	p := &clickhouse.SpecificationServiceListParams{Version: optional(f.Version), AvailabilityZoneId: optional(f.Zone), ClusterId: optional(f.Cluster)}
+	if f.Role != "" {
+		p.Role = ptr(clickhouse.SpecificationServiceListParamsRole("SPECIFICATION_ROLE_CLICKHOUSE_" + strings.ToUpper(f.Role)))
 	}
 
 	return read(h.c.SpecificationServiceList(ctx, p))

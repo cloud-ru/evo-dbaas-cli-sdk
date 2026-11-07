@@ -402,7 +402,7 @@ func TestCreateChecksEveryKeeperCombinationBeforeRequest(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			args := append([]string{"create", "--name", "demo", "--version", "25.8", "--spec", "s1"}, tc.flags...)
+			args := append([]string{"create", "--name", "demo", "--version", "25.8", "--spec", "s1", "--subnet-id", "s1"}, tc.flags...)
 			f := newFake(nil)
 			out, err := run(t, f, false, args...)
 			require.ErrorContains(t, err, tc.want)
@@ -422,7 +422,7 @@ func TestCreateStandaloneAndResizeKeeper(t *testing.T) {
 		route, body string
 	}{
 		{"legacy без необязательных", []string{"create", "--name", "demo", "--version", "25.8", "--spec", "s1"}, "POST /v1/clusters", `{"project_id":"p1","name":"demo","version":"25.8","specification_id":"s1","shards":1,"replicas":1}`},
-		{"standalone", []string{"create", "--name", "demo", "--version", "25.8", "--spec", "s1", "--keeper", "STANDALONE", "--keeper-spec", "k1", "--keeper-storage-gib", "10", "--subnet-id", "sn1,sn2"}, "POST /v1/clusters", `{"project_id":"p1","name":"demo","version":"25.8","specification_id":"s1","shards":1,"replicas":1,"keeper_mode":"KEEPER_MODE_STANDALONE","standalone_keeper":{"specification_id":"k1","storage_gib":10},"subnet_ids":["sn1","sn2"]}`},
+		{"standalone", []string{"create", "--name", "demo", "--version", "25.8", "--spec", "s1", "--keeper", "STANDALONE", "--keeper-spec", "k1", "--keeper-storage-gib", "10", "--subnet-id", "sn1,sn2,sn3", "--replicas", "3"}, "POST /v1/clusters", `{"project_id":"p1","name":"demo","version":"25.8","specification_id":"s1","shards":1,"replicas":3,"keeper_mode":"KEEPER_MODE_STANDALONE","standalone_keeper":{"specification_id":"k1","storage_gib":10},"subnet_ids":["sn1","sn2","sn3"]}`},
 		{"resize keeper", []string{"resize", "c1", "--keeper-spec", "k2", "--keeper-storage-gib", "20", "--config", "max_connections=100"}, "PATCH /v1/clusters/c1", `{"cluster_id":"c1","standalone_keeper":{"specification_id":"k2","storage_gib":20},"config":{"max_connections":100}}`},
 		{"resize keeper storage only", []string{"resize", "c1", "--keeper-storage-gib", "30"}, "PATCH /v1/clusters/c1", `{"cluster_id":"c1","standalone_keeper":{"storage_gib":30}}`},
 	} {

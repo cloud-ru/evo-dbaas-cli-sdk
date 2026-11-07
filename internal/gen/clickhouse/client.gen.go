@@ -271,13 +271,12 @@ type CloudruDbaasClickhouseV1Cluster struct {
 	// Example: 00000000-0000-0000-0000-000000000000
 	ProjectId string `json:"project_id"`
 
-	// Replicas Количество дополнительных реплик на шард кластера.
-	//  Реальное количество хостов, участвующих в репликации, на один больше.
+	// Replicas Количество реплик на шард кластера: для `KEEPER_MODE_EMBEDDED` — 1, для `KEEPER_MODE_STANDALONE` — 3.
 	//
-	// Example: 2
+	// Example: 3
 	Replicas int32 `json:"replicas"`
 
-	// Shards Количество шардов кластера.
+	// Shards Количество шардов кластера: для `KEEPER_MODE_EMBEDDED` — 1, для `KEEPER_MODE_STANDALONE` — от 1 до 3.
 	//
 	// Example: 3
 	Shards int32 `json:"shards"`
@@ -415,13 +414,12 @@ type CloudruDbaasClickhouseV1CreateClusterRequest struct {
 	// Example: 00000000-0000-0000-0000-000000000000
 	ProjectId string `json:"project_id"`
 
-	// Replicas Количество дополнительных реплик на шард кластера.
-	//  Реальное количество хостов, участвующих в репликации, на один больше.
+	// Replicas Количество реплик на шард кластера: для `KEEPER_MODE_EMBEDDED` — 1, для `KEEPER_MODE_STANDALONE` — 3.
 	//
-	// Example: 2
+	// Example: 3
 	Replicas int32 `json:"replicas"`
 
-	// Shards Количество шардов кластера.
+	// Shards Количество шардов кластера: для `KEEPER_MODE_EMBEDDED` — 1, для `KEEPER_MODE_STANDALONE` — от 1 до 3.
 	//
 	// Example: 3
 	Shards int32 `json:"shards"`
@@ -447,7 +445,9 @@ type CloudruDbaasClickhouseV1CreateClusterRequest struct {
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	SubnetId *string `json:"subnet_id,omitempty"`
 
-	// SubnetIds Идентификаторы подсетей.
+	// SubnetIds Идентификаторы подсетей:
+	//  - для `KEEPER_MODE_EMBEDDED` — 1 подсеть.
+	//  - для `KEEPER_MODE_STANDALONE` — 3 разные подсети в разных зонах доступности.
 	//
 	//  Список подсетей и их описание можно получить через API сервиса виртуальных машин
 	//  в разделе [Subnets](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3#tag/Subnets).
@@ -909,13 +909,14 @@ type SpecificationServiceListParams struct {
 	Version *string `form:"version,omitempty" json:"version,omitempty"`
 
 	// AvailabilityZoneId Идентификатор зоны доступности.
-	//
-	//  Список зон доступности и их описание можно получить через API сервиса виртуальных машин
-	//  в разделе [Availability Zones](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3#tag/Availability-Zones).
 	AvailabilityZoneId *string `form:"availability_zone_id,omitempty" json:"availability_zone_id,omitempty"`
 
 	// Role Назначение спецификаций.
 	Role *SpecificationServiceListParamsRole `form:"role,omitempty" json:"role,omitempty"`
+
+	// ClusterId Идентификатор кластера.
+	//  Укажите для получения спецификаций, доступных для вертикального масштабирования кластера.
+	ClusterId *string `form:"cluster_id,omitempty" json:"cluster_id,omitempty"`
 }
 
 // SpecificationServiceListParamsRole defines parameters for SpecificationServiceList.
@@ -2564,6 +2565,18 @@ func NewSpecificationServiceListRequest(server string, params *SpecificationServ
 		if params.Role != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "role", *params.Role, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "enum"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ClusterId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cluster_id", *params.ClusterId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {

@@ -113,7 +113,7 @@ func runWith(t *testing.T, f *fake, json bool, setup func(*state.State, *cobra.C
 func TestListPrintsTableAndPreservesJSON(t *testing.T) {
 	t.Parallel()
 
-	raw := `{"clusters":[{"id":"c1","name":"events","status":"READY","health":"ALIVE","brokers":3,"storage_gib":40,"future":12345678901234567890}]}`
+	raw := `{"clusters":[{"id":"c1","name":"events","status":"READY","health":"ALIVE","brokers":3,"storage_gib":40,"subnet_ids":["sn1","sn2","sn3"],"controller_spec":{"specification_id":"cs","storage_gib":10},"future":12345678901234567890}]}`
 	for _, json := range []bool{false, true} {
 		t.Run(map[bool]string{false: "таблица", true: "JSON"}[json], func(t *testing.T) {
 			t.Parallel()
@@ -124,7 +124,7 @@ func TestListPrintsTableAndPreservesJSON(t *testing.T) {
 			if json {
 				assert.JSONEq(t, raw, out)
 			} else {
-				assert.Equal(t, []string{"ID", "NAME", "STATUS", "HEALTH", "BROKERS", "STORAGE_GIB", "c1", "events", "READY", "ALIVE", "3", "40"}, strings.Fields(out))
+				assert.Equal(t, []string{"ID", "NAME", "STATUS", "HEALTH", "BROKERS", "STORAGE_GIB", "SUBNET_IDS", "CONTROLLER_SPEC", "CONTROLLER_STORAGE_GIB", "c1", "events", "READY", "ALIVE", "3", "40", "sn1,", "sn2,", "sn3", "cs", "10"}, strings.Fields(out))
 			}
 		})
 	}
@@ -137,7 +137,7 @@ func TestGetPrintsHostsAndOptionalFields(t *testing.T) {
 		name, raw string
 		fields    []string
 	}{
-		{"все поля", `{"id":"c1","name":"events","status":"READY","health":"ALIVE","version_id":"v1","specification_id":"s1","brokers":3,"storage_gib":40,"kafka_hosts":["a:9092","b:9092"],"kafka_ui_host":"ui.example","created_at":"2026-10-26T12:00:00Z","future":42}`, []string{"hosts", "a:9092, b:9092", "ui_host", "ui.example", "created_at", "2026-10-26T12:00:00Z"}},
+		{"все поля", `{"id":"c1","name":"events","status":"READY","health":"ALIVE","version_id":"v1","specification_id":"s1","brokers":3,"storage_gib":40,"subnet_ids":["sn1","sn2","sn3"],"controller_spec":{"specification_id":"cs","storage_gib":10},"kafka_hosts":["a:9092","b:9092"],"kafka_ui_host":"ui.example","created_at":"2026-10-26T12:00:00Z","future":42}`, []string{"subnet_ids", "sn1, sn2, sn3", "controller_spec.specification_id", "cs", "controller_spec.storage_gib", "10", "hosts", "a:9092, b:9092", "ui_host", "ui.example", "created_at", "2026-10-26T12:00:00Z"}},
 		{"без необязательных полей", `{"id":"c1","kafka_ui_host":""}`, nil},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -157,7 +157,7 @@ func TestGetPrintsHostsAndOptionalFields(t *testing.T) {
 				}
 
 				if tc.fields == nil {
-					for _, field := range []string{"hosts", "ui_host", "created_at"} {
+					for _, field := range []string{"hosts", "ui_host", "created_at", "controller_spec"} {
 						assert.NotContains(t, out, field)
 					}
 				}
@@ -175,11 +175,12 @@ func TestCreateWaitPrintsClusterAndSendsFlags(t *testing.T) {
 		"GET /v1/clusters/c1":    `{"id":"c1","name":"events","status":"READY"}`,
 	})
 	out, err := run(t, f, false, "create", "--name", "events", "--version-id", "v1", "--spec", "s1",
-		"--storage-gib", "40", "--subnet-id", "sn1", "--brokers", "3", "--ui", "--cruise-control", "--auto-rebalance",
+		"--storage-gib", "40", "--subnet-id", "sn1", "--subnet-id", "sn2", "--subnet-id", "sn3",
+		"--controller-spec", "cs", "--controller-storage-gib", "10", "--brokers", "3", "--ui", "--cruise-control", "--auto-rebalance",
 		"--description", "описание", "--param", "retention.ms=1000", "--logging", "--log-group-id", "lg1", "--body", `{"future":true}`, "--wait")
 	require.NoError(t, err)
 	assert.Contains(t, out, "READY")
-	assert.JSONEq(t, `{"project_id":"p1","name":"events","description":"описание","version_id":"v1","specification_id":"s1","storage_gib":40,"subnet_id":"sn1","brokers":3,"ui_enabled":true,"cruise_control_enabled":true,"cruise_control_rebalance_auto_enabled":true,"parameters":{"retention.ms":"1000"},"logging":{"enabled":true,"log_group_id":"lg1"},"future":true}`, f.body("POST /v1/clusters"))
+	assert.JSONEq(t, `{"project_id":"p1","name":"events","description":"описание","version_id":"v1","specification_id":"s1","storage_gib":40,"subnet_ids":["sn1","sn2","sn3"],"controller_spec":{"specification_id":"cs","storage_gib":10},"brokers":3,"ui_enabled":true,"cruise_control_enabled":true,"cruise_control_rebalance_auto_enabled":true,"parameters":{"retention.ms":"1000"},"logging":{"enabled":true,"log_group_id":"lg1"},"future":true}`, f.body("POST /v1/clusters"))
 	assert.Equal(t, []string{"POST /v1/clusters", "GET /v1/operations/op1", "GET /v1/clusters/c1"}, f.requests())
 }
 
@@ -190,7 +191,7 @@ func TestCreateSendsDefaultsWithoutOptionalFlags(t *testing.T) {
 	f := newFake(map[string]string{"POST /v1/clusters": `{"id":"op1","done":false}`})
 	_, err := run(t, f, false, "create", "--name", "events", "--version-id", "v1", "--spec", "s1", "--storage-gib", "40", "--subnet-id", "sn1")
 	require.NoError(t, err)
-	assert.JSONEq(t, `{"project_id":"p1","name":"events","version_id":"v1","specification_id":"s1","storage_gib":40,"subnet_id":"sn1","brokers":1,"ui_enabled":false,"cruise_control_enabled":false,"cruise_control_rebalance_auto_enabled":false}`, f.body("POST /v1/clusters"))
+	assert.JSONEq(t, `{"project_id":"p1","name":"events","version_id":"v1","specification_id":"s1","storage_gib":40,"subnet_ids":["sn1"],"brokers":1,"ui_enabled":false,"cruise_control_enabled":false,"cruise_control_rebalance_auto_enabled":false}`, f.body("POST /v1/clusters"))
 }
 
 // Каждый обязательный флаг проверяется отдельно до первого запроса.

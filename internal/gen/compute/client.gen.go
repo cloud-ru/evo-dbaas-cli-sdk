@@ -271,30 +271,6 @@ func (e FipPriceEnum) Valid() bool {
 	}
 }
 
-// Defines values for FlavorEnum.
-const (
-	FlavorEnumGeneral         FlavorEnum = "general"
-	FlavorEnumGpuH100         FlavorEnum = "gpu_h100"
-	FlavorEnumGpuV100         FlavorEnum = "gpu_v100"
-	FlavorEnumMemoryOptimized FlavorEnum = "memory-optimized"
-)
-
-// Valid indicates whether the value is a known member of the FlavorEnum enum.
-func (e FlavorEnum) Valid() bool {
-	switch e {
-	case FlavorEnumGeneral:
-		return true
-	case FlavorEnumGpuH100:
-		return true
-	case FlavorEnumGpuV100:
-		return true
-	case FlavorEnumMemoryOptimized:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for FlavorParamTypes.
 const (
 	FlavorParamTypesFlavorType       FlavorParamTypes = "flavor-type"
@@ -334,6 +310,39 @@ func (e FlavorState) Valid() bool {
 	case FlavorStateErrorCreating:
 		return true
 	case FlavorStateErrorDeleting:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FlavorTypeDisplayGroupType.
+const (
+	FlavorTypeDisplayGroupTypeCustom        FlavorTypeDisplayGroupType = "custom"
+	FlavorTypeDisplayGroupTypeGeneral11     FlavorTypeDisplayGroupType = "general1:1"
+	FlavorTypeDisplayGroupTypeGeneral110    FlavorTypeDisplayGroupType = "general1:10"
+	FlavorTypeDisplayGroupTypeGeneral13     FlavorTypeDisplayGroupType = "general1:3"
+	FlavorTypeDisplayGroupTypeGpu           FlavorTypeDisplayGroupType = "gpu"
+	FlavorTypeDisplayGroupTypeHighFrequency FlavorTypeDisplayGroupType = "high_frequency"
+	FlavorTypeDisplayGroupTypeSpot          FlavorTypeDisplayGroupType = "spot"
+)
+
+// Valid indicates whether the value is a known member of the FlavorTypeDisplayGroupType enum.
+func (e FlavorTypeDisplayGroupType) Valid() bool {
+	switch e {
+	case FlavorTypeDisplayGroupTypeCustom:
+		return true
+	case FlavorTypeDisplayGroupTypeGeneral11:
+		return true
+	case FlavorTypeDisplayGroupTypeGeneral110:
+		return true
+	case FlavorTypeDisplayGroupTypeGeneral13:
+		return true
+	case FlavorTypeDisplayGroupTypeGpu:
+		return true
+	case FlavorTypeDisplayGroupTypeHighFrequency:
+		return true
+	case FlavorTypeDisplayGroupTypeSpot:
 		return true
 	default:
 		return false
@@ -2289,6 +2298,33 @@ type AuthUnauthorizedExceptionSchema struct {
 	Message string `json:"message"`
 }
 
+// AvailabilityZoneFlavorSchema defines model for AvailabilityZoneFlavorSchema.
+type AvailabilityZoneFlavorSchema struct {
+	// AvailabilityZoneId Идентификатор зоны доступности.
+	AvailabilityZoneId string `json:"availability_zone_id"`
+
+	// AvailabilityZoneName Название зоны доступности.
+	AvailabilityZoneName string `json:"availability_zone_name"`
+
+	// Available Указывает, доступна ли зона: `true` - доступна, `false` - недоступна.
+	Available bool `json:"available"`
+
+	// Default `true` - является зоной доступности по умолчанию, `false` - не является зоной доступности по умолчанию.
+	Default bool `json:"default"`
+
+	// Enabled Указывает, включена ли зона доступности: `true` - включена, `false` - выключена.
+	Enabled bool `json:"enabled"`
+
+	// State Статус флейлора:
+	//
+	// - `created` — флейвор создан.
+	// - `error_creating` — ошибка создания флейвора.
+	// - `error_deleting` — ошибка удаления флейвора.
+	// - `creating` — флейвор создается.
+	// - `deleting` — флейвор удаляется.
+	State FlavorState `json:"state"`
+}
+
 // AvailabilityZoneLiteSchema Зона доступности.
 type AvailabilityZoneLiteSchema struct {
 	// Enabled Если указано значение `true`, зона доступности включена.
@@ -2596,14 +2632,14 @@ type BackupItemResponse struct {
 	// Name Название резервной копии.
 	Name string `json:"name"`
 
-	// ParentFullBackupId Идентификатор предыдущей полной копии.
-	ParentFullBackupId *string `json:"parent_full_backup_id,omitempty"`
-
 	// ProjectId Идентификатор проекта.
 	ProjectId string `json:"project_id"`
 
 	// Resource Ресурс, для которого создана резервная копия.
 	Resource BackupItemResponse_Resource `json:"resource"`
+
+	// RetentionPolicy Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
+	RetentionPolicy any `json:"retention_policy,omitempty"`
 
 	// Size Размер резервной копии в МБ.
 	Size *int `json:"size,omitempty"`
@@ -2646,6 +2682,53 @@ type BackupListItemResourceSection struct {
 // BackupListItemResourceSection_ResourceState Конфигурация ресурса.
 type BackupListItemResourceSection_ResourceState struct {
 	union json.RawMessage
+}
+
+// BackupListItemResponse defines model for BackupListItemResponse.
+type BackupListItemResponse struct {
+	// CreatedAt Дата и время создания.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Description Описание резервной копии.
+	Description *string `json:"description,omitempty"`
+
+	// Id Идентификатор резервной копии.
+	Id string `json:"id"`
+
+	// LastRestoreTime Дата и время последнего восстановления.
+	LastRestoreTime *time.Time `json:"last_restore_time,omitempty"`
+
+	// Name Название резервной копии.
+	Name string `json:"name"`
+
+	// ProjectId Идентификатор проекта.
+	ProjectId string `json:"project_id"`
+
+	// Resource Ресурс.
+	Resource BackupListItemResourceSection `json:"resource"`
+
+	// RetentionPolicy Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
+	RetentionPolicy any `json:"retention_policy,omitempty"`
+
+	// Size Размер резервной копии в MБ.
+	Size *int `json:"size,omitempty"`
+
+	// State Статус резервной копии:
+	//
+	// - `creating` — копия создается;
+	// - `created` — копия создана;
+	// - `error_creating` — ошибка создания копии;
+	// - `updating` — обновляется;
+	// - `error` — ошибка;
+	// - `deleting` — копия удаляется;
+	// - `error_deleting` — ошибка удаления копии.
+	State CheckpointState `json:"state"`
+
+	// Tags Теги.
+	Tags []BackupTagItemSection `json:"tags"`
+
+	// UpdatedAt Дата и время изменения.
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 // BackupLiteSchema defines model for BackupLiteSchema.
@@ -2713,18 +2796,6 @@ type BackupResourceResponse struct {
 	ResourceType ResourceType `json:"resource_type"`
 }
 
-// BackupResourceSchema defines model for BackupResourceSchema.
-type BackupResourceSchema struct {
-	ResourceId    string                 `json:"resource_id"`
-	ResourceState map[string]interface{} `json:"resource_state"`
-
-	// ResourceType Тип ресурса:
-	//
-	// - `disk` — диск;
-	// - `virtual_machine` — виртуальная машина.
-	ResourceType ResourceType `json:"resource_type"`
-}
-
 // BackupResourceStateAvailabilityZoneSection Зона доступности.
 type BackupResourceStateAvailabilityZoneSection struct {
 	// Id Идентификатор зоны доступности.
@@ -2745,56 +2816,6 @@ type BackupResourceStateProjectSection struct {
 
 // BackupResourceTypeEnum Тип ресурса.
 type BackupResourceTypeEnum string
-
-// BackupSchema defines model for BackupSchema.
-type BackupSchema struct {
-	// CreatedAt Дата и время создания.
-	CreatedAt time.Time `json:"created_at"`
-
-	// Description Описание резервной копии.
-	Description *string `json:"description,omitempty"`
-
-	// Id Идентификатор резервной копии.
-	Id string `json:"id"`
-
-	// LastRestoreTime Дата и время последнего восстановления.
-	LastRestoreTime *time.Time `json:"last_restore_time,omitempty"`
-
-	// Name Название резервной копии.
-	Name string `json:"name"`
-
-	// ParentFullBackupId Идентификатор предыдущей полной копии.
-	ParentFullBackupId *string `json:"parent_full_backup_id,omitempty"`
-
-	// ProjectId Идентификатор проекта.
-	ProjectId string `json:"project_id"`
-
-	// ProtectionPlan План резервного копирования.
-	ProtectionPlan *ProtectionPlanLiteSchema `json:"protection_plan,omitempty"`
-	Resource       BackupResourceSchema      `json:"resource"`
-	Size           int                       `json:"size"`
-
-	// State Статус резервной копии:
-	//
-	// - `creating` — копия создается;
-	// - `created` — копия создана;
-	// - `error_creating` — ошибка создания копии;
-	// - `updating` — обновляется;
-	// - `error` — ошибка;
-	// - `deleting` — копия удаляется;
-	// - `error_deleting` — ошибка удаления копии.
-	State BackupState     `json:"state"`
-	Tags  []TagLiteSchema `json:"tags"`
-
-	// Type Тип резервной копии:
-	//
-	// - ``full`` — полная копия;
-	// - ``incremental`` — инкрементальная копия.
-	Type BackupType `json:"type"`
-
-	// UpdatedAt Дата и время изменения.
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
-}
 
 // BackupState Статус резервной копии:
 //
@@ -3558,17 +3579,17 @@ type CreateBackupResponseSchema struct {
 	// Name Название резервной копии.
 	Name string `json:"name"`
 
-	// ParentFullBackupId Идентификатор предыдущей полной копии.
-	ParentFullBackupId *string `json:"parent_full_backup_id,omitempty"`
-
 	// ProjectId Идентификатор проекта.
 	ProjectId string `json:"project_id"`
 
 	// ProtectionPlan План резервного копирования.
 	ProtectionPlan *ProtectionPlanLiteSchema `json:"protection_plan,omitempty"`
 
-	// Resource Ресурс.
-	Resource BackupResourceSchema `json:"resource"`
+	// Resource Ресурсы.
+	Resource CreateBackupResponseSchema_Resource `json:"resource"`
+
+	// RetentionPolicy Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
+	RetentionPolicy any `json:"retention_policy,omitempty"`
 
 	// Size Размер резервной копии в МБ.
 	Size int `json:"size"`
@@ -3597,6 +3618,11 @@ type CreateBackupResponseSchema struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
+// CreateBackupResponseSchema_Resource Ресурсы.
+type CreateBackupResponseSchema_Resource struct {
+	union json.RawMessage
+}
+
 // CreateProtectionPlanRequestSchema defines model for CreateProtectionPlanRequestSchema.
 type CreateProtectionPlanRequestSchema struct {
 	// Description Описание плана резервного копирования.
@@ -3616,6 +3642,9 @@ type CreateProtectionPlanRequestSchema struct {
 
 	// Resources Ресурсы, которые требуется включить в план.
 	Resources []ProtectionPlanResourceRequestSchema `json:"resources"`
+
+	// RetentionPolicy Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
+	RetentionPolicy any `json:"retention_policy,omitempty"`
 
 	// Schedules Расписание плана резервного копирования.
 	Schedules *[]ProtectionPlanScheduleRequestSchema `json:"schedules,omitempty"`
@@ -3641,12 +3670,6 @@ type CreateProtectionPlanResponseSchema struct {
 	// Description Описание плана резервного копирования.
 	Description *string `json:"description,omitempty"`
 
-	// ExecutionType Тип резервной копии:
-	//
-	// - ``full`` — полная копия;
-	// - ``incremental`` — инкрементальная копия.
-	ExecutionType *BackupType `json:"execution_type,omitempty"`
-
 	// Id Идентификатор плана резервного копирования.
 	Id string `json:"id"`
 
@@ -3658,6 +3681,9 @@ type CreateProtectionPlanResponseSchema struct {
 
 	// Resources Ресурсы, включенные в план.
 	Resources []ProtectionPlanResourceResponseSchema `json:"resources"`
+
+	// RetentionPolicy Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
+	RetentionPolicy any `json:"retention_policy,omitempty"`
 
 	// Schedules Расписание плана резервного копирования.
 	Schedules []ProtectionPlanScheduleResponseSchema `json:"schedules"`
@@ -3717,6 +3743,43 @@ type DiskAlreadyExistsExceptionSchema struct {
 type DiskAttachRequest struct {
 	// VmId Идентификатор виртуальной машины. Идентификатор можно получить, выполнив запрос [GET /api/v1/vms](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3?source-platform=#tag/VMs/operation/get_vms_svc_v1_vms_get).
 	VmId openapi_types.UUID `json:"vm_id"`
+}
+
+// DiskBackup defines model for DiskBackup.
+type DiskBackup struct {
+	// ResourceExists Если `false`, то ресурс удален.
+	ResourceExists bool `json:"resource_exists"`
+
+	// ResourceId Идентификатор ресурса.
+	ResourceId string `json:"resource_id"`
+
+	// ResourceState Конфигурация ресурса в копии.
+	ResourceState DiskResource `json:"resource_state"`
+
+	// ResourceType Тип ресурса:
+	//
+	// - `disk` — диск;
+	// - `virtual_machine` — виртуальная машина.
+	ResourceType ResourceType `json:"resource_type"`
+}
+
+// DiskBackupItem Ресурс: виртуальная машина или диск.
+type DiskBackupItem struct {
+	// ResourceExists Если `false`, то ресурс удален.
+	ResourceExists bool `json:"resource_exists"`
+
+	// ResourceId Идентификатор ресурса.
+	ResourceId    string       `json:"resource_id"`
+	ResourceState DiskResource `json:"resource_state"`
+
+	// ResourceType Тип ресурса:
+	//
+	// - `disk` — диск;
+	// - `virtual_machine` — виртуальная машина.
+	ResourceType ResourceType `json:"resource_type"`
+
+	// RestoreConfiguration Конфигурация диска для восстановления.
+	RestoreConfiguration DiskRestore `json:"restore_configuration"`
 }
 
 // DiskCanNotBeDeletedWithMultiMountsExceptionSchema defines model for DiskCanNotBeDeletedWithMultiMountsExceptionSchema.
@@ -4112,10 +4175,35 @@ type ExternalNetNotFoundOnServerExceptionSchema struct {
 // FipPriceEnum Действие с IP-адресом.
 type FipPriceEnum string
 
-// FlavorEnum An enumeration.
-type FlavorEnum string
+// FlavorExtendedWithFlavorTypeSchema defines model for FlavorExtendedWithFlavorTypeSchema.
+type FlavorExtendedWithFlavorTypeSchema struct {
+	// Available Если указано `true`, флейвор доступен для создания ВМ.
+	Available bool `json:"available"`
 
-// FlavorLiteSchema Флейвор.
+	// Cpu Количество виртуальных процессоров — vCPU.
+	Cpu        int              `json:"cpu"`
+	FlavorType FlavorTypeSchema `json:"flavor_type"`
+
+	// FreeTier Если указано `true`, флейвор можно использовать для бесплатной ВМ (free tier).
+	FreeTier bool `json:"free_tier"`
+
+	// Gpu Количество графических процессоров — GPU.
+	Gpu int `json:"gpu"`
+
+	// Id Идентификатор флейвора.
+	Id string `json:"id"`
+
+	// Name Название флейвора.
+	Name string `json:"name"`
+
+	// Oversubscription Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%.
+	Oversubscription string `json:"oversubscription"`
+
+	// Ram Объем оперативной памяти (RAM) в ГБ.
+	Ram int `json:"ram"`
+}
+
+// FlavorLiteSchema defines model for FlavorLiteSchema.
 type FlavorLiteSchema struct {
 	// Cpu Количество виртуальных процессоров — vCPU.
 	Cpu int `json:"cpu"`
@@ -4142,10 +4230,8 @@ type FlavorLiteSchema struct {
 // FlavorMiniResponse Флейвор.
 type FlavorMiniResponse struct {
 	// Cpu Количество виртуальных процессоров — vCPU.
-	Cpu int `json:"cpu"`
-
-	// FlavorType Тип флейвора.
-	FlavorType *PublicFlavorTypeResponse `json:"flavor_type,omitempty"`
+	Cpu        int               `json:"cpu"`
+	FlavorType *FlavorTypeSchema `json:"flavor_type,omitempty"`
 
 	// FreeTier Если указано `true`, флейвор можно использовать для бесплатной ВМ (free tier).
 	FreeTier bool `json:"free_tier"`
@@ -4178,8 +4264,136 @@ type FlavorNotFoundExceptionSchema struct {
 // FlavorParamTypes Тип параметра.
 type FlavorParamTypes string
 
-// FlavorState Статус флейвора.
+// FlavorSchema defines model for FlavorSchema.
+type FlavorSchema struct {
+	// AssuredBandwidth Гарантированная полоса пропускания сетевых интерфейсов виртуальной машины в Мбит/с. Если указано `0`, параметр не используется.
+	AssuredBandwidth int `json:"assured_bandwidth"`
+
+	// AvailabilityZones Зоны доступности, в которых доступен флейвор.
+	AvailabilityZones []AvailabilityZoneFlavorSchema `json:"availability_zones"`
+
+	// Cpu Количество виртуальных процессоров — vCPU.
+	Cpu int `json:"cpu"`
+
+	// Description Описание флейвора.
+	Description string `json:"description"`
+
+	// DisplayName Название флейвора, которое отображается в личном кабинете пользователя.
+	DisplayName *string          `json:"display_name,omitempty"`
+	FlavorType  FlavorTypeSchema `json:"flavor_type"`
+
+	// FreeTier Если указано `true`, флейвор можно использовать для бесплатной ВМ (free tier).
+	FreeTier bool `json:"free_tier"`
+
+	// Gpu Количество графических процессоров — GPU.
+	Gpu int `json:"gpu"`
+
+	// Id Идентификатор флейвора.
+	Id string `json:"id"`
+
+	// MaximumBandwidth Максимальная полоса пропускания сетевых интерфейсов виртуальной машины в Мбит/с. Если указано `0`, параметр не используется.
+	MaximumBandwidth int `json:"maximum_bandwidth"`
+
+	// Name Название флейвора.
+	Name string `json:"name"`
+
+	// Oversubscription Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%.
+	Oversubscription string `json:"oversubscription"`
+
+	// PciDeviceAvailable Количество свободных слотов PCI.
+	PciDeviceAvailable int `json:"pci_device_available"`
+
+	// PciDeviceLimit Количество доступных [слотов PCI](https://cloud.ru/docs/virtual-machines/ug/topics/concepts__flavors#concepts-flavors-pci) для подключения виртуальных устройств.
+	PciDeviceLimit int `json:"pci_device_limit"`
+
+	// Pps Количество пакетов в секунду, которое может получать виртуальная машина. Если указано `0`, параметр не используется.
+	Pps int `json:"pps"`
+
+	// Ram Объем оперативной памяти (RAM) в ГБ.
+	Ram int `json:"ram"`
+
+	// Type Название типа флейвора. Используется для обратной совместимости и соответствует значению поля `old_name` объекта `flavor_type`.
+	Type string `json:"type"`
+}
+
+// FlavorState Статус флейлора:
+//
+// - `created` — флейвор создан.
+// - `error_creating` — ошибка создания флейвора.
+// - `error_deleting` — ошибка удаления флейвора.
+// - `creating` — флейвор создается.
+// - `deleting` — флейвор удаляется.
 type FlavorState string
+
+// FlavorTypeDisplayGroupType Тип группы, который позволяет выбирать одинаковые флейворы разного типа в одной вкладке.
+type FlavorTypeDisplayGroupType string
+
+// FlavorTypeSchema defines model for FlavorTypeSchema.
+type FlavorTypeSchema struct {
+	// CpuType Модель процессора.
+	CpuType string `json:"cpu_type"`
+
+	// Description Описание типа флейвора.
+	Description string `json:"description"`
+
+	// DisplayGroup Группа отображения — название вкладки, на которой отображаются флейворы этого типа на форме создания виртуальной машины.
+	DisplayGroup string `json:"display_group"`
+
+	// DisplayGroupDescription Описание группы, которое отображается внутри вкладки.
+	DisplayGroupDescription string `json:"display_group_description"`
+
+	// DisplayGroupPosition Порядковый номер вкладки в личном кабинете.
+	DisplayGroupPosition int `json:"display_group_position"`
+
+	// DisplayGroupType Тип группы отображения — позволяет выбирать одинаковые флейворы разного типа в одной вкладке.
+	DisplayGroupType FlavorTypeDisplayGroupType `json:"display_group_type"`
+
+	// DisplayName Название типа флейвора, которое отображается в интерфейсе личного кабинете пользователя.
+	DisplayName string `json:"display_name"`
+
+	// GpuType Модель графического процессора.
+	GpuType string `json:"gpu_type"`
+
+	// Id Идентификатор типа флейвора.
+	Id string `json:"id"`
+
+	// IsSpot Если указано `true`, тип флейвора поддерживает создание прерываемых виртуальных машин.
+	IsSpot bool `json:"is_spot"`
+
+	// Name Системное название типа флейвора.
+	Name string `json:"name"`
+
+	// OldName Системное название типа флейвора. Используется для обратной совместимости и соответствует значению поля `type`.
+	OldName string `json:"old_name"`
+
+	// Oversubscription Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%.
+	Oversubscription string `json:"oversubscription"`
+}
+
+// FlavorWithFlavorTypeSchema defines model for FlavorWithFlavorTypeSchema.
+type FlavorWithFlavorTypeSchema struct {
+	// Cpu Количество виртуальных процессоров — vCPU.
+	Cpu        int              `json:"cpu"`
+	FlavorType FlavorTypeSchema `json:"flavor_type"`
+
+	// FreeTier Если указано `true`, флейвор можно использовать для бесплатной ВМ (free tier).
+	FreeTier bool `json:"free_tier"`
+
+	// Gpu Количество графических процессоров — GPU.
+	Gpu int `json:"gpu"`
+
+	// Id Идентификатор флейвора.
+	Id string `json:"id"`
+
+	// Name Название флейвора.
+	Name string `json:"name"`
+
+	// Oversubscription Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%.
+	Oversubscription string `json:"oversubscription"`
+
+	// Ram Объем оперативной памяти (RAM) в ГБ.
+	Ram int `json:"ram"`
+}
 
 // FloatingIpAddressIsUsedByNATGatewayExceptionSchema defines model for FloatingIpAddressIsUsedByNATGatewayExceptionSchema.
 type FloatingIpAddressIsUsedByNATGatewayExceptionSchema struct {
@@ -4525,15 +4739,17 @@ type GetBackupResponseSchema struct {
 	// Name Название резервной копии.
 	Name string `json:"name"`
 
-	// ParentFullBackupId Идентификатор предыдущей полной копии.
-	ParentFullBackupId *string `json:"parent_full_backup_id,omitempty"`
-
 	// ProjectId Идентификатор проекта.
-	ProjectId      string                      `json:"project_id"`
-	ProtectionPlan *[]ProtectionPlanLiteSchema `json:"protection_plan,omitempty"`
+	ProjectId string `json:"project_id"`
 
-	// Resource Ресурс.
-	Resource BackupResourceSchema `json:"resource"`
+	// ProtectionPlan План резервного копирования.
+	ProtectionPlan *ProtectionPlanLiteSchema `json:"protection_plan,omitempty"`
+
+	// Resource Resource
+	Resource GetBackupResponseSchema_Resource `json:"resource"`
+
+	// RetentionPolicy Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
+	RetentionPolicy any `json:"retention_policy,omitempty"`
 
 	// Size Размер копии в МБ.
 	Size int `json:"size"`
@@ -4562,6 +4778,11 @@ type GetBackupResponseSchema struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
+// GetBackupResponseSchema_Resource Resource
+type GetBackupResponseSchema_Resource struct {
+	union json.RawMessage
+}
+
 // GetProtectionPlanResponseSchema defines model for GetProtectionPlanResponseSchema.
 type GetProtectionPlanResponseSchema struct {
 	// AvailabilityZone Зона доступности.
@@ -4576,12 +4797,6 @@ type GetProtectionPlanResponseSchema struct {
 	// Description Описание.
 	Description *string `json:"description,omitempty"`
 
-	// ExecutionType Тип резервной копии:
-	//
-	// - ``full`` — полная копия;
-	// - ``incremental`` — инкрементальная копия.
-	ExecutionType BackupType `json:"execution_type"`
-
 	// Id Идентификатор плана.
 	Id string `json:"id"`
 
@@ -4593,6 +4808,9 @@ type GetProtectionPlanResponseSchema struct {
 
 	// Resources Ресурсы.
 	Resources []ProtectionPlanResourceResponseSchema `json:"resources"`
+
+	// RetentionPolicy Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
+	RetentionPolicy any `json:"retention_policy,omitempty"`
 
 	// Schedules Расписание.
 	Schedules []ProtectionPlanScheduleResponseSchema `json:"schedules"`
@@ -4618,9 +4836,9 @@ type GetProtectionPlanResponseSchema struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
-// HTTPValidationError defines model for HTTPValidationError.
+// HTTPValidationError Ошибка валидации.
 type HTTPValidationError struct {
-	// Detail Описание ошибки.
+	// Detail Детали.
 	Detail *[]ValidationError `json:"detail,omitempty"`
 }
 
@@ -4736,7 +4954,7 @@ type InterfaceExtendedLiteSchema struct {
 	// Name Название интерфейса.
 	Name string `json:"name"`
 
-	// Primary Если укаазно `true`, интерфейс является основным для ВМ.
+	// Primary Если указано `true`, интерфейс является основным для ВМ.
 	Primary bool `json:"primary"`
 
 	// SecurityGroups Группы безопасности.
@@ -4907,16 +5125,16 @@ type InterfaceUpdateRequest_SecurityGroupsNames struct {
 // IpProtocol Протокол.
 type IpProtocol string
 
-// ListBackupsResponseSchema defines model for ListBackupsResponseSchema.
-type ListBackupsResponseSchema struct {
-	// Items Список резервных копий.
-	Items []PublicBackupResponse `json:"items"`
+// ListFlavorsResponseSchema defines model for ListFlavorsResponseSchema.
+type ListFlavorsResponseSchema struct {
+	// Items Массив объектов.
+	Items []FlavorSchema `json:"items"`
 
 	// Limit Максимальное количество элементов в списке.
-	Limit *int `json:"limit,omitempty"`
+	Limit int `json:"limit"`
 
 	// Offset Количество элементов с начала списка, которые будут пропущены.
-	Offset *int `json:"offset,omitempty"`
+	Offset int `json:"offset"`
 
 	// Total Общее количество доступных элементов.
 	Total int `json:"total"`
@@ -5095,6 +5313,21 @@ type OutOfBoundsExceptionSchema struct {
 	Message string `json:"message"`
 }
 
+// PaginationResponseBackupListItemResponse defines model for PaginationResponse_BackupListItemResponse_.
+type PaginationResponseBackupListItemResponse struct {
+	// Items Список резервных копий.
+	Items []BackupListItemResponse `json:"items"`
+
+	// Limit Максимальное количество элементов в списке.
+	Limit *int `json:"limit,omitempty"`
+
+	// Offset Количество элементов с начала списка, которые будут пропущены.
+	Offset *int `json:"offset,omitempty"`
+
+	// Total Общее количество доступных элементов.
+	Total int `json:"total"`
+}
+
 // PaginationResponseIPv4Address defines model for PaginationResponse_IPv4Address_.
 type PaginationResponseIPv4Address struct {
 	// Items Список адресов.
@@ -5129,21 +5362,6 @@ type PaginationResponseIPv4Network struct {
 type PaginationResponsePublicDiskResponse struct {
 	// Items Массив объектов.
 	Items []PublicDiskResponse `json:"items"`
-
-	// Limit Максимальное количество элементов в списке.
-	Limit *int `json:"limit,omitempty"`
-
-	// Offset Количество элементов с начала списка, которые будут пропущены.
-	Offset *int `json:"offset,omitempty"`
-
-	// Total Общее количество доступных элементов.
-	Total int `json:"total"`
-}
-
-// PaginationResponsePublicFlavorResponse defines model for PaginationResponse_PublicFlavorResponse_.
-type PaginationResponsePublicFlavorResponse struct {
-	// Items Массив объектов.
-	Items []PublicFlavorResponse `json:"items"`
 
 	// Limit Максимальное количество элементов в списке.
 	Limit *int `json:"limit,omitempty"`
@@ -5648,6 +5866,12 @@ type ProtectionPlanLiteSchema struct {
 	// - ``deleting`` — план удаляется;
 	// - ``error_deleting`` — ошибка удаления.
 	State ProtectionPlanState `json:"state"`
+
+	// Type Тип резервной копии:
+	//
+	// - ``full`` — полная копия;
+	// - ``incremental`` — инкрементальная копия.
+	Type BackupType `json:"type"`
 }
 
 // ProtectionPlanResourceRequestSchema defines model for ProtectionPlanResourceRequestSchema.
@@ -5682,12 +5906,6 @@ type ProtectionPlanResourceResponseSchema struct {
 
 // ProtectionPlanScheduleRequestSchema defines model for ProtectionPlanScheduleRequestSchema.
 type ProtectionPlanScheduleRequestSchema struct {
-	// BackupMode Тип резервной копии:
-	//
-	// - ``full`` — полная копия;
-	// - ``incremental`` — инкрементальная копия.
-	BackupMode *BackupType `json:"backup_mode,omitempty"`
-
 	// DaysOfMonth Дни месяца, по которым будет выполняться копирование.
 	DaysOfMonth *[]int `json:"days_of_month,omitempty"`
 
@@ -5700,22 +5918,8 @@ type ProtectionPlanScheduleRequestSchema struct {
 	// EndTime Дата и время последнего запуска копирования по расписанию.
 	EndTime *time.Time `json:"end_time,omitempty"`
 
-	// MaxBackups Максимальное количество копий одного ресурса, которые могут храниться в сервисе.
-	// Если количество созданных копий превышает этот параметр, перед созданием новой копии будет удалена самая старая из созданных копий.
-	// Если указано значение ``null``, все созданные копии хранятся бессрочно.
-	//
-	// Если указаны оба параметра ``max_backups`` и ``retention_policy``, первым учитывается ``max_backups``.
-	MaxBackups *int `json:"max_backups,omitempty"`
-
 	// Months Месяцы, по которым будет выполняться копирование.
 	Months *[]int `json:"months,omitempty"`
-
-	// RetentionPolicy Срок хранения резервной копии в сервисе.
-	// Указывается количество дней с момента создания копии.
-	// Если указано значение ``null``, копия хранится бессрочно.
-	//
-	// Если указаны оба параметра ``max_backups`` и ``retention_policy``, первым учитывается ``max_backups``.
-	RetentionPolicy *int `json:"retention_policy,omitempty"`
 
 	// StartTime Дата и время первого запуска копирования по расписанию.
 	StartTime time.Time `json:"start_time"`
@@ -5727,7 +5931,7 @@ type ProtectionPlanScheduleResponseSchema struct {
 	//
 	// - ``full`` — полная копия;
 	// - ``incremental`` — инкрементальная копия.
-	BackupMode BackupType `json:"backup_mode"`
+	BackupMode *BackupType `json:"backup_mode,omitempty"`
 
 	// DaysOfMonth Дни месяца, по которым будет выполняться копирование.
 	DaysOfMonth []int `json:"days_of_month"`
@@ -5741,22 +5945,8 @@ type ProtectionPlanScheduleResponseSchema struct {
 	// EndTime Дата и время последнего запуска копирования по расписанию, если указано.
 	EndTime *time.Time `json:"end_time,omitempty"`
 
-	// MaxBackups Максимальное количество копий одного ресурса, которые могут храниться в сервисе.
-	// Если количество созданных копий превышает этот параметр, перед созданием новой копии будет удалена самая старая из созданных копий.
-	// Если указано значение ``null``, все созданные копии хранятся бессрочно.
-	//
-	// Если указаны оба параметра ``max_backups`` и ``retention_policy``, первым учитывается ``max_backups``.
-	MaxBackups *int `json:"max_backups,omitempty"`
-
 	// Months Месяцы, по которым будет выполняться копирование.
 	Months []int `json:"months"`
-
-	// RetentionPolicy Срок хранения резервной копии в сервисе.
-	// Указывается количество дней с момента создания копии.
-	// Если указано значение ``null``, копия хранится бессрочно.
-	//
-	// Если указаны оба параметра ``max_backups`` и ``retention_policy``, первым учитывается ``max_backups``.
-	RetentionPolicy *int `json:"retention_policy,omitempty"`
 
 	// StartTime Дата и время первого запуска копирования по расписанию.
 	StartTime time.Time `json:"start_time"`
@@ -5776,12 +5966,6 @@ type ProtectionPlanSchema struct {
 	// Description Описание плана резервного копирования.
 	Description *string `json:"description,omitempty"`
 
-	// ExecutionType Тип резервной копии:
-	//
-	// - ``full`` — полная копия;
-	// - ``incremental`` — инкрементальная копия.
-	ExecutionType *BackupType `json:"execution_type,omitempty"`
-
 	// Id Идентификатор плана резервного копирования.
 	Id string `json:"id"`
 
@@ -5793,6 +5977,9 @@ type ProtectionPlanSchema struct {
 
 	// Resources Ресурсы, включенные в план.
 	Resources []ProtectionPlanResourceResponseSchema `json:"resources"`
+
+	// RetentionPolicy Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
+	RetentionPolicy any `json:"retention_policy,omitempty"`
 
 	// Schedules Расписание плана резервного копирования.
 	Schedules []ProtectionPlanScheduleResponseSchema `json:"schedules"`
@@ -5807,12 +5994,6 @@ type ProtectionPlanSchema struct {
 	// - ``deleting`` — план удаляется;
 	// - ``error_deleting`` — ошибка удаления.
 	State ProtectionPlanState `json:"state"`
-
-	// Type Тип резервной копии:
-	//
-	// - ``full`` — полная копия;
-	// - ``incremental`` — инкрементальная копия.
-	Type *BackupType `json:"type,omitempty"`
 
 	// UpdatedAt Дата и время обновления плана резервного копирования.
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
@@ -5842,24 +6023,6 @@ type PublicAvailabilityZoneDiskTypeResponse struct {
 
 	// Enabled Указывает, включена ли зона доступности: `true` - включена, `false` - выключена.
 	Enabled bool `json:"enabled"`
-}
-
-// PublicAvailabilityZoneFlavorResponse defines model for PublicAvailabilityZoneFlavorResponse.
-type PublicAvailabilityZoneFlavorResponse struct {
-	// AvailabilityZoneId Идентификатор зоны доступности.
-	AvailabilityZoneId string `json:"availability_zone_id"`
-
-	// AvailabilityZoneName Название зоны доступности.
-	AvailabilityZoneName string `json:"availability_zone_name"`
-
-	// Default `true` - является зоной доступности по умолчанию, `false` - не является зоной доступности по умолчанию.
-	Default bool `json:"default"`
-
-	// Enabled Указывает, включена ли зона доступности: `true` - включена, `false` - выключена.
-	Enabled bool `json:"enabled"`
-
-	// State Статус флейвора.
-	State FlavorState `json:"state"`
 }
 
 // PublicAvailabilityZoneImageCreateRequest defines model for PublicAvailabilityZoneImageCreateRequest.
@@ -6230,87 +6393,6 @@ type PublicDiskUpdateRequest struct {
 
 	// TagNames Названия тегов.
 	TagNames *[]string `json:"tag_names,omitempty"`
-}
-
-// PublicFlavorResponse defines model for PublicFlavorResponse.
-type PublicFlavorResponse struct {
-	// AssuredBandwidth Гарантированная полоса пропускания сетевых интерфейсов виртуальной машины в Мбит/с. Если указано `0`, параметр не используется.
-	AssuredBandwidth int `json:"assured_bandwidth"`
-
-	// AvailabilityZones Зоны доступности, в которых доступен флейвор.
-	AvailabilityZones []PublicAvailabilityZoneFlavorResponse `json:"availability_zones"`
-
-	// Cpu Количество виртуальных процессоров — vCPU.
-	Cpu int `json:"cpu"`
-
-	// Description Описание флейвора.
-	Description string `json:"description"`
-
-	// FlavorType Тип флейвора.
-	FlavorType *PublicFlavorTypeResponse `json:"flavor_type,omitempty"`
-
-	// FreeTier Если указано `true`, флейвор можно использовать для бесплатной ВМ (free tier).
-	FreeTier *bool `json:"free_tier,omitempty"`
-
-	// Gpu Количество графических процессоров — GPU.
-	Gpu int `json:"gpu"`
-
-	// Id Идентификатор флейвора.
-	Id string `json:"id"`
-
-	// MaximumBandwidth Максимальная полоса пропускания сетевых интерфейсов виртуальной машины в Мбит/с. Если указано `0`, параметр не используется.
-	MaximumBandwidth int `json:"maximum_bandwidth"`
-
-	// Name Название флейвора.
-	Name string `json:"name"`
-
-	// Oversubscription Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%.
-	Oversubscription string `json:"oversubscription"`
-
-	// PciDeviceAvailable Количество свободных слотов PCI.
-	PciDeviceAvailable *int `json:"pci_device_available,omitempty"`
-
-	// PciDeviceLimit Количество доступных [слотов PCI](https://cloud.ru/docs/virtual-machines/ug/topics/concepts__flavors#concepts-flavors-pci) для подключения виртуальных устройств.
-	PciDeviceLimit *int `json:"pci_device_limit,omitempty"`
-
-	// Pps Количество пакетов в секунду, которое может получать виртуальная машина. Если указано `0`, параметр не используется.
-	Pps int `json:"pps"`
-
-	// Ram Объем оперативной памяти (RAM) в ГБ.
-	Ram int `json:"ram"`
-
-	// Type Название типа флейвора. Используется для обратной совместимости и соответствует значению поля `old_name` объекта `flavor_type`.
-	Type string `json:"type"`
-}
-
-// PublicFlavorTypeResponse Тип флейвора.
-type PublicFlavorTypeResponse struct {
-	// CpuType Модель процессора.
-	CpuType string `json:"cpu_type"`
-
-	// Description Описание типа флейвора.
-	Description string `json:"description"`
-
-	// DisplayName Название типа флейвора, которое отображается в графическом интерфейсе.
-	DisplayName string `json:"display_name"`
-
-	// GpuType Модель графического процессора.
-	GpuType string `json:"gpu_type"`
-
-	// Id Идентификатор типа флейвора.
-	Id string `json:"id"`
-
-	// IsSpot Если указано `true`, тип флейвора поддерживает создание прерываемых виртуальных машин.
-	IsSpot bool `json:"is_spot"`
-
-	// Name Системное название типа флейвора.
-	Name string `json:"name"`
-
-	// OldName Системное название типа флейвора. Используется для обратной совместимости и соответствует значению поля `type`.
-	OldName string `json:"old_name"`
-
-	// Oversubscription Гарантированная доля vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%.
-	Oversubscription string `json:"oversubscription"`
 }
 
 // PublicFloatingIpCreateRequest defines model for PublicFloatingIpCreateRequest.
@@ -6727,7 +6809,7 @@ type PublicInterfaceResponse struct {
 	// Name Название интерфейса.
 	Name string `json:"name"`
 
-	// Primary Если укаазно `true`, интерфейс является основным для ВМ.
+	// Primary Если указано `true`, интерфейс является основным для ВМ.
 	Primary bool `json:"primary"`
 
 	// SecurityGroups Группы безопасности.
@@ -8294,17 +8376,17 @@ type UpdateBackupResponseSchema struct {
 	// Name Название резервной копии.
 	Name string `json:"name"`
 
-	// ParentFullBackupId Идентификатор предыдущей полной копии.
-	ParentFullBackupId *string `json:"parent_full_backup_id,omitempty"`
-
 	// ProjectId Идентификатор проекта.
 	ProjectId string `json:"project_id"`
 
 	// ProtectionPlan План резервного копирования.
 	ProtectionPlan *ProtectionPlanLiteSchema `json:"protection_plan,omitempty"`
 
-	// Resource Ресурсы.
-	Resource BackupResourceSchema `json:"resource"`
+	// Resource Ресурсы
+	Resource UpdateBackupResponseSchema_Resource `json:"resource"`
+
+	// RetentionPolicy Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
+	RetentionPolicy any `json:"retention_policy,omitempty"`
 
 	// Size Размер резервной копии в МБ.
 	Size int `json:"size"`
@@ -8333,6 +8415,11 @@ type UpdateBackupResponseSchema struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
+// UpdateBackupResponseSchema_Resource Ресурсы
+type UpdateBackupResponseSchema_Resource struct {
+	union json.RawMessage
+}
+
 // UpdateProtectionPlanRequestBody defines model for UpdateProtectionPlanRequestBody.
 type UpdateProtectionPlanRequestBody struct {
 	// Description Описание плана резервного копирования.
@@ -8343,6 +8430,9 @@ type UpdateProtectionPlanRequestBody struct {
 
 	// Resources Ресурсы, включенные в план.
 	Resources *[]ProtectionPlanResourceRequestSchema `json:"resources,omitempty"`
+
+	// RetentionPolicy Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
+	RetentionPolicy any `json:"retention_policy,omitempty"`
 
 	// Schedules Расписание плана резервного копирования.
 	Schedules *[]ProtectionPlanScheduleRequestSchema `json:"schedules,omitempty"`
@@ -8374,6 +8464,9 @@ type UpdateProtectionPlanResponseSchema struct {
 	// Resources Ресурсы, включенные в план.
 	Resources []ProtectionPlanResourceResponseSchema `json:"resources"`
 
+	// RetentionPolicy Срок хранения резервных копий. Сейчас все копии хранятся бессрочно, значение — `null`.
+	RetentionPolicy any `json:"retention_policy,omitempty"`
+
 	// Schedules Расписание плана резервного копирования.
 	Schedules []ProtectionPlanScheduleResponseSchema `json:"schedules"`
 
@@ -8400,25 +8493,51 @@ type UpdateProtectionPlanResponseSchema struct {
 
 // ValidationError defines model for ValidationError.
 type ValidationError struct {
-	// Loc Расположение ошибки.
-	Loc []ValidationError_Loc_Item `json:"loc"`
+	// Code Код ошибки.
+	Code string `json:"code"`
 
-	// Msg Сообщение об ошибке.
-	Msg string `json:"msg"`
+	// Field Поле, с которым связана ошибка.
+	Field string `json:"field"`
 
-	// Type Тип ошибки.
-	Type string `json:"type"`
+	// Message Описание ошибки.
+	Message string `json:"message"`
 }
 
-// ValidationErrorLoc0 defines model for ValidationError.Loc.0.
-type ValidationErrorLoc0 = string
+// VmBackup defines model for VmBackup.
+type VmBackup struct {
+	// ResourceExists Если `false`, то ресурс удален.
+	ResourceExists bool `json:"resource_exists"`
 
-// ValidationErrorLoc1 defines model for ValidationError.Loc.1.
-type ValidationErrorLoc1 = int
+	// ResourceId Идентификатор ресурса.
+	ResourceId string `json:"resource_id"`
 
-// ValidationError_Loc_Item defines model for ValidationError.loc.Item.
-type ValidationError_Loc_Item struct {
-	union json.RawMessage
+	// ResourceState Конфигурация ресурса в копии.
+	ResourceState VmResource `json:"resource_state"`
+
+	// ResourceType Тип ресурса:
+	//
+	// - `disk` — диск;
+	// - `virtual_machine` — виртуальная машина.
+	ResourceType ResourceType `json:"resource_type"`
+}
+
+// VmBackupItem Ресурс: виртуальная машина или диск.
+type VmBackupItem struct {
+	// ResourceExists Если `false`, то ресурс удален.
+	ResourceExists bool `json:"resource_exists"`
+
+	// ResourceId Идентификатор ресурса
+	ResourceId    string     `json:"resource_id"`
+	ResourceState VmResource `json:"resource_state"`
+
+	// ResourceType Тип ресурса:
+	//
+	// - `disk` — диск;
+	// - `virtual_machine` — виртуальная машина.
+	ResourceType ResourceType `json:"resource_type"`
+
+	// RestoreConfiguration Конфигурация виртуальной машины для восстановления.
+	RestoreConfiguration VmRestore `json:"restore_configuration"`
 }
 
 // VmCanNotBeDeletedFromCurrentStateExceptionSchema defines model for VmCanNotBeDeletedFromCurrentStateExceptionSchema.
@@ -8843,7 +8962,7 @@ type VmResourceDisk struct {
 	// Name Название диска.
 	Name string `json:"name"`
 
-	// Primary Если укаазно `true`, интерфейс является основным для ВМ.
+	// Primary Если указано `true`, интерфейс является основным для ВМ.
 	Primary bool `json:"primary"`
 
 	// SerialId Серийный номер диска.
@@ -8986,7 +9105,7 @@ type VmResponseFreeTierInterfaceSection struct {
 	// Name Название.
 	Name string `json:"name"`
 
-	// Primary Если укаазно `true`, интерфейс является основным для ВМ.
+	// Primary Если указано `true`, интерфейс является основным для ВМ.
 	Primary bool `json:"primary"`
 
 	// SecurityGroups Группы безопасности.
@@ -9028,7 +9147,7 @@ type VmResponseInterfaceSection struct {
 	// Name Название интерфейса.
 	Name string `json:"name"`
 
-	// Primary Если укаазно `true`, интерфейс является основным для ВМ.
+	// Primary Если указано `true`, интерфейс является основным для ВМ.
 	Primary bool `json:"primary"`
 
 	// SecurityGroups Группы безопасности.
@@ -9073,7 +9192,7 @@ type VmResponseItemInterfaceSection struct {
 	// Name Название интерфейса.
 	Name string `json:"name"`
 
-	// Primary Если укаазно `true`, интерфейс является основным для ВМ.
+	// Primary Если указано `true`, интерфейс является основным для ВМ.
 	Primary bool `json:"primary"`
 
 	// State Статус сетевого интерфейса:
@@ -9505,9 +9624,6 @@ type VmRestoreSubnetConfig struct {
 
 // VmSetPasswordRequest defines model for VmSetPasswordRequest.
 type VmSetPasswordRequest struct {
-	// Login Логин пользователя, для которого устанавливается пароль.
-	Login *string `json:"login,omitempty"`
-
 	// Password Пароль виртуальной машины. Требования к паролю:
 	// - Должен состоять минимум из 8 символов.
 	// - Только латиница в буквенной части: минимум одна заглавная и одна строчная буква.
@@ -10235,18 +10351,18 @@ type GetAvailableSubnetsSvcV1AvailableSubnetsGetParams struct {
 
 // ListBackupsSvcV1BackupsGetParams defines parameters for ListBackupsSvcV1BackupsGet.
 type ListBackupsSvcV1BackupsGetParams struct {
-	Offset             *int                                     `form:"offset,omitempty" json:"offset,omitempty"`
-	Limit              *int                                     `form:"limit,omitempty" json:"limit,omitempty"`
-	OrderBy            *ListBackupsSvcV1BackupsGetParamsOrderBy `form:"order_by,omitempty" json:"order_by,omitempty"`
-	OrderDesc          *bool                                    `form:"order_desc,omitempty" json:"order_desc,omitempty"`
-	Name               *string                                  `form:"name,omitempty" json:"name,omitempty"`
-	State              *BackupState                             `form:"state,omitempty" json:"state,omitempty"`
-	TagIds             *[]string                                `form:"tag_ids,omitempty" json:"tag_ids,omitempty"`
-	ResourceIds        *[]string                                `form:"resource_ids,omitempty" json:"resource_ids,omitempty"`
-	ResourceTypes      *[]ResourceType                          `form:"resource_types,omitempty" json:"resource_types,omitempty"`
-	ProjectId          string                                   `form:"project_id" json:"project_id"`
-	Type               *BackupType                              `form:"type,omitempty" json:"type,omitempty"`
-	ParentFullBackupId *string                                  `form:"parent_full_backup_id,omitempty" json:"parent_full_backup_id,omitempty"`
+	Offset           *int                                     `form:"offset,omitempty" json:"offset,omitempty"`
+	Limit            *int                                     `form:"limit,omitempty" json:"limit,omitempty"`
+	OrderBy          *ListBackupsSvcV1BackupsGetParamsOrderBy `form:"order_by,omitempty" json:"order_by,omitempty"`
+	OrderDesc        *bool                                    `form:"order_desc,omitempty" json:"order_desc,omitempty"`
+	Name             *string                                  `form:"name,omitempty" json:"name,omitempty"`
+	State            *BackupState                             `form:"state,omitempty" json:"state,omitempty"`
+	TagIds           *[]string                                `form:"tag_ids,omitempty" json:"tag_ids,omitempty"`
+	ResourceIds      *[]string                                `form:"resource_ids,omitempty" json:"resource_ids,omitempty"`
+	ResourceTypes    *[]ResourceType                          `form:"resource_types,omitempty" json:"resource_types,omitempty"`
+	ProjectId        string                                   `form:"project_id" json:"project_id"`
+	ProtectionPlanId *string                                  `form:"protection_plan_id,omitempty" json:"protection_plan_id,omitempty"`
+	Type             *BackupType                              `form:"type,omitempty" json:"type,omitempty"`
 }
 
 // ListBackupsSvcV1BackupsGetParamsOrderBy defines parameters for ListBackupsSvcV1BackupsGet.
@@ -10325,14 +10441,11 @@ type GetFlavorsSvcV1FlavorsGetParams struct {
 	Ram *int `form:"ram,omitempty" json:"ram,omitempty"`
 
 	// Gpu Фильтр по количеству графических процессоров — GPU.
-	Gpu *int `form:"gpu,omitempty" json:"gpu,omitempty"`
+	Gpu  *int    `form:"gpu,omitempty" json:"gpu,omitempty"`
+	Type *string `form:"type,omitempty" json:"type,omitempty"`
 
 	// FlavorType Фильтр по названию типа флейвора. Узнать доступные типы флейворов можно, выполнив запрос `GET api/v1/flavor-types`. Названию соответствует поле `name`.
 	FlavorType *string `form:"flavor_type,omitempty" json:"flavor_type,omitempty"`
-
-	// Type Фильтр по названию типа флейвора. Узнать доступные типы флейворов можно, выполнив запрос `GET api/v1/flavor-types`. Названию соответствует поле `old_name`.
-	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
-	Type *string `form:"type,omitempty" json:"type,omitempty"`
 
 	// Oversubscription Фильтр по гарантированной доле vCPU: `1:1` — 100%, `1:3` — 30%, `1:10` — 10%.
 	Oversubscription *string `form:"oversubscription,omitempty" json:"oversubscription,omitempty"`
@@ -10346,6 +10459,9 @@ type GetFlavorsSvcV1FlavorsGetParams struct {
 	// - `true` — только флейворы с поддержкой прерываемых виртуальных машин.
 	// - `false` — только флейворы без поддержки прерываемых виртуальных машин.
 	IsSpot *bool `form:"is_spot,omitempty" json:"is_spot,omitempty"`
+
+	// DisplayGroups Фильтр по группам флейворов.
+	DisplayGroups *[]string `form:"display_groups,omitempty" json:"display_groups,omitempty"`
 }
 
 // GetFlavorsSvcV1FlavorsGetParamsOrderBy defines parameters for GetFlavorsSvcV1FlavorsGet.
@@ -11243,6 +11359,68 @@ func (t *BaseBackupActionBody_Resource) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsVmBackup returns the union data inside the CreateBackupResponseSchema_Resource as a VmBackup
+func (t CreateBackupResponseSchema_Resource) AsVmBackup() (VmBackup, error) {
+	var body VmBackup
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromVmBackup overwrites any union data inside the CreateBackupResponseSchema_Resource as the provided VmBackup
+func (t *CreateBackupResponseSchema_Resource) FromVmBackup(v VmBackup) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeVmBackup performs a merge with any union data inside the CreateBackupResponseSchema_Resource, using the provided VmBackup
+func (t *CreateBackupResponseSchema_Resource) MergeVmBackup(v VmBackup) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsDiskBackup returns the union data inside the CreateBackupResponseSchema_Resource as a DiskBackup
+func (t CreateBackupResponseSchema_Resource) AsDiskBackup() (DiskBackup, error) {
+	var body DiskBackup
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDiskBackup overwrites any union data inside the CreateBackupResponseSchema_Resource as the provided DiskBackup
+func (t *CreateBackupResponseSchema_Resource) FromDiskBackup(v DiskBackup) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeDiskBackup performs a merge with any union data inside the CreateBackupResponseSchema_Resource, using the provided DiskBackup
+func (t *CreateBackupResponseSchema_Resource) MergeDiskBackup(v DiskBackup) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t CreateBackupResponseSchema_Resource) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *CreateBackupResponseSchema_Resource) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsFloatingIpUpdateRequestDescription0 returns the union data inside the FloatingIpUpdateRequest_Description as a FloatingIpUpdateRequestDescription0
 func (t FloatingIpUpdateRequest_Description) AsFloatingIpUpdateRequestDescription0() (FloatingIpUpdateRequestDescription0, error) {
 	var body FloatingIpUpdateRequestDescription0
@@ -11735,6 +11913,68 @@ func (t FloatingIpUpdateRequest_VmId) MarshalJSON() ([]byte, error) {
 }
 
 func (t *FloatingIpUpdateRequest_VmId) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsVmBackupItem returns the union data inside the GetBackupResponseSchema_Resource as a VmBackupItem
+func (t GetBackupResponseSchema_Resource) AsVmBackupItem() (VmBackupItem, error) {
+	var body VmBackupItem
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromVmBackupItem overwrites any union data inside the GetBackupResponseSchema_Resource as the provided VmBackupItem
+func (t *GetBackupResponseSchema_Resource) FromVmBackupItem(v VmBackupItem) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeVmBackupItem performs a merge with any union data inside the GetBackupResponseSchema_Resource, using the provided VmBackupItem
+func (t *GetBackupResponseSchema_Resource) MergeVmBackupItem(v VmBackupItem) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsDiskBackupItem returns the union data inside the GetBackupResponseSchema_Resource as a DiskBackupItem
+func (t GetBackupResponseSchema_Resource) AsDiskBackupItem() (DiskBackupItem, error) {
+	var body DiskBackupItem
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDiskBackupItem overwrites any union data inside the GetBackupResponseSchema_Resource as the provided DiskBackupItem
+func (t *GetBackupResponseSchema_Resource) FromDiskBackupItem(v DiskBackupItem) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeDiskBackupItem performs a merge with any union data inside the GetBackupResponseSchema_Resource, using the provided DiskBackupItem
+func (t *GetBackupResponseSchema_Resource) MergeDiskBackupItem(v DiskBackupItem) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t GetBackupResponseSchema_Resource) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *GetBackupResponseSchema_Resource) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -14529,22 +14769,22 @@ func (t *SecurityGroupUpdateRequest_TagNames) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsValidationErrorLoc0 returns the union data inside the ValidationError_Loc_Item as a ValidationErrorLoc0
-func (t ValidationError_Loc_Item) AsValidationErrorLoc0() (ValidationErrorLoc0, error) {
-	var body ValidationErrorLoc0
+// AsVmBackup returns the union data inside the UpdateBackupResponseSchema_Resource as a VmBackup
+func (t UpdateBackupResponseSchema_Resource) AsVmBackup() (VmBackup, error) {
+	var body VmBackup
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromValidationErrorLoc0 overwrites any union data inside the ValidationError_Loc_Item as the provided ValidationErrorLoc0
-func (t *ValidationError_Loc_Item) FromValidationErrorLoc0(v ValidationErrorLoc0) error {
+// FromVmBackup overwrites any union data inside the UpdateBackupResponseSchema_Resource as the provided VmBackup
+func (t *UpdateBackupResponseSchema_Resource) FromVmBackup(v VmBackup) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeValidationErrorLoc0 performs a merge with any union data inside the ValidationError_Loc_Item, using the provided ValidationErrorLoc0
-func (t *ValidationError_Loc_Item) MergeValidationErrorLoc0(v ValidationErrorLoc0) error {
+// MergeVmBackup performs a merge with any union data inside the UpdateBackupResponseSchema_Resource, using the provided VmBackup
+func (t *UpdateBackupResponseSchema_Resource) MergeVmBackup(v VmBackup) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -14555,22 +14795,22 @@ func (t *ValidationError_Loc_Item) MergeValidationErrorLoc0(v ValidationErrorLoc
 	return err
 }
 
-// AsValidationErrorLoc1 returns the union data inside the ValidationError_Loc_Item as a ValidationErrorLoc1
-func (t ValidationError_Loc_Item) AsValidationErrorLoc1() (ValidationErrorLoc1, error) {
-	var body ValidationErrorLoc1
+// AsDiskBackup returns the union data inside the UpdateBackupResponseSchema_Resource as a DiskBackup
+func (t UpdateBackupResponseSchema_Resource) AsDiskBackup() (DiskBackup, error) {
+	var body DiskBackup
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromValidationErrorLoc1 overwrites any union data inside the ValidationError_Loc_Item as the provided ValidationErrorLoc1
-func (t *ValidationError_Loc_Item) FromValidationErrorLoc1(v ValidationErrorLoc1) error {
+// FromDiskBackup overwrites any union data inside the UpdateBackupResponseSchema_Resource as the provided DiskBackup
+func (t *UpdateBackupResponseSchema_Resource) FromDiskBackup(v DiskBackup) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeValidationErrorLoc1 performs a merge with any union data inside the ValidationError_Loc_Item, using the provided ValidationErrorLoc1
-func (t *ValidationError_Loc_Item) MergeValidationErrorLoc1(v ValidationErrorLoc1) error {
+// MergeDiskBackup performs a merge with any union data inside the UpdateBackupResponseSchema_Resource, using the provided DiskBackup
+func (t *UpdateBackupResponseSchema_Resource) MergeDiskBackup(v DiskBackup) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -14581,12 +14821,12 @@ func (t *ValidationError_Loc_Item) MergeValidationErrorLoc1(v ValidationErrorLoc
 	return err
 }
 
-func (t ValidationError_Loc_Item) MarshalJSON() ([]byte, error) {
+func (t UpdateBackupResponseSchema_Resource) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *ValidationError_Loc_Item) UnmarshalJSON(b []byte) error {
+func (t *UpdateBackupResponseSchema_Resource) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -18664,9 +18904,9 @@ func NewListBackupsSvcV1BackupsGetRequest(server string, params *ListBackupsSvcV
 			}
 		}
 
-		if params.Type != nil {
+		if params.ProtectionPlanId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "protection_plan_id", *params.ProtectionPlanId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "uuid4"}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
@@ -18676,9 +18916,9 @@ func NewListBackupsSvcV1BackupsGetRequest(server string, params *ListBackupsSvcV
 
 		}
 
-		if params.ParentFullBackupId != nil {
+		if params.Type != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "parent_full_backup_id", *params.ParentFullBackupId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "uuid4"}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
@@ -19582,9 +19822,9 @@ func NewGetFlavorsSvcV1FlavorsGetRequest(server string, params *GetFlavorsSvcV1F
 
 		}
 
-		if params.FlavorType != nil {
+		if params.Type != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "flavor_type", *params.FlavorType, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
@@ -19594,9 +19834,9 @@ func NewGetFlavorsSvcV1FlavorsGetRequest(server string, params *GetFlavorsSvcV1F
 
 		}
 
-		if params.Type != nil {
+		if params.FlavorType != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "flavor_type", *params.FlavorType, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
@@ -19633,6 +19873,18 @@ func NewGetFlavorsSvcV1FlavorsGetRequest(server string, params *GetFlavorsSvcV1F
 		if params.IsSpot != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "is_spot", *params.IsSpot, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.DisplayGroups != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "display_groups", *params.DisplayGroups, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
@@ -25407,7 +25659,7 @@ type ListBackupsSvcV1BackupsGetResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *PublicBackupResponse
+	JSON200 *PaginationResponseBackupListItemResponse
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *[]AuthUnauthorizedExceptionSchema
 	// JSON403 the response for an HTTP 403 `application/json` response
@@ -25419,7 +25671,7 @@ type ListBackupsSvcV1BackupsGetResponse struct {
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ListBackupsSvcV1BackupsGetResponse) GetJSON200() *PublicBackupResponse {
+func (r ListBackupsSvcV1BackupsGetResponse) GetJSON200() *PaginationResponseBackupListItemResponse {
 	return r.JSON200
 }
 
@@ -26567,47 +26819,19 @@ type GetFlavorsSvcV1FlavorsGetResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *PaginationResponsePublicFlavorResponse
-	// JSON401 the response for an HTTP 401 `application/json` response
-	JSON401 *[]AuthUnauthorizedExceptionSchema
-	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *[]AuthForbiddenExceptionSchema
-	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *[]AvailabilityZoneNotFoundExceptionSchema
+	JSON200 *ListFlavorsResponseSchema
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *[]WrongProjectExceptionSchema
-	// JSON500 the response for an HTTP 500 `application/json` response
-	JSON500 *[]APIExceptionSchema
+	JSON422 *[]HTTPValidationError
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r GetFlavorsSvcV1FlavorsGetResponse) GetJSON200() *PaginationResponsePublicFlavorResponse {
+func (r GetFlavorsSvcV1FlavorsGetResponse) GetJSON200() *ListFlavorsResponseSchema {
 	return r.JSON200
 }
 
-// GetJSON401 returns the response for an HTTP 401 `application/json` response
-func (r GetFlavorsSvcV1FlavorsGetResponse) GetJSON401() *[]AuthUnauthorizedExceptionSchema {
-	return r.JSON401
-}
-
-// GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r GetFlavorsSvcV1FlavorsGetResponse) GetJSON403() *[]AuthForbiddenExceptionSchema {
-	return r.JSON403
-}
-
-// GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r GetFlavorsSvcV1FlavorsGetResponse) GetJSON404() *[]AvailabilityZoneNotFoundExceptionSchema {
-	return r.JSON404
-}
-
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r GetFlavorsSvcV1FlavorsGetResponse) GetJSON422() *[]WrongProjectExceptionSchema {
+func (r GetFlavorsSvcV1FlavorsGetResponse) GetJSON422() *[]HTTPValidationError {
 	return r.JSON422
-}
-
-// GetJSON500 returns the response for an HTTP 500 `application/json` response
-func (r GetFlavorsSvcV1FlavorsGetResponse) GetJSON500() *[]APIExceptionSchema {
-	return r.JSON500
 }
 
 // GetBody returns the raw response body bytes
@@ -26643,47 +26867,19 @@ type GetFlavorByIdSvcV1FlavorsFlavorIdGetResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *PublicFlavorResponse
-	// JSON401 the response for an HTTP 401 `application/json` response
-	JSON401 *[]AuthUnauthorizedExceptionSchema
-	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *[]AuthForbiddenExceptionSchema
-	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *[]FlavorNotFoundExceptionSchema
+	JSON200 *FlavorSchema
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *[]CustomRequestValidationErrorSchema
-	// JSON500 the response for an HTTP 500 `application/json` response
-	JSON500 *[]APIExceptionSchema
+	JSON422 *HTTPValidationError
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r GetFlavorByIdSvcV1FlavorsFlavorIdGetResponse) GetJSON200() *PublicFlavorResponse {
+func (r GetFlavorByIdSvcV1FlavorsFlavorIdGetResponse) GetJSON200() *FlavorSchema {
 	return r.JSON200
 }
 
-// GetJSON401 returns the response for an HTTP 401 `application/json` response
-func (r GetFlavorByIdSvcV1FlavorsFlavorIdGetResponse) GetJSON401() *[]AuthUnauthorizedExceptionSchema {
-	return r.JSON401
-}
-
-// GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r GetFlavorByIdSvcV1FlavorsFlavorIdGetResponse) GetJSON403() *[]AuthForbiddenExceptionSchema {
-	return r.JSON403
-}
-
-// GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r GetFlavorByIdSvcV1FlavorsFlavorIdGetResponse) GetJSON404() *[]FlavorNotFoundExceptionSchema {
-	return r.JSON404
-}
-
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r GetFlavorByIdSvcV1FlavorsFlavorIdGetResponse) GetJSON422() *[]CustomRequestValidationErrorSchema {
+func (r GetFlavorByIdSvcV1FlavorsFlavorIdGetResponse) GetJSON422() *HTTPValidationError {
 	return r.JSON422
-}
-
-// GetJSON500 returns the response for an HTTP 500 `application/json` response
-func (r GetFlavorByIdSvcV1FlavorsFlavorIdGetResponse) GetJSON500() *[]APIExceptionSchema {
-	return r.JSON500
 }
 
 // GetBody returns the raw response body bytes
@@ -33768,7 +33964,7 @@ func ParseListBackupsSvcV1BackupsGetResponse(rsp *http.Response) (*ListBackupsSv
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PublicBackupResponse
+		var dest PaginationResponseBackupListItemResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -34694,46 +34890,18 @@ func ParseGetFlavorsSvcV1FlavorsGetResponse(rsp *http.Response) (*GetFlavorsSvcV
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PaginationResponsePublicFlavorResponse
+		var dest ListFlavorsResponseSchema
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest []AuthUnauthorizedExceptionSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest []AuthForbiddenExceptionSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON403 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest []AvailabilityZoneNotFoundExceptionSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest []WrongProjectExceptionSchema
+		var dest []HTTPValidationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest []APIExceptionSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
 
 	}
 
@@ -34755,46 +34923,18 @@ func ParseGetFlavorByIdSvcV1FlavorsFlavorIdGetResponse(rsp *http.Response) (*Get
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PublicFlavorResponse
+		var dest FlavorSchema
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest []AuthUnauthorizedExceptionSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest []AuthForbiddenExceptionSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON403 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest []FlavorNotFoundExceptionSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest []CustomRequestValidationErrorSchema
+		var dest HTTPValidationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest []APIExceptionSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
 
 	}
 

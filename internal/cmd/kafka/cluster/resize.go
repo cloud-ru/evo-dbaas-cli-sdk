@@ -21,7 +21,11 @@ func resizeCmd(s *state.State) *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "resize CLUSTER_ID", Short: i18n.T("kafka.cluster.resize.short"), Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if u.Spec == "" && u.StorageGiB == 0 && len(params) == 0 && body == "" {
+			if err := checkController(cmd, u.Controller); err != nil {
+				return err
+			}
+
+			if u.Controller.Spec == "" && u.Spec == "" && u.StorageGiB == 0 && len(params) == 0 && body == "" {
 				return &base.ExitError{Code: 1, Msg: i18n.T("kafka.cluster.resize.err.no_changes")}
 			}
 
@@ -42,6 +46,8 @@ func resizeCmd(s *state.State) *cobra.Command {
 			return base.Finish(cmd, s, raw, wait, operation.Ops, operation.GetCmd)
 		},
 	}
+	cmd.Flags().StringVar(&u.Controller.Spec, "controller-spec", "", i18n.T("kafka.cluster.resize.flag.controller_spec"))
+	cmd.Flags().Int32Var(&u.Controller.StorageGiB, "controller-storage-gib", 0, i18n.T("kafka.cluster.resize.flag.controller_storage_gib"))
 	cmd.Flags().StringVar(&u.Spec, "spec", "", i18n.T("kafka.cluster.resize.flag.spec"))
 	cmd.Flags().Int32Var(&u.StorageGiB, "storage-gib", 0, i18n.T("kafka.cluster.resize.flag.storage_gib"))
 	cmd.Flags().StringArrayVar(&params, "param", nil, i18n.T("kafka.cluster.resize.flag.param"))

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -34,9 +35,14 @@ func listCmd(s *state.State) *cobra.Command {
 				return err
 			}
 
-			t := output.NewTable(w, "ID", "NAME", "STATUS", "HEALTH", "BROKERS", "STORAGE_GIB")
+			t := output.NewTable(w, "ID", "NAME", "STATUS", "HEALTH", "BROKERS", "STORAGE_GIB", "SUBNET_IDS", "CONTROLLER_SPEC", "CONTROLLER_STORAGE_GIB")
 			for _, cl := range l.Clusters {
-				t.Row(cl.ID, cl.Name, cl.Status, cl.Health, fmt.Sprint(cl.Brokers), fmt.Sprint(cl.StorageGiB))
+				spec, disk := "", ""
+				if cl.Controller != nil {
+					spec, disk = cl.Controller.Spec, fmt.Sprint(cl.Controller.StorageGiB)
+				}
+
+				t.Row(cl.ID, cl.Name, cl.Status, cl.Health, fmt.Sprint(cl.Brokers), fmt.Sprint(cl.StorageGiB), strings.Join(cl.Subnets, ", "), spec, disk)
 			}
 
 			return t.Flush()

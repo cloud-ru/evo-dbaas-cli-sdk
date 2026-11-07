@@ -24,9 +24,15 @@ func TestClickHouseMethodsUseRoutesQueriesAndBodies(t *testing.T) {
 		call                     func(context.Context, *ClickHouse) ([]byte, error)
 	}{
 		{"versions", "GET", "/v1/versions", "", nil, func(ctx context.Context, h *ClickHouse) ([]byte, error) { return h.Versions(ctx) }},
-		{"specs empty", "GET", "/v1/specifications", "", url.Values{"availability_zone_id": {"z1"}}, func(ctx context.Context, h *ClickHouse) ([]byte, error) { return h.Specs(ctx, "", "z1", "") }},
-		{"specs server", "GET", "/v1/specifications", "", url.Values{"availability_zone_id": {"z1"}, "version": {"25.8"}, "role": {"SPECIFICATION_ROLE_CLICKHOUSE_SERVER"}}, func(ctx context.Context, h *ClickHouse) ([]byte, error) { return h.Specs(ctx, "25.8", "z1", "server") }},
-		{"specs keeper", "GET", "/v1/specifications", "", url.Values{"availability_zone_id": {"z1"}, "role": {"SPECIFICATION_ROLE_CLICKHOUSE_KEEPER"}}, func(ctx context.Context, h *ClickHouse) ([]byte, error) { return h.Specs(ctx, "", "z1", "keeper") }},
+		{"specs empty", "GET", "/v1/specifications", "", url.Values{"availability_zone_id": {"z1"}}, func(ctx context.Context, h *ClickHouse) ([]byte, error) {
+			return h.Specs(ctx, ClickHouseSpecFilter{Zone: "z1"})
+		}},
+		{"specs server", "GET", "/v1/specifications", "", url.Values{"availability_zone_id": {"z1"}, "version": {"25.8"}, "role": {"SPECIFICATION_ROLE_CLICKHOUSE_SERVER"}}, func(ctx context.Context, h *ClickHouse) ([]byte, error) {
+			return h.Specs(ctx, ClickHouseSpecFilter{Version: "25.8", Zone: "z1", Role: "server"})
+		}},
+		{"specs keeper", "GET", "/v1/specifications", "", url.Values{"availability_zone_id": {"z1"}, "role": {"SPECIFICATION_ROLE_CLICKHOUSE_KEEPER"}}, func(ctx context.Context, h *ClickHouse) ([]byte, error) {
+			return h.Specs(ctx, ClickHouseSpecFilter{Zone: "z1", Role: "keeper"})
+		}},
 		{"probe", "GET", "/v1/clusters", "", url.Values{"project_id": {"p1"}, "page_size": {"1"}}, func(ctx context.Context, h *ClickHouse) ([]byte, error) { return h.ProbeProject(ctx, "p1") }},
 		{"cluster", "GET", "/v1/clusters/c1", "", nil, func(ctx context.Context, h *ClickHouse) ([]byte, error) { return h.Cluster(ctx, "c1") }},
 		{"delete cluster", "DELETE", "/v1/clusters/c1", "", nil, func(ctx context.Context, h *ClickHouse) ([]byte, error) { return h.DeleteCluster(ctx, "c1") }},

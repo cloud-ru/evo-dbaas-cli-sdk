@@ -5,7 +5,8 @@
 #   scripts/generate.sh --fetch   — сначала скачать свежие спецификации
 #                                   с cloud.ru/docs и наложить локальные правки
 #
-# Локальных правок три. compute и iam чинит tools/specfix при каждой генерации.
+# Локальных правок четыре. compute, iam и kafka чинит tools/specfix при каждой генерации.
+# Kafka: deprecated CreateClusterRequest.subnet_id — необязательная строка вместо required array без items.
 # Ссылки на внутренний хост документации (dev.site.sbercloud.dev, есть в compute) заменяются
 # на публичный cloud.ru/docs сразу после скачивания — репо публичный, внутреннее имя не тиражируем.
 # api/openapi-clickhouse.patch: поля config в ответе
@@ -44,15 +45,15 @@ if grep -l 'sbercloud\.dev' api/openapi-*.yaml; then
   exit 1
 fi
 
-for p in clickhouse redis kafka vpc; do
+for p in clickhouse redis vpc; do
   go run "$OAPI_CODEGEN" -config "internal/${PKG[$p]}/cfg.yaml" "api/openapi-$p.yaml"
 done
 
-# compute и iam в опубликованном виде oapi-codegen не читает (битая ссылка, остатки Swagger 2) —
+# compute, iam и kafka в опубликованном виде oapi-codegen не читает (битая ссылка, остатки Swagger 2) —
 # сначала tools/specfix, api/ остаётся как скачано.
 fixed=$(mktemp -d)
 trap 'rm -rf "$fixed"' EXIT
-for p in compute iam; do
+for p in compute iam kafka; do
   go run ./tools/specfix "api/openapi-$p.yaml" "$fixed/$p.yaml"
   go run "$OAPI_CODEGEN" -config "internal/${PKG[$p]}/cfg.yaml" "$fixed/$p.yaml"
 done

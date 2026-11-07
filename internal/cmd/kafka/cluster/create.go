@@ -32,6 +32,10 @@ func createCmd(s *state.State) *cobra.Command {
 				return err
 			}
 
+			if err := checkController(cmd, req.Controller); err != nil {
+				return err
+			}
+
 			if req.Params, err = base.ParseKV("param", params); err != nil {
 				return err
 			}
@@ -42,6 +46,27 @@ func createCmd(s *state.State) *cobra.Command {
 
 			if req.Body, err = base.Body(body); err != nil {
 				return err
+			}
+
+			topology, err := req.Topology()
+			if err != nil {
+				return err
+			}
+
+			if topology.Subnets != nil {
+				n, brokers, dedicated := len(*topology.Subnets), topology.Brokers, topology.Dedicated
+				switch {
+				case n != 1 && n != 3:
+					return &base.ExitError{Code: 1, Msg: i18n.T("kafka.cluster.create.err.subnets")}
+				case n == 1 && dedicated != nil && *dedicated:
+					return &base.ExitError{Code: 1, Msg: i18n.T("kafka.cluster.create.err.dedicated_single")}
+				case n == 1 && brokers != nil && *brokers != 1 && *brokers != 3:
+					return &base.ExitError{Code: 1, Msg: i18n.T("kafka.cluster.create.err.brokers_single")}
+				case n == 3 && dedicated != nil && !*dedicated && brokers != nil && *brokers != 1:
+					return &base.ExitError{Code: 1, Msg: i18n.T("kafka.cluster.create.err.brokers_combined")}
+				case n == 3 && dedicated != nil && *dedicated && brokers != nil && (*brokers < 1 || *brokers > 5):
+					return &base.ExitError{Code: 1, Msg: i18n.T("kafka.cluster.create.err.brokers_dedicated")}
+				}
 			}
 
 			raw, err := operation.With(s, func(k *cloud.Kafka) ([]byte, error) { return k.CreateCluster(cmd.Context(), req) })
@@ -69,7 +94,9 @@ func createCmd(s *state.State) *cobra.Command {
 	f.StringVar(&req.Spec, "spec", "", i18n.T("kafka.cluster.create.flag.spec"))
 	f.Int32Var(&req.Brokers, "brokers", 1, i18n.T("kafka.cluster.create.flag.brokers"))
 	f.Int32Var(&req.StorageGiB, "storage-gib", 0, i18n.T("kafka.cluster.create.flag.storage_gib"))
-	f.StringVar(&req.Subnet, "subnet-id", "", i18n.T("kafka.cluster.create.flag.subnet_id"))
+	f.StringSliceVar(&req.Subnets, "subnet-id", nil, i18n.T("kafka.cluster.create.flag.subnet_id"))
+	f.StringVar(&req.Controller.Spec, "controller-spec", "", i18n.T("kafka.cluster.create.flag.controller_spec"))
+	f.Int32Var(&req.Controller.StorageGiB, "controller-storage-gib", 0, i18n.T("kafka.cluster.create.flag.controller_storage_gib"))
 	f.BoolVar(&req.UI, "ui", false, i18n.T("kafka.cluster.create.flag.ui"))
 	f.BoolVar(&req.CruiseControl, "cruise-control", false, i18n.T("kafka.cluster.create.flag.cruise_control"))
 	f.BoolVar(&req.AutoRebalance, "auto-rebalance", false, i18n.T("kafka.cluster.create.flag.auto_rebalance"))

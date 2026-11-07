@@ -9,6 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cloud"
+	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/base"
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/i18n"
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/output"
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/state"
@@ -24,17 +26,22 @@ func NewCmd(s *state.State) *cobra.Command {
 
 // cluster — поля кластера для человека; --json печатает ответ как есть.
 type cluster struct {
-	ID              string     `json:"id"`
-	Name            string     `json:"name"`
-	Status          string     `json:"status"`
-	Health          string     `json:"health"`
-	VersionID       string     `json:"version_id"`
-	SpecificationID string     `json:"specification_id"`
-	Brokers         int32      `json:"brokers"`
-	StorageGiB      int32      `json:"storage_gib"`
-	Hosts           *[]string  `json:"kafka_hosts"`
-	UIHost          string     `json:"kafka_ui_host"`
-	CreatedAt       *time.Time `json:"created_at"`
+	ID              string   `json:"id"`
+	Name            string   `json:"name"`
+	Status          string   `json:"status"`
+	Health          string   `json:"health"`
+	VersionID       string   `json:"version_id"`
+	SpecificationID string   `json:"specification_id"`
+	Brokers         int32    `json:"brokers"`
+	StorageGiB      int32    `json:"storage_gib"`
+	Subnets         []string `json:"subnet_ids"`
+	Controller      *struct {
+		Spec       string `json:"specification_id"`
+		StorageGiB int32  `json:"storage_gib"`
+	} `json:"controller_spec"`
+	Hosts     *[]string  `json:"kafka_hosts"`
+	UIHost    string     `json:"kafka_ui_host"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 func printCluster(w io.Writer, raw []byte) error {
@@ -53,6 +60,12 @@ func printCluster(w io.Writer, raw []byte) error {
 	kv("specification_id", cl.SpecificationID)
 	kv("brokers", fmt.Sprint(cl.Brokers))
 	kv("storage_gib", fmt.Sprint(cl.StorageGiB))
+	kv("subnet_ids", strings.Join(cl.Subnets, ", "))
+
+	if cl.Controller != nil {
+		kv("controller_spec.specification_id", cl.Controller.Spec)
+		kv("controller_spec.storage_gib", fmt.Sprint(cl.Controller.StorageGiB))
+	}
 
 	if cl.Hosts != nil {
 		kv("hosts", strings.Join(*cl.Hosts, ", "))
@@ -67,4 +80,13 @@ func printCluster(w io.Writer, raw []byte) error {
 	}
 
 	return t.Flush()
+}
+
+// checkController проверяет пару флагов на границе, до обращения к API.
+func checkController(cmd *cobra.Command, c cloud.KafkaController) error {
+	if (cmd.Flags().Changed("controller-spec") || cmd.Flags().Changed("controller-storage-gib")) && (c.Spec == "" || c.StorageGiB <= 0) {
+		return &base.ExitError{Code: 1, Msg: i18n.T("kafka.cluster.err.controller_pair")}
+	}
+
+	return nil
 }

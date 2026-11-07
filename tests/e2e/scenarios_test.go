@@ -32,7 +32,7 @@ var commandRuns = []scenario{
 	{args: "clickhouse clusters list"},
 	{args: "clickhouse clusters get c1"},
 	{args: "clickhouse clusters create --name n --description d --version 25.8 --spec s --shards 1 --replicas 1 --storage-gib 40 --subnet-id sn1 --keeper embedded"},
-	{args: "clickhouse clusters create --name n --version 25.8 --spec s --shards 1 --replicas 3 --subnet-id sn1 --subnet-id sn2 --keeper standalone --keeper-spec ks --keeper-storage-gib 10 --config max_connections=100 --config max_concurrent_queries=50 --config background_pool_size=1 --config background_schedule_pool_size=1 --config keep_alive_timeout=1 --config mark_cache_size=1 --config max_partition_size_to_drop=1 --config max_session_timeout=1 --config max_table_size_to_drop=1 --config uncompressed_cache_size=1 --logging --log-group-id lg --body {\"description\":\"из-body\"}"},
+	{name: "clickhouse clusters create --name n --version 25.8 --spec s --shards 1 --replicas 3 --subnet-id sn1 --subnet-id sn2 --keeper standalone --keeper-spec ks --keeper-storage-gib 10 --config max_connections=100 --config max_concurrent_queries=50 --config background_pool_size=1 --config background_schedule_pool_size=1 --config keep_alive_timeout=1 --config mark_cache_size=1 --config max_partition_size_to_drop=1 --config max_session_timeout=1 --config max_table_size_to_drop=1 --config uncompressed_cache_size=1 --logging --log-group-id lg --body {\"description\":\"из-body\"}", args: "clickhouse clusters create --name n --version 25.8 --spec s --shards 1 --replicas 3 --subnet-id sn1 --subnet-id sn2 --subnet-id sn3 --keeper standalone --keeper-spec ks --keeper-storage-gib 10 --config max_connections=100 --config max_concurrent_queries=50 --config background_pool_size=1 --config background_schedule_pool_size=1 --config keep_alive_timeout=1 --config mark_cache_size=1 --config max_partition_size_to_drop=1 --config max_session_timeout=1 --config max_table_size_to_drop=1 --config uncompressed_cache_size=1 --logging --log-group-id lg --body {\"description\":\"из-body\"}"},
 	{args: "clickhouse clusters resize c1 --spec s2 --storage-gib 80"},
 	{args: "clickhouse clusters resize c1 --keeper-spec ks2 --keeper-storage-gib 20 --config max_connections=200 --body {}"},
 	{args: "clickhouse databases get c1 db"},
@@ -188,10 +188,10 @@ var edgeRuns = []scenario{
 		"GET /redis/v1/clusters": {body: `{"clusters":[{"id":"r1","name":"cache","status":"READY","type":"STANDALONE","shards":1,"replicas":0,"specification_id":"s","version_id":"v"}]}`},
 	}},
 	{name: "ответ kafka get", args: "kafka clusters get k9", overrides: map[string]reply{
-		"GET /kafka/v1/clusters/k9": {body: `{"id":"k9","name":"events","status":"READY","brokers":3,"storage_gib":40,"specification_id":"s","version_id":"v","kafka_hosts":["10.0.1.8:9092"],"kafka_ui_host":"10.0.1.9"}`},
+		"GET /kafka/v1/clusters/k9": {body: `{"id":"k9","subnet_ids":["sn1","sn2","sn3"],"controller_spec":{"specification_id":"cs","storage_gib":10},"name":"events","status":"READY","brokers":3,"storage_gib":40,"specification_id":"s","version_id":"v","kafka_hosts":["10.0.1.8:9092"],"kafka_ui_host":"10.0.1.9"}`},
 	}},
 	{name: "ответ kafka list", args: "kafka clusters list", overrides: map[string]reply{
-		"GET /kafka/v1/clusters": {body: `{"clusters":[{"id":"k2","name":"bus2","brokers":1,"storage_gib":40,"specification_id":"s","version_id":"v"}]}`},
+		"GET /kafka/v1/clusters": {body: `{"clusters":[{"id":"k2","subnet_ids":["sn1"],"name":"bus2","brokers":1,"storage_gib":40,"specification_id":"s","version_id":"v"}]}`},
 	}},
 	{name: "ответ clickhouse get", args: "clickhouse clusters get c-new", overrides: map[string]reply{
 		"GET /clickhouse/v1/clusters/c-new": {body: `{"id":"c-new","name":"demo","status":"READY","version":"24.3","shards":1,"replicas":0,"specification_id":"s1","project_id":"proj-1","hosts":["h1:9440"]}`},
@@ -340,7 +340,10 @@ func allRuns() []scenario {
 	var out []scenario
 
 	for _, s := range commandRuns {
-		s.name = s.args
+		if s.name == "" {
+			s.name = s.args
+		}
+
 		out = append(out, s)
 	}
 

@@ -1,7 +1,8 @@
-// Command ratchet сверяет измеримые числа с таблицей «Измеряем» в CONSTRAINTS.md:
-// ручные строки Go не растут, покрытие ручного кода не падает больше допуска.
+// Command ratchet сверяет измеримые числа: ручные строки Go — с базой PR (рост только со строкой
+// «Рост строк: …» в описании PR, -pr-body); пройденные тесты и покрытие —
+// с таблицей «Измеряем» в CONSTRAINTS.md.
 //
-//	go run ./tools/ratchet -cover cover.out -tests test.json
+//	go run ./tools/ratchet -base origin/main -pr-body "$RATCHET_PR_BODY" -cover cover.out -tests test.json
 //
 // Пройденные тесты считаются по выводу go test -json: любое выключение теста — переименование
 // под чужую ОС, перенос в testdata/, build-тег, Skip — уменьшает число.
@@ -28,6 +29,8 @@ func main() {
 	coverFile := flag.String("cover", "", "профиль go test -coverprofile; без него покрытие не сверяется")
 	testsFile := flag.String("tests", "", "вывод go test -json; без него тесты не сверяются")
 	failures := flag.String("failures", "", "только напечатать упавшие тесты из вывода go test -json")
+	base := flag.String("base", "", "база PR для ручных строк (merge-base с HEAD); без неё строки не сверяются")
+	prBody := flag.String("pr-body", "", "описание PR: рост строк проходит со строкой «Рост строк: …»")
 
 	flag.Parse()
 
@@ -39,7 +42,7 @@ func main() {
 		return
 	}
 
-	code, err := run(*coverFile, *testsFile)
+	code, err := run(*base, *prBody, *coverFile, *testsFile)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ratchet:", err)
 	}
@@ -47,25 +50,18 @@ func main() {
 	os.Exit(code)
 }
 
-func run(coverFile, testsFile string) (int, error) {
+func run(base, prBody, coverFile, testsFile string) (int, error) {
 	recorded, err := readRecorded("CONSTRAINTS.md")
-	if err != nil {
-		return 2, err
-	}
-
-	lines, err := manualLines()
 	if err != nil {
 		return 2, err
 	}
 
 	code := 0
 
-	fmt.Printf("ручные строки Go: %d (записано %d)\n", lines, int(recorded["lines"]))
-
-	if float64(lines) > recorded["lines"] {
-		fmt.Fprintln(os.Stderr, "ratchet: ручных строк больше записанного — уберите код или объясните рост в PR и поднимите число отдельным коммитом")
-
-		code = 1
+	if base != "" {
+		if code, err = checkLines(base, prBody); err != nil {
+			return 2, err
+		}
 	}
 
 	if testsFile != "" {
@@ -108,8 +104,44 @@ func run(coverFile, testsFile string) (int, error) {
 	return code, nil
 }
 
+// checkLines сравнивает ручные строки с merge-base: рост проходит, только если в описании PR
+// есть «Рост строк: <объяснение>».
+func checkLines(base, prBody string) (int, error) {
+	mb, err := git("merge-base", base, "HEAD")
+	if err != nil {
+		return 0, err
+	}
+
+	was, err := manualLinesAt(strings.TrimSpace(string(mb)))
+	if err != nil {
+		return 0, err
+	}
+
+	now, err := manualLines()
+	if err != nil {
+		return 0, err
+	}
+
+	fmt.Printf("ручные строки Go: %d (база %d, %+d)\n", now, was, now-was)
+
+	if now <= was {
+		return 0, nil
+	}
+
+	if growthRe.MatchString(prBody) {
+		fmt.Println("рост объяснён в описании PR")
+
+		return 0, nil
+	}
+
+	fmt.Fprintln(os.Stderr, "ratchet: ручных строк больше, чем в базе, — уберите код или добавьте в описание PR строку «Рост строк: <за счёт чего>»")
+
+	return 1, nil
+}
+
 var (
-	rowRe       = regexp.MustCompile(`^\|\s*(Ручные строки Go|Покрытие ручного кода|Пройденные тесты)\s*\|\s*([\d.,]+)`)
+	growthRe    = regexp.MustCompile(`Рост строк:[*_]*[ \t]*[^\s*_]`)
+	rowRe       = regexp.MustCompile(`^\|\s*(Покрытие ручного кода|Пройденные тесты)\s*\|\s*([\d.,]+)`)
 	toleranceRe = regexp.MustCompile(`допуск\s+([\d.,]+)`)
 	generatedRe = regexp.MustCompile(`(?m)^// Code generated .* DO NOT EDIT\.$`)
 )
@@ -144,12 +176,7 @@ func readRecorded(path string) (map[string]float64, error) {
 			return nil, err
 		}
 
-		switch m[1] {
-		case "Ручные строки Go":
-			got["lines"] = v
-
-			continue
-		case "Пройденные тесты":
+		if m[1] == "Пройденные тесты" {
 			got["tests"] = v
 
 			continue
@@ -165,10 +192,6 @@ func readRecorded(path string) (map[string]float64, error) {
 		if got["tolerance"], err = parseNum(t[1]); err != nil {
 			return nil, err
 		}
-	}
-
-	if _, ok := got["lines"]; !ok {
-		return nil, errors.New("в CONSTRAINTS.md нет строки «Ручные строки Go»")
 	}
 
 	if _, ok := got["tests"]; !ok {
@@ -283,38 +306,72 @@ func generatedFiles() (map[string]bool, error) {
 	return gen, nil
 }
 
-// manualLines — непустые строки ручного кода без строк-комментариев.
+// manualLines — непустые строки ручного кода без строк-комментариев в рабочем дереве.
 func manualLines() (int, error) {
 	out, err := exec.Command("git", "ls-files", "--cached", "--others", "--exclude-standard", "*.go").Output()
 	if err != nil {
 		return 0, fmt.Errorf("git ls-files: %w", err)
 	}
 
+	return countFiles(strings.Fields(string(out)), os.ReadFile)
+}
+
+// manualLinesAt — то же на коммите rev.
+func manualLinesAt(rev string) (int, error) {
+	out, err := git("ls-tree", "-r", "--name-only", rev)
+	if err != nil {
+		return 0, err
+	}
+
+	return countFiles(strings.Fields(string(out)), func(path string) ([]byte, error) {
+		return git("show", rev+":"+path)
+	})
+}
+
+func git(args ...string) ([]byte, error) {
+	out, err := exec.Command("git", args...).Output()
+	if err != nil {
+		return nil, fmt.Errorf("git %s: %w", strings.Join(args, " "), err)
+	}
+
+	return out, nil
+}
+
+func countFiles(paths []string, read func(string) ([]byte, error)) (int, error) {
 	total := 0
 
-	for _, path := range strings.Fields(string(out)) {
+	for _, path := range paths {
 		if !isManual(path) {
 			continue
 		}
 
-		data, err := os.ReadFile(path)
+		data, err := read(path)
 		if err != nil {
 			return 0, fmt.Errorf("read %s: %w", path, err)
 		}
 
-		if generatedRe.Match(data) {
-			continue
-		}
-
-		for line := range strings.SplitSeq(string(data), "\n") {
-			t := strings.TrimSpace(line)
-			if t != "" && !strings.HasPrefix(t, "//") {
-				total++
-			}
-		}
+		total += countLines(data)
 	}
 
 	return total, nil
+}
+
+// countLines — непустые строки без строк-комментариев; сгенерированный файл — ноль.
+func countLines(data []byte) int {
+	if generatedRe.Match(data) {
+		return 0
+	}
+
+	n := 0
+
+	for line := range strings.SplitSeq(string(data), "\n") {
+		t := strings.TrimSpace(line)
+		if t != "" && !strings.HasPrefix(t, "//") {
+			n++
+		}
+	}
+
+	return n
 }
 
 // manualCoverage — доля покрытых операторов ручного кода по профилю go test.

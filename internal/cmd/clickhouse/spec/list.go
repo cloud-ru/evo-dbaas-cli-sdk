@@ -33,29 +33,31 @@ type spec struct {
 
 // NewCmd — clickhouse specs.
 func NewCmd(s *state.State) *cobra.Command {
-	var version, zone, role string
+	var f cloud.ClickHouseSpecFilter
 
 	list := base.ListCmd{
 		Use: "list", Short: i18n.T("clickhouse.spec.list.short"), Args: cobra.NoArgs,
 		List: func(ctx context.Context, s *state.State, _ []string) ([]byte, error) {
-			// Без зоны API отвечает 400 «AvailabilityZoneId: value must be a valid UUID» (стенд 14.10).
-			if zone == "" {
+			// Без зоны и cluster_id API отвечает 400 «AvailabilityZoneId: value must be a valid UUID» (стенд 14.10).
+			q := f
+			if q.Zone == "" && q.Cluster == "" {
 				return nil, &base.ExitError{Code: 1, Msg: i18n.T("clickhouse.spec.err.zone_required")}
 			}
 
-			zid, err := base.ZoneID(ctx, s, zone)
-			if err != nil {
-				return nil, err
-			}
-
-			r := role
-			if r != "" {
-				if r, err = base.OneOf("role", r, "server", "keeper"); err != nil {
+			var err error
+			if q.Zone != "" {
+				if q.Zone, err = base.ZoneID(ctx, s, q.Zone); err != nil {
 					return nil, err
 				}
 			}
 
-			return operation.With(s, func(h *cloud.ClickHouse) ([]byte, error) { return h.Specs(ctx, version, zid, r) })
+			if q.Role != "" {
+				if q.Role, err = base.OneOf("role", q.Role, "server", "keeper"); err != nil {
+					return nil, err
+				}
+			}
+
+			return operation.With(s, func(h *cloud.ClickHouse) ([]byte, error) { return h.Specs(ctx, q) })
 		},
 		Table: func(w io.Writer, raw []byte) error {
 			var l struct {
@@ -75,9 +77,13 @@ func NewCmd(s *state.State) *cobra.Command {
 			return t.Flush()
 		},
 	}.Cmd(s)
-	list.Flags().StringVar(&version, "version", "", i18n.T("clickhouse.spec.flag.version"))
-	list.Flags().StringVar(&zone, "zone", "", i18n.T("clickhouse.spec.flag.zone"))
-	list.Flags().StringVar(&role, "role", "server", i18n.T("clickhouse.spec.flag.role"))
+	list.Flags().StringVar(&f.Cluster, "cluster-id", "", i18n.T("clickhouse.spec.flag.cluster_id"))
+	list.Flags().StringVar(&f.Version, "version", "", i18n.T("clickhouse.spec.flag.version"))
+	list.Flags().StringVar(&f.Zone, "zone", "", i18n.T("clickhouse.spec.flag.zone"))
+	list.Flags().StringVar(&f.Role, "role", "server", i18n.T("clickhouse.spec.flag.role"))
+	// cluster_id вместе с version или availability_zone_id API отклоняет: 400 «cannot be specified together» (живой прогон 7.11).
+	list.MarkFlagsMutuallyExclusive("cluster-id", "version")
+	list.MarkFlagsMutuallyExclusive("cluster-id", "zone")
 
 	c := &cobra.Command{Use: "specs", Aliases: []string{"specifications"}, Short: i18n.T("clickhouse.spec.short")}
 	c.AddCommand(list)

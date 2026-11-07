@@ -32,10 +32,6 @@ func createCmd(s *state.State) *cobra.Command {
 				return err
 			}
 
-			if err := checkKeeper(&req); err != nil {
-				return err
-			}
-
 			kv, err := base.ParseKV("config", config)
 			if err != nil {
 				return err
@@ -52,6 +48,10 @@ func createCmd(s *state.State) *cobra.Command {
 			}
 
 			if req.Body, err = base.Body(body); err != nil {
+				return err
+			}
+
+			if err := checkKeeper(&req); err != nil {
 				return err
 			}
 
@@ -99,24 +99,37 @@ func createCmd(s *state.State) *cobra.Command {
 // checkKeeper — сочетания режима Keeper, топологии и подсетей, на которые API
 // отвечает 400: отказываем до запроса.
 func checkKeeper(req *cloud.ClickHouseClusterCreate) error {
-	if req.KeeperMode != "" {
-		mode, err := base.OneOf("keeper", req.KeeperMode, "embedded", "standalone")
-		if err != nil {
-			return err
-		}
-
-		req.KeeperMode = mode
+	topology, err := req.Topology()
+	if err != nil {
+		return err
 	}
 
-	switch k := req.Keeper; {
-	case req.KeeperMode == "embedded" && (req.Shards != 1 || req.Replicas != 1 || len(req.Subnets) > 1):
+	if topology.KeeperMode == nil {
+		return nil
+	}
+
+	mode := *topology.KeeperMode
+	if mode != "" {
+		if mode, err = base.OneOf("keeper", mode, "embedded", "standalone"); err != nil {
+			return err
+		}
+	}
+
+	shards, replicas, subnets := topology.Shards, topology.Replicas, topology.Subnets
+
+	spec, storage := topology.KeeperSpec, topology.KeeperStorageGiB
+	switch {
+	case mode == "embedded" && ((shards != nil && *shards != 1) || (replicas != nil && *replicas != 1) || (subnets != nil && len(*subnets) != 1)):
 		return &base.ExitError{Code: 1, Msg: i18n.T("clickhouse.cluster.err.keeper_embedded")}
-	case req.KeeperMode == "" && len(req.Subnets) > 1:
+	case mode == "" && subnets != nil && len(*subnets) > 1:
 		return &base.ExitError{Code: 1, Msg: i18n.T("clickhouse.cluster.err.keeper_legacy")}
-	case req.KeeperMode == "standalone" && k.Spec == "":
-		// Без спецификации Keeper API собрать не может — не ждём 400 после отправки.
+	case mode == "standalone" && spec != nil && *spec == "":
 		return &base.ExitError{Code: 1, Msg: i18n.T("clickhouse.cluster.err.keeper_resources")}
-	case (k.Spec != "" || k.StorageGiB > 0) && req.KeeperMode != "standalone":
+	case mode == "standalone" && ((shards != nil && (*shards < 1 || *shards > 3)) || (replicas != nil && *replicas != 3) || (subnets != nil && len(*subnets) != 3)):
+		return &base.ExitError{Code: 1, Msg: i18n.T("clickhouse.cluster.err.keeper_topology")}
+	case mode == "standalone" && subnets != nil && ((*subnets)[0] == (*subnets)[1] || (*subnets)[0] == (*subnets)[2] || (*subnets)[1] == (*subnets)[2]):
+		return &base.ExitError{Code: 1, Msg: i18n.T("clickhouse.cluster.err.keeper_topology")}
+	case ((spec != nil && *spec != "") || (storage != nil && *storage > 0)) && mode != "standalone":
 		return &base.ExitError{Code: 1, Msg: i18n.T("clickhouse.cluster.err.keeper_standalone")}
 	}
 

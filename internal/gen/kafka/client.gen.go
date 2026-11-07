@@ -114,9 +114,18 @@ type CloudruDbaasKafkaV1Cluster struct {
 	// Example: 3
 	Brokers int32 `json:"brokers"`
 
+	// ControllerSpec Параметры выделенных контроллеров Kafka.
+	//
+	//  Режим хостов:
+	//  - Комбинированный, если `controller_spec` не указан: каждый хост совмещает роли брокера и контроллера.
+	//  - Выделенный, если `controller_spec` указан: брокеры и контроллеры работают на разных хостах.
+	//
+	//  Режим нельзя изменить после создания кластера.
+	ControllerSpec *CloudruDbaasKafkaV1ControllerSpec `json:"controller_spec,omitempty"`
+
 	// CreatedAt Дата создания кластера.
 	//
-	// Example: 2026-02-14T17:17:45.000Z
+	// Example: 2026-02-14T17:17:45Z
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	// Description Описание кластера.
@@ -178,6 +187,17 @@ type CloudruDbaasKafkaV1Cluster struct {
 	// Example: 40
 	StorageGib int32 `json:"storage_gib"`
 
+	// SubnetIds Идентификаторы подсетей. Подсети определяют зоны доступности кластера.
+	//  Можно передать 1 или 3 подсети.
+	//  Если указано 3 подсети, кластер считается мультизональным.
+	//  Каждая подсеть должна находиться в отдельной зоне доступности.
+	//
+	//  Список подсетей и их описание можно получить через API сервиса виртуальных машин
+	//  в разделе [Subnets](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3#tag/Subnets).
+	//
+	// Example: ["00000000-0000-0000-0000-000000000000","11111111-1111-1111-1111-111111111111"]
+	SubnetIds *[]string `json:"subnet_ids,omitempty"`
+
 	// TopicPartitions Количество партиций.
 	//
 	// Example: 3
@@ -199,12 +219,41 @@ type CloudruDbaasKafkaV1ClusterHealth string
 // Example: READY
 type CloudruDbaasKafkaV1ClusterStatus string
 
+// CloudruDbaasKafkaV1ControllerSpec Параметры контроллера в кластере.
+type CloudruDbaasKafkaV1ControllerSpec struct {
+	// SpecificationId Идентификатор спецификации контроллеров.
+	//
+	// Example: 00000000-0000-0000-0000-000000000000
+	SpecificationId string `json:"specification_id"`
+
+	// StorageGib Размер диска в гибибайтах.
+	//
+	// Example: 10
+	StorageGib int32 `json:"storage_gib"`
+}
+
 // CloudruDbaasKafkaV1CreateClusterRequest Запрос на создание кластера.
 type CloudruDbaasKafkaV1CreateClusterRequest struct {
-	// Brokers Количество брокеров.
+	// Brokers Количество брокеров в одной зоне доступности.
+	//
+	//  Допустимые значения зависят от `subnet_ids` и `controller_spec`:
+	//  - 1 или 3 брокера, если указана 1 подсеть в `subnet_ids` (Single-AZ).
+	//  - 1 брокер, если указаны 3 подсети в `subnet_ids` (Multi-AZ) и не передано `controller_spec`.
+	//  - От 1 до 5 брокеров, если указаны 3 подсети в `subnet_ids` (Multi-AZ) и передано `controller_spec`.
+	//
+	//  Указанное значение брокеров создается в каждой зоне доступности.
 	//
 	// Example: 3
 	Brokers int32 `json:"brokers"`
+
+	// ControllerSpec Параметры выделенных контроллеров Kafka.
+	//
+	//  Режим хостов:
+	//  - Комбинированный, если `controller_spec` не указан: каждый хост совмещает роли брокера и контроллера.
+	//  - Выделенный, если `controller_spec` указан: брокеры и контроллеры работают на разных хостах.
+	//
+	//  Режим нельзя изменить после создания кластера.
+	ControllerSpec *CloudruDbaasKafkaV1ControllerSpec `json:"controller_spec,omitempty"`
 
 	// CruiseControlEnabled Укажите `true`, чтобы включить Cruise Control для управления кластером.
 	//
@@ -254,9 +303,22 @@ type CloudruDbaasKafkaV1CreateClusterRequest struct {
 	//
 	//  Список подсетей и их описание можно получить через API сервиса виртуальных машин
 	//  в разделе [Subnets](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3#tag/Subnets).
+	//  Deprecated: используйте поле `subnet_ids`.
 	//
 	// Example: 00000000-0000-0000-0000-000000000000
-	SubnetId string `json:"subnet_id"`
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	SubnetId *string `json:"subnet_id,omitempty"`
+
+	// SubnetIds Идентификаторы подсетей. Подсети определяют зоны доступности кластера.
+	//  Можно передать 1 или 3 подсети.
+	//  Если указано 3 подсети, кластер считается мультизональным.
+	//  Каждая подсеть должна находиться в отдельной зоне доступности.
+	//
+	//  Список подсетей и их описание можно получить через API сервиса виртуальных машин
+	//  в разделе [Subnets](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3#tag/Subnets).
+	//
+	// Example: ["00000000-0000-0000-0000-000000000000","11111111-1111-1111-1111-111111111111"]
+	SubnetIds *[]string `json:"subnet_ids,omitempty"`
 
 	// UiEnabled Включен ли визуальный интерфейс кластера.
 	//
@@ -502,6 +564,11 @@ type CloudruDbaasKafkaV1UpdateClusterRequest struct {
 	//
 	// Example: 00000000-0000-0000-0000-000000000000
 	ClusterId string `json:"cluster_id"`
+
+	// ControllerSpec Параметры выделенных контроллеров Kafka.
+	//  Передается, только если кластер создан в выделенном режиме.
+	//  Режим нельзя изменить после создания кластера.
+	ControllerSpec *CloudruDbaasKafkaV1ControllerSpec `json:"controller_spec,omitempty"`
 
 	// Parameters Параметры кластера <параметр, значение>. Список поддерживаемых параметров и их описание доступны
 	//  в разделе документации [Параметры кластера](https://cloud.ru/docs/paas-kafka/ug/topics/guides__parameters__available-parameters-list).

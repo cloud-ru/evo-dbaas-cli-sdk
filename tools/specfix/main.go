@@ -1,9 +1,11 @@
 // Command specfix приводит опубликованную спецификацию cloud.ru к OpenAPI 3.0, который понимает oapi-codegen.
-// api/ остаётся как скачано; scripts/generate.sh пропускает через specfix compute и iam.
+// api/ остаётся как скачано; scripts/generate.sh пропускает через specfix compute, iam и kafka.
 //
 //	go run ./tools/specfix in.yaml out.yaml
 //
-// Правила общие, не под конкретные схемы:
+// Локальная правка Kafka: deprecated CreateClusterRequest.subnet_id ошибочно объявлен
+// обязательным массивом без items; возвращаем необязательную строку.
+// Остальные правила общие, не под конкретные схемы:
 //   - остатки Swagger 2 (iam): definitions → components.schemas, ссылки #/definitions/ → #/components/schemas/,
 //     swagger, consumes, produces убираются;
 //   - параметр без schema (type, format, items, enum, default прямо в параметре) — поля уходят в schema;
@@ -133,6 +135,8 @@ func fix(doc map[string]any) (map[string]any, []string, error) {
 	note(bodies, "in: body → requestBody")
 	note(responses, "schema ответа → content")
 	note(nullableAnyOf(doc), "anyOf [X, null] → X, nullable")
+
+	note(kafkaSubnet(schemas), "Kafka CreateClusterRequest.subnet_id → необязательная строка")
 
 	missing := danglingSchemas(doc, schemas)
 	for _, name := range missing {
@@ -363,4 +367,33 @@ func danglingSchemas(doc, schemas map[string]any) []string {
 	sort.Strings(out)
 
 	return out
+}
+
+// kafkaSubnet исправляет только сломанный массив; исправленная или удалённая схема не меняется.
+func kafkaSubnet(schemas map[string]any) int {
+	req, _ := schemas["cloudru.dbaas.kafka.v1.CreateClusterRequest"].(map[string]any)
+	props, _ := req["properties"].(map[string]any)
+
+	subnet, _ := props["subnet_id"].(map[string]any)
+	if subnet["type"] != "array" {
+		return 0
+	}
+
+	subnet["type"] = "string"
+	required, _ := req["required"].([]any)
+
+	kept := required[:0:0]
+	for _, field := range required {
+		if field != "subnet_id" {
+			kept = append(kept, field)
+		}
+	}
+
+	if len(kept) == 0 {
+		delete(req, "required")
+	} else {
+		req["required"] = kept
+	}
+
+	return 1
 }

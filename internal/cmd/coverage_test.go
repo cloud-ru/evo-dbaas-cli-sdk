@@ -56,10 +56,11 @@ var coverageRuns = []covRun{
 	{args: "clickhouse versions list"},
 	{args: "clickhouse specs list --version 25.8 --zone zone-1 --role server"},
 	{args: "clickhouse specs list --zone zone-1 --role keeper"},
+	{args: "clickhouse specs list --cluster-id c1"},
 	{args: "clickhouse clusters list"},
 	{args: "clickhouse clusters get c1"},
 	{args: "clickhouse clusters create --name n --description d --version 25.8 --spec s --shards 1 --replicas 1 --storage-gib 40 --subnet-id sn1 --keeper embedded"},
-	{args: "clickhouse clusters create --name n --version 25.8 --spec s --shards 1 --replicas 3 --subnet-id sn1 --subnet-id sn2 --keeper standalone --keeper-spec ks --keeper-storage-gib 10 --config max_connections=100 --config max_concurrent_queries=50 --config background_pool_size=1 --config background_schedule_pool_size=1 --config keep_alive_timeout=1 --config mark_cache_size=1 --config max_partition_size_to_drop=1 --config max_session_timeout=1 --config max_table_size_to_drop=1 --config uncompressed_cache_size=1 --logging --log-group-id lg --body {\"description\":\"из-body\"}"},
+	{args: "clickhouse clusters create --name n --version 25.8 --spec s --shards 1 --replicas 3 --subnet-id sn1 --subnet-id sn2 --subnet-id sn3 --keeper standalone --keeper-spec ks --keeper-storage-gib 10 --config max_connections=100 --config max_concurrent_queries=50 --config background_pool_size=1 --config background_schedule_pool_size=1 --config keep_alive_timeout=1 --config mark_cache_size=1 --config max_partition_size_to_drop=1 --config max_session_timeout=1 --config max_table_size_to_drop=1 --config uncompressed_cache_size=1 --logging --log-group-id lg --body {\"description\":\"из-body\"}"},
 	{args: "clickhouse clusters resize c1 --spec s2 --storage-gib 80"},
 	{args: "clickhouse clusters resize c1 --keeper-spec ks2 --keeper-storage-gib 20 --config max_connections=200 --body {}"},
 	{args: "clickhouse databases get c1 db"},
@@ -108,9 +109,10 @@ var coverageRuns = []covRun{
 	{args: "kafka specs list --version-id v1 --zone zone-1"},
 	{args: "kafka clusters list"},
 	{args: "kafka clusters get c1"},
+	{args: "kafka clusters describe c1"},
 	{args: "kafka clusters create --name n --description d --version-id v1 --spec s --brokers 3 --storage-gib 40 --subnet-id sn1 --ui --cruise-control --auto-rebalance"},
-	{args: "kafka clusters create --name n --version-id v1 --spec s --storage-gib 40 --subnet-id sn1 --param auto.create.topics.enable=false --logging --log-group-id lg --body {}"},
-	{args: "kafka clusters resize c1 --spec s2 --storage-gib 80"},
+	{args: "kafka clusters create --name n --version-id v1 --spec s --storage-gib 40 --subnet-id sn1 --subnet-id sn2 --subnet-id sn3 --controller-spec cs --controller-storage-gib 10 --param auto.create.topics.enable=false --logging --log-group-id lg --body {}"},
+	{args: "kafka clusters resize c1 --spec s2 --storage-gib 80 --controller-spec cs2 --controller-storage-gib 20"},
 	{args: "kafka clusters resize c1 --param auto.create.topics.enable=false --body {}"},
 	{args: "kafka specs list --cluster-id c1"},
 	{args: "kafka topics get c1 t"},
@@ -245,6 +247,11 @@ func TestAPICoverage(t *testing.T) {
 		}
 
 		cmd, _, _ := root.Find(args)
+		if !cmd.Runnable() {
+			t.Errorf("%s: команда не выполнена, выведена справка родителя", run.args)
+			continue
+		}
+
 		cmd.Flags().Visit(func(f *pflag.Flag) { usedFlags[cmd.CommandPath()+" --"+f.Name] = true })
 	}
 

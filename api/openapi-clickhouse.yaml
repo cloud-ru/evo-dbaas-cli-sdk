@@ -610,11 +610,7 @@ paths:
                     type: string
                 - name: availability_zone_id
                   in: query
-                  description: |-
-                    Идентификатор зоны доступности.
-
-                     Список зон доступности и их описание можно получить через API сервиса виртуальных машин
-                     в разделе [Availability Zones](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3#tag/Availability-Zones).
+                  description: Идентификатор зоны доступности.
                   schema:
                     type: string
                 - name: role
@@ -627,6 +623,13 @@ paths:
                         - SPECIFICATION_ROLE_CLICKHOUSE_KEEPER
                     type: string
                     format: enum
+                - name: cluster_id
+                  in: query
+                  description: |-
+                    Идентификатор кластера.
+                     Укажите для получения спецификаций, доступных для вертикального масштабирования кластера.
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -730,14 +733,14 @@ components:
                 shards:
                     example: 3
                     type: integer
-                    description: Количество шардов кластера.
+                    description: |-
+                        Количество шардов кластера: для `KEEPER_MODE_EMBEDDED` — 1, для `KEEPER_MODE_STANDALONE` — от 1 до 3.
                     format: int32
                 replicas:
-                    example: 2
+                    example: 3
                     type: integer
                     description: |-
-                        Количество дополнительных реплик на шард кластера.
-                         Реальное количество хостов, участвующих в репликации, на один больше.
+                        Количество реплик на шард кластера: для `KEEPER_MODE_EMBEDDED` — 1, для `KEEPER_MODE_STANDALONE` — 3.
                     format: int32
                 disk_size_gigs:
                     example: 40
@@ -907,14 +910,14 @@ components:
                 shards:
                     example: 3
                     type: integer
-                    description: Количество шардов кластера.
+                    description:  |-
+                        Количество шардов кластера: для `KEEPER_MODE_EMBEDDED` — 1, для `KEEPER_MODE_STANDALONE` — от 1 до 3.
                     format: int32
                 replicas:
-                    example: 2
+                    example: 3
                     type: integer
                     description: |-
-                        Количество дополнительных реплик на шард кластера.
-                         Реальное количество хостов, участвующих в репликации, на один больше.
+                        Количество реплик на шард кластера: для `KEEPER_MODE_EMBEDDED` — 1, для `KEEPER_MODE_STANDALONE` — 3.
                     format: int32
                 disk_size_gigs:
                     example: 40
@@ -945,7 +948,9 @@ components:
                     items:
                         type: string
                     description: |-
-                        Идентификаторы подсетей.
+                        Идентификаторы подсетей:
+                         - для `KEEPER_MODE_EMBEDDED` — 1 подсеть.
+                         - для `KEEPER_MODE_STANDALONE` — 3 разные подсети в разных зонах доступности.
 
                          Список подсетей и их описание можно получить через API сервиса виртуальных машин
                          в разделе [Subnets](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3#tag/Subnets).
