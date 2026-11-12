@@ -47,6 +47,7 @@ func newFakeCloud(t *testing.T) *fakeCloud {
 	t.Setenv("CLOUDRU_CLICKHOUSE_API_URL", srv.URL)
 	t.Setenv("CLOUDRU_REDIS_API_URL", srv.URL)
 	t.Setenv("CLOUDRU_KAFKA_API_URL", srv.URL)
+	t.Setenv("CLOUDRU_POSTGRESQL_API_URL", srv.URL)
 	t.Setenv("CLOUDRU_COMPUTE_API_URL", srv.URL)
 	t.Setenv("CLOUDRU_VPC_API_URL", srv.URL)
 	t.Setenv("CLOUDRU_IAM_API_URL", srv.URL)

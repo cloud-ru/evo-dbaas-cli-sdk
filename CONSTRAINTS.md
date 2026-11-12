@@ -4,7 +4,8 @@
 Читать до первой строки кода. **Не ослаблять, чтобы изменение прошло** — `tools/floorguard` это ловит,
 и такой PR не мержится без решения владельца.
 
-**Где гоняется:** все строки ниже — `task check`, его же запускает CI на каждый PR и push в `main`.
+**Где гоняется:** строки ниже — `task check`, его же запускает CI на каждый PR и push в `main`.
+Короткие fuzz-прогоны — отдельный CI job `fuzz`; seed-корпус входит в обычные юнит-тесты.
 
 ## Пол (всегда, проверяет `go run ./tools/floorguard`)
 
@@ -32,9 +33,11 @@
 | Границы карты | cobra только в `internal/cmd`; команды без `net/http` и `encoding/json`; нижние слои не импортируют верхние; env читает только `internal/config` | `depguard`, `forbidigo` в `golangci-lint` | `task check` |
 | Уязвимости зависимостей | ноль известных уязвимостей, достижимых из кода | `govulncheck ./...` (база vuln.go.dev — внешнее мнение) | `task check` |
 | Юнит-тесты | все зелёные, с `-race` | `go test -race ./...` | `task check` |
+| Fuzz | Fuzz-тест есть у каждой функции разбора ввода и ответа API из списка: `ParseKV`, `OneOf`, `Body`, `ParseClickHouseConfig`, `ParseOperation`, `ParseVPCOperation`, `parseTopologyBody` и аксессоры, `pageItems`, `walkTokens`, `validName`, `parseUUID`, `shellValue` | `task fuzz` зелёный | CI job fuzz |
 | Полнота против OpenAPI | `TestAPICoverage`, `TestSkillCommandsParse` зелёные | `go test ./internal/cmd/` | `task check` |
 | Пол | ноль нарушений | `go run ./tools/floorguard` | `task check` |
 | Храповик | числа ниже не хуже записанных | `go run ./tools/ratchet -base origin/main -pr-body "$RATCHET_PR_BODY" -cover cover.out -tests test.json` | `task check` |
+| Мутации по дифу | эффективность ≥ 94 % | Gremlins v0.6.0, `task mutate BASE=origin/main` (`gremlins unleash --diff` с порогом из YAML) | `task check` |
 
 ## Измеряем (храповик)
 

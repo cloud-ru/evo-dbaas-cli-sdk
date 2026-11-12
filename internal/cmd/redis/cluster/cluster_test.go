@@ -3,6 +3,7 @@ package cluster
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -34,6 +35,27 @@ func (f *fake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.bodies[key] = string(b)
 	body, ok := f.routes[key]
 	f.mu.Unlock()
+
+	// Находка 12.11: Redis Multi-AZ принимает ровно три разные подсети.
+	if key == "POST /v1/clusters" {
+		var req struct {
+			Subnets []string `json:"subnet_ids"`
+		}
+		if err := json.Unmarshal(b, &req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		ids := map[string]bool{}
+		for _, id := range req.Subnets {
+			ids[id] = true
+		}
+
+		if len(req.Subnets) > 1 && (len(req.Subnets) != 3 || len(ids) != 3) {
+			http.Error(w, `{"message":"validate architecture: replicas per shard must be in range [3:3]"}`, http.StatusBadRequest)
+			return
+		}
+	}
 
 	if !ok {
 		http.Error(w, `{"message":"no route"}`, http.StatusNotFound)

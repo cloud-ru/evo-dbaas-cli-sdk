@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: Redis Multi-AZ requires exactly 3 distinct subnet ids in --subnet-id
+--- requests

@@ -1,0 +1,14 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: The cluster is still being created; deletion is available after creation completes; check its state: `kafka clusters get k1`
+API 500: cannot receive any new tasks
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+DELETE /kafka/v1/clusters/k1
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1

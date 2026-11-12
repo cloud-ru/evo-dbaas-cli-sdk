@@ -18,6 +18,7 @@ import (
 
 // scenario — один вызов бинарника против фейка.
 type scenario struct {
+	extraArgs []string           // arguments containing spaces, passed as single values
 	name      string             // имя golden; у commandRuns — args
 	args      string             // аргументы через пробел; ENVFILE — путь во временной папке, FAKEURL — адрес фейка
 	stdin     string             // что подать на вход
@@ -78,7 +79,7 @@ func runScenario(s scenario) result {
 	DeferCleanup(f.close)
 
 	tmp := GinkgoT().TempDir()
-	args := strings.Fields(strings.NewReplacer("ENVFILE", filepath.Join(tmp, "key.env"), "FAKEURL", f.srv.URL).Replace(s.args))
+	args := append(strings.Fields(strings.NewReplacer("ENVFILE", filepath.Join(tmp, "key.env"), "FAKEURL", f.srv.URL).Replace(s.args)), s.extraArgs...)
 
 	path := filepath.Join(tmp, ".config", "cloudru-dbaas", "config.yaml")
 	if s.config != "" {

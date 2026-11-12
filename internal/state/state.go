@@ -30,11 +30,13 @@ type State struct {
 	RedisURL string
 	Redis    func() (*cloud.Redis, error)
 	// KafkaURL — адрес API Kafka; флаг --api-url продукта пишет сюда.
-	KafkaURL string
-	Kafka    func() (*cloud.Kafka, error)
-	Compute  func() (*cloud.Compute, error)
-	VPC      func() (*cloud.VPC, error)
-	IAM      func() (*cloud.IAM, error)
+	KafkaURL      string
+	Kafka         func() (*cloud.Kafka, error)
+	PostgreSQLURL string
+	PostgreSQL    func() (*cloud.PostgreSQL, error)
+	Compute       func() (*cloud.Compute, error)
+	VPC           func() (*cloud.VPC, error)
+	IAM           func() (*cloud.IAM, error)
 }
 
 // NeedProject — проект или ErrNoProject.

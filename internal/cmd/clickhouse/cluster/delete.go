@@ -18,6 +18,6 @@ func deleteCmd(s *state.State) *cobra.Command {
 		Delete: func(ctx context.Context, s *state.State, args []string) ([]byte, error) {
 			return operation.With(s, func(h *cloud.ClickHouse) ([]byte, error) { return h.DeleteCluster(ctx, args[0]) })
 		},
-		Ops: operation.Ops, OpsCmd: operation.GetCmd,
+		Ops: operation.Ops, OpsCmd: operation.GetCmd, ClusterCmd: "clickhouse clusters get",
 	}.Cmd(s)
 }

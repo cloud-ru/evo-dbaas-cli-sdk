@@ -19,7 +19,7 @@ func resizeCmd(s *state.State) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use: "resize CLUSTER_ID", Short: i18n.T("kafka.cluster.resize.short"), Args: cobra.ExactArgs(1),
+		Use: "resize CLUSTER_ID", Aliases: []string{"update"}, Short: i18n.T("kafka.cluster.resize.short"), Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := checkController(cmd, u.Controller); err != nil {
 				return err

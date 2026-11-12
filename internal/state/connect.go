@@ -70,7 +70,7 @@ func (s *State) Connect(c Conn) error {
 		return nil
 	}
 
-	for _, u := range []string{s.ClickHouseURL, s.RedisURL, s.KafkaURL, iam.URL, cfg.ComputeURL, cfg.VPCURL, cfg.IAMURL} {
+	for _, u := range []string{s.ClickHouseURL, s.RedisURL, s.KafkaURL, s.PostgreSQLURL, iam.URL, cfg.ComputeURL, cfg.VPCURL, cfg.IAMURL} {
 		if err := checkInsecureURL(s.Printer.Err, u, cfg.AllowHTTP); err != nil {
 			return err
 		}
@@ -85,6 +85,7 @@ func (s *State) Connect(c Conn) error {
 	s.ClickHouse = sync.OnceValues(func() (*cloud.ClickHouse, error) { return cloud.NewClickHouse(s.ClickHouseURL, o) })
 	s.Redis = sync.OnceValues(func() (*cloud.Redis, error) { return cloud.NewRedis(s.RedisURL, o) })
 	s.Kafka = sync.OnceValues(func() (*cloud.Kafka, error) { return cloud.NewKafka(s.KafkaURL, o) })
+	s.PostgreSQL = sync.OnceValues(func() (*cloud.PostgreSQL, error) { return cloud.NewPostgreSQL(s.PostgreSQLURL, o) })
 	s.Compute = sync.OnceValues(func() (*cloud.Compute, error) { return cloud.NewCompute(cfg.ComputeURL, o) })
 	s.VPC = sync.OnceValues(func() (*cloud.VPC, error) { return cloud.NewVPC(cfg.VPCURL, o) })
 	s.IAM = sync.OnceValues(func() (*cloud.IAM, error) { return cloud.NewIAM(cfg.IAMURL, o) })

@@ -87,7 +87,7 @@ cloudru-dbaas clickhouse clusters create --name <имя> --version <V> --spec <S
   только топологии 1×3 и 3×3, иначе 400.
 - `--keeper standalone` — выделенный Keeper: нужны `--keeper-spec` (из
   `specs list --role keeper`) и `--keeper-storage-gib`. Вживую не проверялся.
-- Серверные параметры — `--config ключ=число` в `create` и `resize`. Все поля
+- Серверные параметры — `--config ключ=число` в `create` и `resize` (синоним `update`). Все поля
   `config` спецификация помечает «только для чтения» — применяет ли их сервер,
   вживую не проверено: после вызова сверь `config` в `clusters get`.
   Логи — `--logging [--log-group-id]`. Поле API без флага — `--body '<JSON>'`.

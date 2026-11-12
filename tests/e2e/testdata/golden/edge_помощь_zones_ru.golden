@@ -16,7 +16,7 @@ Global Flags:
       --json               вывод в JSON (для скриптов и агентов)
       --profile string     профиль из файла конфига (также CLOUDRU_PROFILE; по умолчанию — profile: в файле, затем default)
       --project string     идентификатор проекта cloud.ru
-      --timeout duration   предел ожидания для --wait (default 30m0s)
+      --timeout duration   предел ожидания для --wait (default 2h30m0s)
 
 Use "cloudru-dbaas zones [command] --help" for more information about a command.
 --- stderr

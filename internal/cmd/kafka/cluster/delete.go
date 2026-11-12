@@ -18,6 +18,6 @@ func deleteCmd(s *state.State) *cobra.Command {
 		Delete: func(ctx context.Context, s *state.State, args []string) ([]byte, error) {
 			return operation.With(s, func(r *cloud.Kafka) ([]byte, error) { return r.DeleteCluster(ctx, args[0]) })
 		},
-		Ops: operation.Ops, OpsCmd: operation.GetCmd,
+		Ops: operation.Ops, OpsCmd: operation.GetCmd, ClusterCmd: "kafka clusters get",
 	}.Cmd(s)
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cloud"
+	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/i18n"
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/operation"
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/output"
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/state"
@@ -823,6 +824,37 @@ func TestDeleteConfirmsMutationWaitsWhenRequestedAndPropagatesErrors(t *testing.
 			}
 
 			assert.Equal(t, tc.requests, f.requests())
+		})
+	}
+}
+
+// Ключи независимы: команды удаления без переопределений должны сохранять
+// оба прежних текста, а настройка одного не должна менять второй.
+func TestDeleteConfirmationKeys(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		name, message, help string
+		messageKey, flagKey func() string
+	}{
+		{name: "defaults", message: "deletion cannot be undone: rerun with --yes", help: "confirm deletion"},
+		{name: "message only", messageKey: func() string { return i18n.T("postgresql.cluster.suspend.err.need_yes") }, message: "suspending a cluster: rerun with --yes", help: "confirm deletion"},
+		{name: "flag only", flagKey: func() string { return i18n.T("postgresql.cluster.suspend.flag.yes") }, message: "deletion cannot be undone: rerun with --yes", help: "confirm suspending the cluster"},
+		{name: "both", messageKey: func() string { return i18n.T("postgresql.cluster.suspend.err.need_yes") }, flagKey: func() string { return i18n.T("postgresql.cluster.suspend.flag.yes") }, message: "suspending a cluster: rerun with --yes", help: "confirm suspending the cluster"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			cmd := (DeleteCmd{Use: "delete", NeedYesKey: tc.messageKey, YesFlagKey: tc.flagKey}).Cmd(&state.State{})
+			cmd.SetOut(io.Discard)
+			cmd.SetErr(io.Discard)
+			cmd.SetArgs([]string{})
+			flag := cmd.Flags().Lookup("yes")
+			require.NotNil(t, flag)
+			assert.Equal(t, tc.help, flag.Usage)
+			err := cmd.ExecuteContext(t.Context())
+			require.EqualError(t, err, tc.message)
+			assert.Equal(t, 1, output.ExitCode(err))
 		})
 	}
 }

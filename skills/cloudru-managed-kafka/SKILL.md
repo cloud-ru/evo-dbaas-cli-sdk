@@ -99,7 +99,7 @@ cloudru-dbaas kafka users list <CLUSTER_ID> --json            # и users get <CL
 `users update --role` **заменяет список ролей целиком**: передай все нужные
 роли, а не только новую.
 
-Параметры кластера — `--param ключ=значение` в `clusters create` и `resize`,
+Параметры кластера — `--param ключ=значение` в `clusters create` и `resize` (синоним `update`),
 логи — `--logging`. Поле API без флага — `--body '<JSON>'`.
 
 - Имя топика: 1–249 символов, латиница, цифры, `-`, `_`, `.`; начинается с

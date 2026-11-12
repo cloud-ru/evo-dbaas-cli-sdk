@@ -123,9 +123,14 @@ func (c *Compute) Zones(ctx context.Context) ([]byte, error) {
 	return read(c.c.GetAvailabilityZoneListSvcV1AvailabilityZonesGet(ctx, nil))
 }
 
+// parseUUID принимает канонический, слитный, в фигурных скобках и urn:uuid: вид.
+// uuid.Parse для 38 символов не смотрит на обёртку: "a<id>b" прошёл бы
+// молча, поэтому обёртку из двух символов проверяем сами.
 func parseUUID(what, s string) (uuid.UUID, error) {
+	braced := len(s) == 38 && s[0] == '{' && s[37] == '}'
+
 	u, err := uuid.Parse(s)
-	if err != nil {
+	if err != nil || (len(s) == 38 && !braced) {
 		return uuid.UUID{}, i18n.Errorf("cloud.err.id", what, s, ErrNotUUID)
 	}
 

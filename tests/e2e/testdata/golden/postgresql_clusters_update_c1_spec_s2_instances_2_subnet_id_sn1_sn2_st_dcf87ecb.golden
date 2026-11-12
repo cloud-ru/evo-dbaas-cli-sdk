@@ -1,0 +1,23 @@
+exit: 0
+--- stdout
+operation op1 — in progress
+resource  c1
+          Создание кластера
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /postgresql/v1/clusters/c1
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1
+GET /postgresql/v1/specifications?product_type=postgres&version_name=17
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1
+PATCH /postgresql/v1/clusters/c1
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"cluster_id":"c1","instances":2,"maintenance_window":{"anytime":{}},"pooler_config":{"parameters":{"max_client_conn":"200"},"pool_mode":"TRANSACTION"},"specification_id":"s2","storage":{"pg_data_gb":100,"pg_wal_gb":20},"subnet_ids":{"value":["sn1","sn2"]}}

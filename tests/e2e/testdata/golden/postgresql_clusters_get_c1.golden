@@ -1,0 +1,26 @@
+exit: 0
+--- stdout
+id:                     c1
+name:                   n
+status:                 READY
+health:                 HEALTHY
+version:                17
+specification_id:       s
+deployment_mode:        BUSINESS
+instances:              2
+subnet_ids:             sn1, sn2
+availability_zone_ids:  az1, az2
+pg_data_gb:             50
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /postgresql/v1/clusters/c1
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1
+GET /postgresql/v1/specifications?product_type=postgres&version_name=17
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1

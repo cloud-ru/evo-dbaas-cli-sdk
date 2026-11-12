@@ -1,0 +1,1820 @@
+openapi: 3.0.3
+info:
+    title: Cloud.ru Managed PostgreSQL API
+    description: '[Документация Managed PostgreSQL](https://cloud.ru/docs/paas-postgresql/ug/index.html)'
+    contact:
+        email: support@cloud.ru
+    version: 1.0.0
+servers:
+    - url: https://postgresql.api.cloud.ru
+paths:
+    /v1/clusters:
+        get:
+            tags:
+                - ClusterService
+            description: Получение списка кластеров PostgreSQL, созданных в указанном проекте.
+            operationId: ClusterService_List
+            parameters:
+                - name: project_id
+                  in: query
+                  description: |-
+                    Идентификатор проекта.
+                     Обязательное поле.
+                  schema:
+                    type: string
+                - name: page_size
+                  in: query
+                  description: |-
+                    Максимальное количество результатов на странице ответа.
+                     Значение по умолчанию — 100. Максимальное значение — 1000.
+                  schema:
+                    type: string
+                    format: int64
+                - name: page_token
+                  in: query
+                  description: |-
+                    Токен запрашиваемой страницы с результатами.
+                     При первом запросе оставьте поле пустым.
+                     При последующих запросах укажите значение параметра `next_page_token` из ответа метода.
+                  schema:
+                    type: string
+                - name: product_type
+                  in: query
+                  description: Название продукта. По умолчанию `postgres`.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.ListClustersResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        post:
+            tags:
+                - ClusterService
+            description: Создание кластера.
+            operationId: ClusterService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.CreateClusterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}:
+        get:
+            tags:
+                - ClusterService
+            description: Получение информации о кластере.
+            operationId: ClusterService_Get
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.Cluster'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        delete:
+            tags:
+                - ClusterService
+            description: Удаление кластера.
+            operationId: ClusterService_Delete
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        patch:
+            tags:
+                - ClusterService
+            description: Изменение кластера.
+            operationId: ClusterService_Update
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.UpdateClusterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/backups:
+        get:
+            tags:
+                - BackupService
+            description: Список резервных копий.
+            operationId: BackupService_List
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.ListBackupsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        post:
+            tags:
+                - BackupService
+            description: Создание резервной копии.
+            operationId: BackupService_Create
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.CreateBackupRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/backups/{name}:
+        get:
+            tags:
+                - BackupService
+            description: Получение резервной копии кластера.
+            operationId: BackupService_Get
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: name
+                  in: path
+                  description: Название резервной копии.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.Backup'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/databases:
+        get:
+            tags:
+                - DatabaseService
+            description: Список баз данных.
+            operationId: DatabaseService_List
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.ListDatabasesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        post:
+            tags:
+                - DatabaseService
+            description: Создание базы данных.
+            operationId: DatabaseService_Create
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.CreateDatabaseRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.Database'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/databases/{name}:
+        get:
+            tags:
+                - DatabaseService
+            description: Получение базы данных в кластере.
+            operationId: DatabaseService_Get
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: name
+                  in: path
+                  description: Название базы данных.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.Database'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        delete:
+            tags:
+                - DatabaseService
+            description: Удаление базы данных в кластере.
+            operationId: DatabaseService_Delete
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: name
+                  in: path
+                  description: Название базы данных.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.DeleteDatabaseResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/operations:
+        get:
+            tags:
+                - ClusterService
+            description: Получение списка операций, произведенных над кластером.
+            operationId: ClusterService_ListOperations
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: page_size
+                  in: query
+                  description: Максимальное количество результатов на странице ответа.
+                  schema:
+                    type: string
+                    format: int64
+                - name: page_token
+                  in: query
+                  description: |-
+                    Токен запрашиваемой страницы с результатами.
+                     При первом запросе оставьте поле пустым.
+                     При последующих запросах укажите значение параметра `next_page_token` из ответа метода.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.ListOperationsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/users:
+        get:
+            tags:
+                - UserService
+            description: Список пользователей кластера.
+            operationId: UserService_List
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.ListUsersResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        post:
+            tags:
+                - UserService
+            description: Создание пользователя.
+            operationId: UserService_Create
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.CreateUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.User'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}/users/{name}:
+        get:
+            tags:
+                - UserService
+            description: Получение пользователя в кластере.
+            operationId: UserService_Get
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: name
+                  in: path
+                  description: Имя пользователя.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.User'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        put:
+            tags:
+                - UserService
+            description: Изменение пользователя кластера.
+            operationId: UserService_Update
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера для обновления.
+                  required: true
+                  schema:
+                    type: string
+                - name: name
+                  in: path
+                  description: Имя пользователя. Используется только для идентификации существующего пользователя.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.UpdateUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.User'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+        delete:
+            tags:
+                - UserService
+            description: Удаление пользователя в кластере.
+            operationId: UserService_Delete
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+                - name: name
+                  in: path
+                  description: Имя пользователя.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.DeleteUserResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}:locales:
+        get:
+            tags:
+                - ClusterService
+            description: Получение возможных локалей для кластера.
+            operationId: ClusterService_ListLocales
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.ListLocalesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}:resume:
+        post:
+            tags:
+                - ClusterService
+            description: Запуск приостановленного кластера.
+            operationId: ClusterService_Resume
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}:storageInfo:
+        get:
+            tags:
+                - ClusterService
+            description: Получение информации о хранилище.
+            operationId: ClusterService_StorageInfo
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.StorageInfoResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}:suspend:
+        post:
+            tags:
+                - ClusterService
+            description: Приостановка кластера.
+            operationId: ClusterService_Suspend
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/clusters/{cluster_id}:switchover:
+        post:
+            tags:
+                - ClusterService
+            description: |-
+                Переключение primary-узла (switchover) в кластере.
+                 Новый primary-узел будет выбран автоматически.
+            operationId: ClusterService_Switchover
+            parameters:
+                - name: cluster_id
+                  in: path
+                  description: Идентификатор кластера.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/operations/{operation_id}:
+        get:
+            tags:
+                - OperationService
+            description: Получение информации об операции по идентификатору.
+            operationId: OperationService_Get
+            parameters:
+                - name: operation_id
+                  in: path
+                  description: Идентификатор операции.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/specifications:
+        get:
+            tags:
+                - SpecificationService
+            description: Возвращает список спецификаций, доступных для выбранной версии продукта.
+            operationId: SpecificationService_List
+            parameters:
+                - name: version_name
+                  in: query
+                  description: |-
+                    Версия продукта.
+                     Укажите для получения спецификаций.
+                  schema:
+                    type: string
+                - name: product_type
+                  in: query
+                  description: Название продукта. По умолчанию `postgres`.
+                  schema:
+                    type: string
+                - name: cluster_id
+                  in: query
+                  description: |-
+                    Идентификатор кластера.
+                     Укажите для получения спецификаций, доступных для вертикального масштабирования кластера.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.ListSpecificationResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/versions:
+        get:
+            tags:
+                - VersionService
+            description: Возвращает список всех доступных версий продукта.
+            operationId: VersionService_List
+            parameters:
+                - name: product_type
+                  in: query
+                  description: Название продукта. По умолчанию `postgres`.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.ListVersionsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+    /v1/versions/{version_name}:locales:
+        get:
+            tags:
+                - VersionService
+            description: Возвращает список локалей, доступных для выбранной версии продукта.
+            operationId: VersionService_ListLocales
+            parameters:
+                - name: version_name
+                  in: path
+                  description: Версия продукта.
+                  required: true
+                  schema:
+                    type: string
+                - name: product_type
+                  in: query
+                  description: Название продукта. По умолчанию `postgres`.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.ListVersionLocalesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/google.rpc.Status'
+components:
+    schemas:
+        cloudru.dbaas.operation.Operation:
+            required:
+                - id
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: Идентификатор операции.
+                resource_name:
+                    readOnly: true
+                    example: urn:cloud:postgresql::265c6f28-9c84-4cef-bbc5-4472c1743bc0:backend
+                    type: string
+                    description: Информация о ресурсе, над которым производится операция.
+                    format: urn:cloud:SERVICE:ZONE_OPT:PROJECT_OPT:RESOURCE_TYPE_OPT
+                resource_id:
+                    readOnly: true
+                    example: 54295782-7aef-43e6-b33b-c9735938677a
+                    type: string
+                    description: Уникальный идентификатор ресурса, над которым производится операция.
+                created_at:
+                    readOnly: true
+                    type: string
+                    description: Время создания операции.
+                    format: date-time
+                updated_at:
+                    readOnly: true
+                    type: string
+                    description: Время последнего изменения операции.
+                    format: date-time
+                done:
+                    readOnly: true
+                    type: boolean
+                    description: |-
+                        Флаг завершенности операции:
+                         - `true` — операция завершена. Операция считается завершенной, даже если в ходе ее выполнения возникла ошибка.
+                         - `false` — операция не завершена.
+                description:
+                    readOnly: true
+                    type: string
+                    description: Описание операции. От 0 до 255 символов.
+                error:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/google.rpc.Status'
+                    description: Результат операции в случае ошибки.
+        cloudru.dbaas.postgresql.v1.AnytimeMaintenanceWindow:
+            type: object
+            properties: {}
+            description: Техническое обслуживание в любое время.
+        cloudru.dbaas.postgresql.v1.Backup:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: string
+                    description: Идентификатор резервной копии.
+                name:
+                    readOnly: true
+                    type: string
+                    description: Название резервной копии.
+                status:
+                    readOnly: true
+                    enum:
+                        - BACKUP_STATUS_UNSPECIFIED
+                        - BACKUP_STATUS_PENDING
+                        - BACKUP_STATUS_STARTED
+                        - BACKUP_STATUS_COMPLETED
+                        - BACKUP_STATUS_FAILED
+                    type: string
+                    description: Статус резервной копии.
+                    format: enum
+                size_bytes:
+                    readOnly: true
+                    type: string
+                    description: Размер резервной копии в байтах.
+                    format: int64
+                started_at:
+                    readOnly: true
+                    type: string
+                    description: Время начала создания резервной копии.
+                    format: date-time
+                finished_at:
+                    readOnly: true
+                    type: string
+                    description: Время окончания создания резервной копии.
+                    format: date-time
+        cloudru.dbaas.postgresql.v1.BackupSpec:
+            type: object
+            properties:
+                schedule:
+                    example: 0 3 * * 0
+                    type: string
+                    description: |-
+                        Расписание автоматического резервного копирования в формате CRON-выражения.
+                         Например, выражение '15 14 ? * *' будет запускать задачу каждый день в 14:15.
+                         Краткий формат вида "@midnight" или "@every 1h30m" не поддерживается.
+                         Автоматическое резервное копирование может происходить не чаще, чем раз в 6 часов.
+                         По умолчанию запускается каждое воскресенье в 03:00, резервные копии хранятся в течение 14 дней.
+                retention_policy_days:
+                    example: 14
+                    type: integer
+                    description: |-
+                        Срок хранения автоматически созданных резервных копий.
+                         Максимальное значение — 30 дней.
+                    format: int32
+            description: Параметры автоматического резервного копирования.
+        cloudru.dbaas.postgresql.v1.Cluster:
+            required:
+                - name
+                - project_id
+                - version
+                - specification_id
+                - storage
+            type: object
+            properties:
+                id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор кластера.
+                name:
+                    example: awesome-postgres-cluster
+                    type: string
+                    description: Название кластера.
+                description:
+                    example: Production PostgreSQL cluster
+                    type: string
+                    description: Описание кластера.
+                project_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор проекта.
+                connection_string:
+                    readOnly: true
+                    example: postgres://user:pass@host:port/db
+                    type: string
+                    description: Строка подключения.
+                health:
+                    readOnly: true
+                    example: HEALTHY
+                    enum:
+                        - HEALTH_UNSPECIFIED
+                        - HEALTHY
+                        - UNHEALTHY
+                    type: string
+                    description: Состояние кластера.
+                    format: enum
+                status:
+                    readOnly: true
+                    example: READY
+                    enum:
+                        - STATUS_UNSPECIFIED
+                        - PENDING
+                        - DEPLOYING
+                        - FAILED
+                        - UPDATING
+                        - READY
+                        - SUSPENDED
+                        - SUSPENDING
+                        - ERASED
+                        - ERASING
+                        - ROLLING_BACK
+                    type: string
+                    description: Статус кластера.
+                    format: enum
+                version:
+                    example: 17
+                    type: string
+                    description: Версия продукта.
+                instances:
+                    example: 2
+                    type: integer
+                    description: |-
+                        Количество узлов кластера.
+                         Допустимые значения зависят от режима развертывания кластера: 1-2 узла для `standard`, 1-3 узла для `business`.
+
+                         Если в `subnet_ids` указано несколько подсетей, кластер считается мультизональным,
+                         и количество узлов должно совпадать с количеством подсетей.
+                    format: int32
+                subnet_ids:
+                    example: ["00000000-0000-0000-0000-000000000000", "11111111-1111-1111-1111-111111111111"]
+                    type: array
+                    items:
+                        type: string
+                    description: |-
+                        Идентификаторы подсетей. Подсети определяют зоны доступности кластера.
+
+                         Если указано несколько подсетей, кластер считается мультизональным.
+                         Мультизональный режим доступен только для кластеров типа `business`.
+                         В этом случае количество подсетей должно совпадать с количеством узлов `instances`,
+                         а каждая подсеть должна находиться в отдельной зоне доступности.
+
+                         Список подсетей и их описание можно получить через API сервиса виртуальных машин
+                         в разделе [Subnets](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3#tag/Subnets).
+                specification_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: |-
+                        Идентификатор спецификации кластера.
+                         Ресурсы кластера типа `standard` нельзя изменить после создания.
+                storage:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.StorageSize'
+                    description: Размеры дисков кластера.
+                pooler_config:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.ConnectionPoolerConfig'
+                    description: Конфигурация пулера соединений PgBouncer.
+                backup:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.BackupSpec'
+                    description: Параметры автоматического резервного копирования.
+                logging:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.LoggingConfig'
+                    description: Параметры интеграции с сервисом Клиентского логирования.
+                maintenance_window:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.MaintenanceWindow'
+                    description: Окно проведения технического обслуживания.
+                created_at:
+                    readOnly: true
+                    example: 2026-01-01T10:00:00Z
+                    type: string
+                    description: Время создания кластера.
+                    format: date-time
+                created_by:
+                    readOnly: true
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор пользователя, создавшего кластер.
+                subnet_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    deprecated: true
+                    type: string
+                    description: Устарело. Используйте поле `subnet_ids`.
+                sync_replication_enabled:
+                    readOnly: true
+                    example: false
+                    deprecated: true
+                    type: boolean
+                    description: Не имеет эффекта.
+            description: Кластер PostgreSQL.
+        cloudru.dbaas.postgresql.v1.ConnectionPoolerConfig:
+            type: object
+            properties:
+                enabled:
+                    example: true
+                    type: boolean
+                    description: |-
+                        Включить пулер соединений. По умолчанию `false` — пулер выключен.
+                         Нельзя изменить после создания кластера.
+                pool_mode:
+                    example: TRANSACTION
+                    enum:
+                        - POOL_MODE_UNSPECIFIED
+                        - SESSION
+                        - TRANSACTION
+                    type: string
+                    description: |-
+                        Режим работы пулера соединений. По умолчанию `SESSION`.
+                         [Подробнее](https://www.pgbouncer.org/config.html#pool_mode).
+                    format: enum
+                parameters:
+                    example: {"max_client_conn": 100}
+                    type: object
+                    additionalProperties:
+                        type: string
+                    description: |-
+                        Дополнительные параметры конфигурации PgBouncer. Список поддерживаемых параметров и их описание доступны
+                         в разделе документации [Пулер соединений](https://cloud.ru/docs/paas-postgresql/ug/topics/guides__connection-pooler).
+
+                         Параметр `pool_mode` задается отдельно через поле `pool_mode`.
+            description: Конфигурация пулера соединений PgBouncer.
+        cloudru.dbaas.postgresql.v1.CreateBackupRequest:
+            required:
+                - cluster_id
+                - name
+            type: object
+            properties:
+                cluster_id:
+                    type: string
+                    description: Идентификатор кластера.
+                name:
+                    type: string
+                    description: |-
+                        Название резервной копии.
+                         Начинается и заканчивается только латинской буквой или цифрой.
+                         Внутри может содержать буквы, цифры, дефисы ('-') и точки, но не может начинаться или заканчиваться дефисом и точкой.
+            description: Запрос на создание резервной копии.
+        cloudru.dbaas.postgresql.v1.CreateClusterRequest:
+            required:
+                - name
+                - project_id
+                - version
+                - specification_id
+                - storage
+                - initial_database
+            type: object
+            properties:
+                name:
+                    example: awesome-postgres-cluster
+                    type: string
+                    description: Название кластера.
+                description:
+                    example: Production PostgreSQL cluster
+                    type: string
+                    description: Описание кластера.
+                project_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор проекта.
+                version:
+                    example: 17
+                    type: string
+                    description: Версия кластера.
+                instances:
+                    example: 2
+                    type: integer
+                    description: |-
+                        Количество узлов кластера.
+                         Допустимые значения зависят от режима развертывания кластера: 1-2 узла для `standard`, 1-3 узла для `business`.
+
+                         Если в `subnet_ids` указано несколько подсетей, кластер считается мультизональным,
+                         и количество узлов должно совпадать с количеством подсетей.
+                    format: int32
+                subnet_ids:
+                    example: ["00000000-0000-0000-0000-000000000000", "11111111-1111-1111-1111-111111111111"]
+                    type: array
+                    items:
+                        type: string
+                    description: |-
+                        Обязательное поле. Идентификаторы подсетей. Подсети определяют зоны доступности кластера.
+
+                         Если указано несколько подсетей, кластер считается мультизональным.
+                         Мультизональный режим доступен только для кластеров типа `business`.
+                         В этом случае количество подсетей должно совпадать с количеством узлов `instances`,
+                         а каждая подсеть должна находиться в отдельной зоне доступности.
+
+                         Список подсетей и их описание можно получить через API сервиса виртуальных машин
+                         в разделе [Subnets](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3#tag/Subnets).
+                specification_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: |-
+                        Идентификатор спецификации кластера.
+                         Ресурсы кластера типа `standard` нельзя изменить после создания.
+                storage:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.StorageSize'
+                    description: Размеры дисков кластера.
+                initial_database:
+                    example: myapp_db
+                    type: string
+                    description: Название базы данных, которая будет создана в экземпляре сервиса по умолчанию.
+                initial_database_lc_collate:
+                    example: C
+                    type: string
+                    description: |-
+                        Локаль сортировки базы данных, созданной по умолчанию.
+                         Нельзя изменить после создания кластера.
+                         Значение по умолчанию — `C`.
+                initial_database_lc_ctype:
+                    example: C
+                    type: string
+                    description: |-
+                        Локаль набора символов базы данных, созданной по умолчанию.
+                         Нельзя изменить после создания кластера.
+                         Значение по умолчанию — `C`.
+                pooler_config:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.ConnectionPoolerConfig'
+                    description: |-
+                        Конфигурация пулера соединений PgBouncer.
+                         Пулер соединений нельзя включить или отключить после создания кластера.
+                backup:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.BackupSpec'
+                    description: Параметры автоматического резервного копирования.
+                recovery_spec:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.RecoverySpec'
+                    description: Параметры восстановления кластера.
+                logging:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.LoggingConfig'
+                    description: Параметры интеграции с сервисом Клиентского логирования.
+                maintenance_window:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.MaintenanceWindow'
+                    description: Окно проведения технического обслуживания.
+                subnet_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    deprecated: true
+                    type: string
+                    description: Устарело. Используйте поле `subnet_ids`.
+                primary_standby_mode:
+                    example: true
+                    deprecated: true
+                    type: boolean
+                    description: Устарело. Используйте поле `instances`.
+                sync_replication_enabled:
+                    example: false
+                    deprecated: true
+                    type: boolean
+                    description: Не имеет эффекта.
+        cloudru.dbaas.postgresql.v1.CreateDatabaseRequest:
+            required:
+                - cluster_id
+                - name
+                - owner
+            type: object
+            properties:
+                cluster_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор кластера.
+                name:
+                    example: myapp_db
+                    type: string
+                    description: |-
+                        Название базы данных.
+                         Может содержать латинские буквы, цифры и подчеркивание.
+                         Должно начинаться с латинской буквы или подчеркивания.
+                owner:
+                    example: db_owner
+                    type: string
+                    description: Владелец базы данных.
+                lc_collate:
+                    example: С
+                    type: string
+                    description: |-
+                        Локаль сортировки.
+                         Нельзя изменить после создания базы данных.
+                         Значение по умолчанию — `C`.
+                lc_ctype:
+                    example: С
+                    type: string
+                    description: |-
+                        Локаль набора символов.
+                         Нельзя изменить после создания базы данных.
+                         Значение по умолчанию — `C`.
+            description: Запрос на создание базы данных.
+        cloudru.dbaas.postgresql.v1.CreateUserRequest:
+            required:
+                - cluster_id
+                - name
+                - password
+            type: object
+            properties:
+                cluster_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор кластера.
+                name:
+                    example: username
+                    type: string
+                    description: Имя пользователя. Используется только для идентификации существующего пользователя.
+                password:
+                    example: SecurePass123!
+                    type: string
+                    description: Пароль.
+            description: Запрос на создание пользователя в кластере.
+        cloudru.dbaas.postgresql.v1.Database:
+            required:
+                - name
+                - owner
+            type: object
+            properties:
+                name:
+                    example: myapp_production
+                    type: string
+                    description: Название базы данных.
+                owner:
+                    example: username
+                    type: string
+                    description: Владелец базы данных.
+                size_mb:
+                    readOnly: true
+                    example: 1024
+                    type: integer
+                    description: Размер в мегабайтах.
+                    format: uint32
+                lc_collate:
+                    readOnly: true
+                    example: C
+                    type: string
+                    description: Локаль сортировки.
+                lc_ctype:
+                    readOnly: true
+                    example: C
+                    type: string
+                    description: Локаль набора символов.
+            description: База данных PostgreSQL.
+        cloudru.dbaas.postgresql.v1.DeleteDatabaseResponse:
+            type: object
+            properties: {}
+            description: Ответ на запрос на удаление базы данных в кластере.
+        cloudru.dbaas.postgresql.v1.DeleteUserResponse:
+            type: object
+            properties: {}
+            description: Ответ на запрос на удаление пользователя в кластере.
+        cloudru.dbaas.postgresql.v1.ListBackupsResponse:
+            type: object
+            properties:
+                backups:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.Backup'
+            description: Ответ на запрос на получение списка резервных копий кластера.
+        cloudru.dbaas.postgresql.v1.ListClustersResponse:
+            type: object
+            properties:
+                clusters:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.Cluster'
+                    description: Список кластеров в указанном проекте.
+                next_page_token:
+                    readOnly: true
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Токен следующей страницы с результатами.
+            description: Ответ на запрос на получение списка кластеров, созданных в указанном проекте.
+        cloudru.dbaas.postgresql.v1.ListDatabasesResponse:
+            type: object
+            properties:
+                databases:
+                    example: [{"name": "db1", "owner": "user1"}, {"name": "db2", "owner": "user2"}]
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.Database'
+                    description: Список баз данных продукта.
+            description: Ответ на запрос на получение списка баз данных продукта.
+        cloudru.dbaas.postgresql.v1.ListLocalesResponse:
+            type: object
+            properties:
+                lc_collate:
+                    example: ["C", "en_US.UTF-8", "ru_RU.UTF-8"]
+                    type: array
+                    items:
+                        type: string
+                    description: Список локалей сортировки.
+                lc_ctype:
+                    example: ["C", "en_US.UTF-8", "ru_RU.UTF-8"]
+                    type: array
+                    items:
+                        type: string
+                    description: Список локалей набора символов.
+            description: Ответ на запрос на получение возможных локалей для кластера.
+        cloudru.dbaas.postgresql.v1.ListOperationsResponse:
+            type: object
+            properties:
+                operations:
+                    readOnly: true
+                    example: [{"id": "00000000-0000-0000-0000-000000000000", "status": "SUCCESS"}, {"id": "00000000-0000-0000-0000-000000000000", "status": "RUNNING"}]
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.operation.Operation'
+                    description: Список операций, выполненных над заданным кластером.
+                next_page_token:
+                    readOnly: true
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Токен следующей страницы с результатами.
+            description: Ответ на запрос на получение списка операций кластера.
+        cloudru.dbaas.postgresql.v1.ListSpecificationResponse:
+            type: object
+            properties:
+                specifications:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.Specification'
+                    description: Список спецификаций, доступных для определенной версии продукта.
+            description: Ответ на запрос на получение спецификаций.
+        cloudru.dbaas.postgresql.v1.ListUsersResponse:
+            type: object
+            properties:
+                users:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.User'
+                    description: Список пользователей кластера.
+            description: Ответ на запрос на получение списка пользователей кластера.
+        cloudru.dbaas.postgresql.v1.ListVersionLocalesResponse:
+            type: object
+            properties:
+                lc_collate:
+                    example: ["C", "ru_RU.UTF-8"]
+                    type: array
+                    items:
+                        type: string
+                    description: Список локалей сортировки.
+                lc_ctype:
+                    example: ["C", "ru_RU.UTF-8"]
+                    type: array
+                    items:
+                        type: string
+                    description: Список локалей набора символов.
+            description: Ответ на запрос на получение списка доступных локалей.
+        cloudru.dbaas.postgresql.v1.ListVersionsResponse:
+            type: object
+            properties:
+                versions:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.Version'
+                    description: Список версий.
+            description: Ответ на запрос на получение списка доступных версий продукта.
+        cloudru.dbaas.postgresql.v1.LoggingConfig:
+            type: object
+            properties:
+                enabled:
+                    example: true
+                    type: boolean
+                    description: |-
+                        Признак отправки логов кластера.
+                         По умолчанию `false` — логи не отправляются.
+                log_group_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: |-
+                        Идентификатор лог-группы, в которую отправляются логи.
+                         Если значение не задано, будет использоваться лог-группа проекта по умолчанию — `default`.
+            description: Параметры интеграции с сервисом Клиентского логирования.
+        cloudru.dbaas.postgresql.v1.MaintenanceWindow:
+            example: {"weekly_maintenance_window": {"day": "SAT", "hour": 2}}
+            type: object
+            properties:
+                anytime:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.AnytimeMaintenanceWindow'
+                    description: Техническое обслуживание в любое время.
+                weekly_maintenance_window:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.WeeklyMaintenanceWindow'
+                    description: Техническое обслуживание по расписанию.
+            description: Настройки окна проведения технического обслуживания.
+        cloudru.dbaas.postgresql.v1.PostgreSQLRole:
+            type: object
+            properties:
+                name:
+                    readOnly: true
+                    example: pg_read_all_data
+                    type: string
+                    description: Название роли.
+        cloudru.dbaas.postgresql.v1.RecoverySpec:
+            required:
+                - cluster_id
+            type: object
+            properties:
+                cluster_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: ClusterID - идентификатор кластера, которому требуется восстановление.
+                pitr:
+                    example: 2026-01-01T12:00:00Z
+                    type: string
+                    description: |-
+                        PITR — восстановление на момент времени (point-in-time-recovery).
+                         Введите время восстановления в формате временной метки.
+                    format: date-time
+                backup_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: BackupID — идентификатор резервной копии, из которой необходимо восстановить кластер.
+            description: |-
+                RecoverySpec — параметры восстановления кластера.
+                 Кластер можно восстановить на момент времени (PITR) или из резервной копии по ее идентификатору (BackupID).
+                 В обоих случаях восстановление происходит в новый кластер.
+        cloudru.dbaas.postgresql.v1.Specification:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор спецификации.
+                display_name:
+                    readOnly: true
+                    example: my-specification
+                    type: string
+                    description: Название спецификации.
+                cpu:
+                    readOnly: true
+                    example: 4
+                    type: number
+                    description: Количество виртуальных ядер процессора.
+                    format: double
+                memory:
+                    readOnly: true
+                    example: 32
+                    type: number
+                    description: Объем оперативной памяти в гигабайтах.
+                    format: double
+                allow_primary_standby:
+                    readOnly: true
+                    example: true
+                    type: boolean
+                    description: |-
+                        Отказоустойчивость кластера. Возможные значения:
+                         - `true` — отказоустойчивая конфигурацию с двумя синхронизированными узлами: основным и резервным.
+                         - `false` — одноузловая конфигурация.
+                max_hosts:
+                    readOnly: true
+                    example: 3
+                    type: integer
+                    description: Максимальное количество узлов, которое поддерживает текущая спецификация.
+                    format: int32
+                deployment_mode:
+                    readOnly: true
+                    example: BUSINESS
+                    enum:
+                        - DEPLOYMENT_MODE_UNSPECIFIED
+                        - STANDARD
+                        - BUSINESS
+                    type: string
+                    description: |-
+                        Режим развертывания кластера. Возможные значения:
+                         - `standard` — для тестирования и небольших приложений.
+                         - `business` — для высоконагруженных сервисов.
+                    format: enum
+                flavor_type:
+                    readOnly: true
+                    example: MEMORY
+                    enum:
+                        - FLAVOR_TYPE_UNSPECIFIED
+                        - MEMORY
+                        - CPU
+                        - BALANCE
+                    type: string
+                    description: |-
+                        Категория флейвора. Возможные значения:
+                         - `cpu` — содержит флейворы с увеличенной долей ядер процессора. Соотношение vCPU к RAM 1:1 и 1:2.
+                         - `balance` — содержит флейворы с оптимальным соотношением vCPU к RAM 1:4.
+                         - `memory` — содержит флейворы с увеличенной долей оперативной памяти. Соотношение vCPU к RAM 1:8 и 1:16.
+                    format: enum
+                min_storage_gb:
+                    readOnly: true
+                    example: 50
+                    type: integer
+                    description: Минимальный размер диска в гигабайтах.
+                    format: int32
+            description: Характеристики спецификации.
+        cloudru.dbaas.postgresql.v1.StorageInfoResponse:
+            type: object
+            properties:
+                read_only_mode:
+                    readOnly: true
+                    example: false
+                    type: boolean
+                    description: |-
+                        Доступ к кластеру:
+                         — `true` — кластер находится в режиме только для чтения;
+                         — `false` — кластер доступен для записи и чтения.
+                pg_data:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.StorageUsage'
+                    description: Текущее использование основного диска с данными.
+                pg_wal:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.StorageUsage'
+                    description: |-
+                        Текущее использование диска с WAL-журналом предзаписи.
+                         Значение является опциональным, отображается при размещении WAL-журнала на отдельном диске.
+        cloudru.dbaas.postgresql.v1.StorageSize:
+            required:
+                - pg_data_gb
+            type: object
+            properties:
+                pg_data_gb:
+                    example: 100
+                    type: integer
+                    description: Размер основного диска с данными в гигабайтах.
+                    format: int32
+                pg_wal_gb:
+                    example: 40
+                    type: integer
+                    description: |-
+                        Размер диска с WAL-журналом предзаписи в гигабайтах.
+                         При указании WAL-журнал будет размещен на отдельном диске.
+                         Размер должен составлять не менее 20% от основного диска.
+                         Значение является опциональным.
+                    format: int32
+            description: Размеры дисков кластера — основного с данными и дополнительного WAL-диска.
+        cloudru.dbaas.postgresql.v1.StorageUsage:
+            type: object
+            properties:
+                used_gb:
+                    readOnly: true
+                    example: 50
+                    type: number
+                    description: Объем занимаемого дискового пространства.
+                    format: double
+                total_gb:
+                    readOnly: true
+                    example: 100
+                    type: number
+                    description: Общий объем доступного дискового пространства.
+                    format: double
+            description: Подробная информация об используемом дисковом пространстве.
+        cloudru.dbaas.postgresql.v1.UpdateClusterRequest:
+            required:
+                - cluster_id
+            type: object
+            properties:
+                cluster_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор кластера.
+                instances:
+                    example: 2
+                    type: integer
+                    description: |-
+                        Количество узлов кластера.
+                         Допустимые значения зависят от режима развертывания кластера: 1-2 узла для `standard`, 1-3 узла для `business`.
+
+                         Если в `subnet_ids` указано несколько подсетей, кластер считается мультизональным,
+                         и количество узлов должно совпадать с количеством подсетей.
+                    format: int32
+                subnet_ids:
+                    example: {"value": ["00000000-0000-0000-0000-000000000000", "11111111-1111-1111-1111-111111111111"]}
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.protobuf.v1.RepeatedString'
+                    description: |-
+                        Идентификаторы подсетей. Подсети определяют зоны доступности кластера.
+
+                         Если указано несколько подсетей, кластер считается мультизональным.
+                         Мультизональный режим доступен только для кластеров типа `business`.
+                         В этом случае количество подсетей должно совпадать с количеством узлов `instances`,
+                         а каждая подсеть должна находиться в отдельной зоне доступности.
+
+                         Список подсетей и их описание можно получить через API сервиса виртуальных машин
+                         в разделе [Subnets](https://cloud.ru/docs/virtual-machines/ug/topics/api-ref-v3#tag/Subnets).
+                specification_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: |-
+                        Идентификатор спецификации кластера.
+                         Ресурсы кластера типа `standard` нельзя изменить после создания.
+                storage:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.StorageSize'
+                    description: Размеры дисков кластера.
+                pooler_config:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.ConnectionPoolerConfig'
+                    description: |-
+                        Конфигурация пулера соединений PgBouncer.
+                         Пулер соединений нельзя включить или отключить после создания кластера.
+                backup:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.BackupSpec'
+                    description: |-
+                        Параметры автоматического резервного копирования.
+                         Резервное копирование нельзя включить или отключить после создания кластера.
+                maintenance_window:
+                    allOf:
+                        - $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.MaintenanceWindow'
+                    description: Окно проведения технического обслуживания.
+            description: Запрос на изменение кластера.
+        cloudru.dbaas.postgresql.v1.UpdateUserRequest:
+            required:
+                - cluster_id
+                - name
+            type: object
+            properties:
+                cluster_id:
+                    example: 00000000-0000-0000-0000-000000000000
+                    type: string
+                    description: Идентификатор кластера для обновления.
+                name:
+                    example: username
+                    type: string
+                    description: Имя пользователя. Используется только для идентификации существующего пользователя.
+                granted_roles:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.PostgreSQLRole'
+                    description: Назначаемые роли.
+                password:
+                    example: NewSecurePass456!
+                    type: string
+                    description: Пароль.
+            description: |-
+                Запрос на изменение пользователя в кластере.
+                 Позволяет назначать роли и менять пароль пользователя. Переименование пользователя не поддерживается.
+        cloudru.dbaas.postgresql.v1.User:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    example: username
+                    type: string
+                    description: Имя пользователя.
+                supported_roles:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.PostgreSQLRole'
+                    description: Доступные роли.
+                granted_roles:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/cloudru.dbaas.postgresql.v1.PostgreSQLRole'
+                    description: Назначенные роли.
+        cloudru.dbaas.postgresql.v1.Version:
+            type: object
+            properties:
+                name:
+                    readOnly: true
+                    example: 17
+                    type: string
+                    description: Название версии продукта.
+            description: Версия продукта.
+        cloudru.dbaas.postgresql.v1.WeeklyMaintenanceWindow:
+            required:
+                - day
+                - hour
+            type: object
+            properties:
+                day:
+                    example: SAT
+                    enum:
+                        - WEEK_DAY_UNSPECIFIED
+                        - WEEK_DAY_MON
+                        - WEEK_DAY_TUE
+                        - WEEK_DAY_WED
+                        - WEEK_DAY_THU
+                        - WEEK_DAY_FRI
+                        - WEEK_DAY_SAT
+                        - WEEK_DAY_SUN
+                    type: string
+                    description: День недели проведения технического обслуживания.
+                    format: enum
+                hour:
+                    example: 2
+                    type: integer
+                    description: Час начала окна по UTC в диапазоне 1-24 (00:00-23:00).
+                    format: int32
+            description: Техническое обслуживание по расписанию.
+        cloudru.protobuf.v1.RepeatedString:
+            type: object
+            properties:
+                value:
+                    type: array
+                    items:
+                        type: string
+                    description: The repeated string value.
+        google.protobuf.Any:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: URL-адрес или имя ресурса, которое определяет тип сериализованного сообщения.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        google.rpc.Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: Код ошибки.
+                    format: int32
+                message:
+                    type: string
+                    description: Описание ошибки.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/google.protobuf.Any'
+                    description: Дополнительная информация об ошибке.
+            description: Ошибка.
+tags:
+    - name: BackupService
+      description: Управление резервными копиями кластеров PostgreSQL.
+    - name: ClusterService
+      description: Управление кластерами PostgreSQL.
+    - name: DatabaseService
+      description: Управление базами данных PostgreSQL.
+    - name: OperationService
+      description: Управление операциями PostgreSQL.
+    - name: SpecificationService
+      description: Управление спецификациями PostgreSQL.
+    - name: UserService
+      description: Управление пользователями PostgreSQL.
+    - name: VersionService
+      description: Управление версиями PostgreSQL.

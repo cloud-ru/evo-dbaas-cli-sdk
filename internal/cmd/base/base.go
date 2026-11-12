@@ -5,12 +5,16 @@ package base
 
 import (
 	"context"
+	"errors"
 	"io"
+	"strings"
 
 	"github.com/spf13/cobra"
 
+	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cloud"
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/i18n"
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/operation"
+	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/output"
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/state"
 )
 
@@ -52,6 +56,13 @@ type DeleteCmd struct {
 	// после обрыва --wait; без NoWait у команды есть --wait.
 	OpsCmd string
 	NoWait bool
+	// ClusterCmd — команда чтения кластера для подсказки при удалении во время создания.
+	// Пустое значение сохраняет ошибки остальных ресурсов и lifecycle-команд.
+	ClusterCmd string
+	// NeedYesKey и YesFlagKey разрешают ключи подтверждения через литеральный
+	// i18n.T (проверка каталога); nil использует прежние ключи common.*.
+	NeedYesKey func() string
+	YesFlagKey func() string
 }
 
 // Cmd собирает cobra-команду.
@@ -80,22 +91,35 @@ func (c DescribeCmd) Cmd(s *state.State) *cobra.Command { return ListCmd(c).Cmd(
 func (c DeleteCmd) Cmd(s *state.State) *cobra.Command {
 	var yes, wait bool
 
+	if c.NeedYesKey == nil {
+		c.NeedYesKey = func() string { return i18n.T("common.err.need_yes") }
+	}
+
+	if c.YesFlagKey == nil {
+		c.YesFlagKey = func() string { return i18n.T("common.flag.yes") }
+	}
+
 	cmd := &cobra.Command{
 		Use: c.Use, Short: c.Short, Args: c.Args,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !yes {
-				return &ExitError{Code: 1, Msg: i18n.T("common.err.need_yes")}
+				return &ExitError{Code: 1, Msg: c.NeedYesKey()}
 			}
 
 			raw, err := c.Delete(cmd.Context(), s, args)
 			if err != nil {
+				var apiErr *cloud.APIError
+				if c.ClusterCmd != "" && errors.As(err, &apiErr) && (strings.Contains(apiErr.Message, "create inventory task") || strings.Contains(apiErr.Message, "cannot receive any new tasks")) {
+					return &ExitError{Code: output.ExitCode(err), Msg: i18n.T("base.err.cluster_creating", c.ClusterCmd, args[0], err)}
+				}
+
 				return err
 			}
 
 			return Finish(cmd, s, raw, wait, c.Ops, c.OpsCmd)
 		},
 	}
-	cmd.Flags().BoolVar(&yes, "yes", false, i18n.T("common.flag.yes"))
+	cmd.Flags().BoolVar(&yes, "yes", false, c.YesFlagKey())
 
 	if !c.NoWait {
 		cmd.Flags().BoolVar(&wait, "wait", false, i18n.T("base.flag.wait"))

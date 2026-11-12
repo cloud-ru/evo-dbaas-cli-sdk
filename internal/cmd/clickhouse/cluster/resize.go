@@ -19,9 +19,10 @@ func resizeCmd(s *state.State) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "resize CLUSTER_ID",
-		Short: i18n.T("clickhouse.cluster.resize.short"),
-		Args:  cobra.ExactArgs(1),
+		Use:     "resize CLUSTER_ID",
+		Aliases: []string{"update"},
+		Short:   i18n.T("clickhouse.cluster.resize.short"),
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if u.Spec == "" && u.StorageGiB == 0 && u.Keeper.Spec == "" && u.Keeper.StorageGiB == 0 && len(config) == 0 && body == "" {
 				return &base.ExitError{Code: 1, Msg: i18n.T("clickhouse.cluster.resize.err.no_changes")}

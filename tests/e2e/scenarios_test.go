@@ -24,6 +24,42 @@ const (
 )
 
 var commandRuns = []scenario{
+	{args: "version", noKey: true},
+	// PostgreSQL: backups, recovery and lifecycle.
+	{args: "postgresql backups list --cluster-id c1"},
+	{args: "postgresql backups get daily --cluster-id c1"},
+	{args: "postgresql backups create daily --cluster-id c1"},
+	{args: "postgresql clusters suspend c1 --yes"},
+	{args: "postgresql clusters resume c1 --yes"},
+	{args: "postgresql clusters switchover c1 --yes"},
+	{args: "postgresql clusters storage-info c1"},
+	{args: "postgresql clusters locales c1"},
+	{args: "postgresql versions locales 17"},
+	{args: "postgresql clusters create --name restored --version 17 --spec s --initial-database app --storage-gib 50 --subnet-id sn1 --backup-retention-days 14 --recover-from-cluster source --backup-id b1", extraArgs: []string{"--backup-schedule", "0 3 * * 0"}},
+	{args: "postgresql clusters create --name restored --version 17 --spec s --initial-database app --storage-gib 50 --subnet-id sn1 --recover-from-cluster source --pitr 2026-11-07T12:30:00+03:00"},
+	{args: "postgresql clusters update c1 --backup-retention-days 30", extraArgs: []string{"--backup-schedule", "15 14 ? * *"}},
+	// PostgreSQL: base commands.
+	{args: "postgresql versions list"},
+	{args: "postgresql specs list --version 17"},
+	{args: "postgresql specs list --cluster-id c1"},
+	{args: "postgresql clusters list"},
+	{args: "postgresql clusters get c1"},
+	{args: "postgresql clusters create --name n --description d --version 17 --spec s --initial-database app --lc-collate C --lc-ctype C --storage-gib 50 --wal-gib 20 --instances 2 --subnet-id sn1 --subnet-id sn2 --logging --log-group-id lg --body {\"pooler_config\":{\"pool_mode\":\"SESSION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"anytime\":{}}}"},
+	{args: "postgresql clusters update c1 --spec s2 --instances 2 --subnet-id sn1,sn2 --storage-gib 100 --wal-gib 20 --body {\"pooler_config\":{\"pool_mode\":\"TRANSACTION\",\"parameters\":{\"max_client_conn\":\"200\"}},\"maintenance_window\":{\"anytime\":{}}}"},
+	{args: "postgresql clusters delete c1 --yes"},
+	{args: "postgresql users list c1"},
+	{args: "postgresql users get c1 u"},
+	{args: "postgresql users create c1 u --password-env PW --body {}", env: []string{"PW=Secret-1"}},
+	{args: "postgresql users create c1 u --password-stdin", stdin: "Secret-1\n"},
+	{args: "postgresql users update c1 u --password-env PW --role pg_read_all_data --body {}", env: []string{"PW=Secret-2"}},
+	{args: "postgresql users update c1 u --password-stdin", stdin: "Secret-2\n"},
+	{args: "postgresql users delete c1 u --yes"},
+	{args: "postgresql databases list c1"},
+	{args: "postgresql databases get c1 db"},
+	{args: "postgresql databases create c1 db --owner u --lc-collate C --lc-ctype C --body {}"},
+	{args: "postgresql databases delete c1 db --yes"},
+	{args: "postgresql operations list c1"},
+	{args: "postgresql operations get op1"},
 	// ClickHouse
 	{args: "clickhouse auth check"},
 	{args: "clickhouse versions list"},
@@ -136,6 +172,25 @@ var commandRuns = []scenario{
 // edgeRuns — поведение, которое рефакторинг шагов 3–7 трогает: ошибки ключа и API,
 // коды выхода, ожидание операций, подтверждение удаления, --json.
 var edgeRuns = []scenario{
+	// Находка 12.11: удаление DEPLOYING даёт 400/500 с отказом планировщика.
+	{name: "delete deploying redis", args: "redis clusters delete c1 --yes", overrides: map[string]reply{
+		"DELETE /redis/v1/clusters/c1": {status: 400, body: `{"message":"create inventory task 123: FailedPrecondition"}`},
+	}},
+	{name: "delete deploying kafka", args: "kafka clusters delete k1 --yes", overrides: map[string]reply{
+		"DELETE /kafka/v1/clusters/k1": {status: 500, body: `{"message":"cannot receive any new tasks"}`},
+	}},
+	{name: "delete deploying clickhouse ru", args: "clickhouse clusters delete ch1 --yes", env: []string{"LANG=ru_RU.UTF-8"}, overrides: map[string]reply{
+		"DELETE /clickhouse/v1/clusters/ch1": {status: 500, body: `{"message":"cannot receive any new tasks"}`},
+	}},
+	{name: "delete deploying postgresql", args: "postgresql clusters delete pg1 --yes", overrides: map[string]reply{
+		"DELETE /postgresql/v1/clusters/pg1": {status: 400, body: `{"message":"create inventory task 456: FailedPrecondition"}`},
+	}},
+	// Находка 12.11: Redis Multi-AZ с двумя подсетями даёт API 400.
+	{name: "redis multi-az две подсети", args: "redis clusters create --name n --version-id v1 --spec s --type master-replica --replicas 1 --shards 1 --subnet-id A --subnet-id B"},
+	{name: "redis multi-az повтор подсети ru", args: "redis clusters create --name n --version-id v1 --spec s --subnet-id A,B,A", env: []string{"LANG=ru_RU.UTF-8"}},
+	{name: "список с мусором после JSON", args: "redis clusters list", overrides: map[string]reply{
+		"GET /redis/v1/clusters": {body: `{}0`},
+	}},
 	{name: "нет ключа", args: "redis clusters list", noKey: true},
 	{name: "ключ отклонён 401", args: "redis clusters list", overrides: map[string]reply{
 		"POST /iam/token": {status: 401, body: `{"error":"invalid_client"}`},

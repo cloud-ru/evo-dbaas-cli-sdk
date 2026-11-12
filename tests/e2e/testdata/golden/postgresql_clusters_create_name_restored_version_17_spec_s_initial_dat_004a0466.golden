@@ -1,0 +1,20 @@
+exit: 0
+--- stdout
+operation op1 — in progress
+resource  c1
+          Создание кластера
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /postgresql/v1/specifications?product_type=postgres&version_name=17
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1
+POST /postgresql/v1/clusters
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"backup":{"retention_policy_days":14,"schedule":"0 3 * * SUN"},"initial_database":"app","instances":1,"name":"restored","project_id":"proj-1","recovery_spec":{"cluster_id":"source","pitr":"2026-11-07T12:30:00+03:00"},"specification_id":"s","storage":{"pg_data_gb":50},"subnet_ids":["sn1"],"version":"17"}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 
@@ -192,6 +193,12 @@ func (b *budget) fetch(path string, get func() ([]byte, error)) (map[string]any,
 	var page map[string]any
 	if err := d.Decode(&page); err != nil {
 		return nil, i18n.Errorf("cloud.err.list_parse", ErrList, path, err)
+	}
+
+	// A list endpoint returns one JSON document, not a stream. A successful
+	// first Decode alone would silently accept a second value or trailing junk.
+	if d.Decode(new(any)) != io.EOF {
+		return nil, i18n.Errorf("cloud.err.list_trailing", ErrList, path)
 	}
 
 	if page == nil {

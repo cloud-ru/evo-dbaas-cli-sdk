@@ -15,6 +15,7 @@ import (
 	iamcmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/iam"
 	kafkacmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/kafka"
 	networkcmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/network"
+	postgresqlcmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/postgresql"
 	rediscmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/redis"
 	zonescmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/zones"
 	"github.com/cloud-ru/evo-dbaas-cli-sdk/internal/config"
@@ -61,7 +62,7 @@ func NewDBaaSRoot() *cobra.Command {
 	a.commonFlags(root)
 
 	// Адреса продуктов — из конфига при выполнении (init): файл и профиль известны только после разбора флагов.
-	root.AddCommand(clickhousecmd.NewCmd(a.st, ""), rediscmd.NewCmd(a.st, ""), kafkacmd.NewCmd(a.st, ""), iamcmd.NewCmd(a.st), networkcmd.NewCmd(a.st), zonescmd.NewCmd(a.st), a.configCmd())
+	root.AddCommand(postgresqlcmd.NewCmd(a.st, ""), clickhousecmd.NewCmd(a.st, ""), rediscmd.NewCmd(a.st, ""), kafkacmd.NewCmd(a.st, ""), iamcmd.NewCmd(a.st), networkcmd.NewCmd(a.st), zonescmd.NewCmd(a.st), a.configCmd(), a.versionCmd())
 
 	return root
 }
@@ -71,7 +72,7 @@ func (a *app) commonFlags(root *cobra.Command) {
 	root.PersistentFlags().StringVar(&a.project, "project", "", i18n.T("cmd.flag.project"))
 	root.PersistentFlags().StringVar(&a.configPath, "config", "", i18n.T("cmd.flag.config"))
 	root.PersistentFlags().StringVar(&a.profile, "profile", "", i18n.T("cmd.flag.profile"))
-	root.PersistentFlags().DurationVar(&a.timeout, "timeout", 30*time.Minute, i18n.T("cmd.flag.timeout"))
+	root.PersistentFlags().DurationVar(&a.timeout, "timeout", 150*time.Minute, i18n.T("cmd.flag.timeout"))
 }
 
 // rejectNegative отказывает на отрицательном числовом флаге: все они —
@@ -88,12 +89,12 @@ func rejectNegative(cmd *cobra.Command) error {
 	return err
 }
 
-// withoutConfig — help и дополнение работают без конфига (§8.7): кривой файл
-// или опечатка в --profile не должны ломать справку и Tab. config читает файл сам и без ключа.
+// withoutConfig — version, help и дополнение работают без конфига (§8.7): кривой файл
+// или опечатка в --profile не должны ломать версию, справку и Tab. config читает файл сам и без ключа.
 func withoutConfig(cmd *cobra.Command) bool {
 	for c := cmd; c != nil; c = c.Parent() {
 		switch c.Name() {
-		case "help", "completion", "config", cobra.ShellCompRequestCmd, cobra.ShellCompNoDescRequestCmd:
+		case "version", "help", "completion", "config", cobra.ShellCompRequestCmd, cobra.ShellCompNoDescRequestCmd:
 			return true
 		}
 	}
@@ -139,6 +140,7 @@ func (a *app) init(cmd *cobra.Command) error {
 		{&a.st.ClickHouseURL, cfg.ClickHouseURL, product == "clickhouse" && cmd.Flags().Changed("api-url")},
 		{&a.st.RedisURL, cfg.RedisURL, product == "redis" && cmd.Flags().Changed("api-url")},
 		{&a.st.KafkaURL, cfg.KafkaURL, product == "kafka" && cmd.Flags().Changed("api-url")},
+		{&a.st.PostgreSQLURL, cfg.PostgreSQLURL, product == "postgresql" && cmd.Flags().Changed("api-url")},
 	} {
 		if !f.set {
 			*f.v = f.def

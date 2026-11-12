@@ -23,6 +23,34 @@ tasks:
     cmds:
       - go test -race -coverprofile=cover.out -json ./... > test.json || (go run ./tools/ratchet -failures test.json; exit 1)
 
+  fuzz:
+    desc: Каждый Fuzz-тест отдельно, по 5 секунд; seed-корпус также входит в task test
+    cmds:
+      - |
+        set -eu
+        suites='
+        ./internal/cmd/base:FuzzParseKV,FuzzOneOf,FuzzBody
+        ./internal/cloud:FuzzParseClickHouseConfig,FuzzParseOperation,FuzzParseVPCOperation,FuzzParseTopologyBody,FuzzPageItems,FuzzWalkTokens,FuzzWalkOffsets,FuzzParseUUID
+        ./internal/cmd/kafka/user:FuzzValidName
+        ./internal/cmd/iam:FuzzShellValue
+        '
+        for suite in $suites; do
+          package=${suite%%:*}
+          expected=$(printf '%s\n' "${suite#*:}" | tr ',' ' ')
+          listed=$(go test "$package" -list '^Fuzz')
+          targets=$(printf '%s\n' "$listed" | sed -n '/^Fuzz[[:alnum:]_]*$/p')
+          test -n "$targets"
+          for required in $expected; do
+            if ! printf '%s\n' "$targets" | grep -Fxq "$required"; then
+              printf 'fuzz: required target %s is missing from %s\n' "$required" "$package" >&2
+              exit 1
+            fi
+          done
+          for target in $targets; do
+            go test "$package" -run '^$' -fuzz "^${target}$" -fuzztime=5s -parallel=2
+          done
+        done
+
   vuln:
     desc: Уязвимости зависимостей
     cmds:
@@ -44,6 +72,42 @@ tasks:
     cmds:
       - go run ./tools/ratchet -base {{.BASE | default "origin/main"}} -pr-body "$RATCHET_PR_BODY" -cover cover.out -tests test.json
 
+  mutate:
+    desc: Мутации изменённых строк ручного Go-кода
+    env:
+      MUTATION_BASE: '{{.BASE | default "origin/main"}}'
+      # v0.6.0 теряет вторую правку внутри одного hunk с контекстом.
+      GIT_DIFF_OPTS: --unified=0
+    cmds:
+      - |
+        set -eu
+        changed=$(git diff --merge-base --name-only "$MUTATION_BASE" -- '*.go' ':(exclude)internal/gen/**' ':(exclude)tools/**' ':(exclude)*_test.go')
+        if [ -z "$changed" ]; then
+          echo "mutate: нет изменённых строк ручного Go-кода"
+          exit 0
+        fi
+        mutation_config=$(mktemp)
+        mutation_report=$(mktemp)
+        trap 'rm -f "$mutation_config" "$mutation_report"' EXIT
+        # v0.6.0 игнорирует числовой флаг порога; YAML сохраняет тип.
+        # Порог строгий: предыдущий float64 перед 94 задаёт эффективность >= 94%.
+        cat > "$mutation_config" <<'YAML'
+        unleash:
+          threshold:
+            efficacy: 93.99999999999999
+        YAML
+        mutation_status=0
+        gremlins unleash --config "$mutation_config" --output "$mutation_report" --diff "$MUTATION_BASE" --exclude-files '(^|/)(internal/gen|tools)/|_test\.go$' --workers 4 --timeout-coefficient 3 || mutation_status=$?
+        # При отсутствии поддерживаемых мутаций v0.6.0 сравнивает с порогом ноль.
+        if [ "$mutation_status" -eq 10 ] &&
+          grep -q '"mutants_total":0[,}]' "$mutation_report" &&
+          grep -q '"mutants_not_covered":0[,}]' "$mutation_report" &&
+          ! grep -q '"status":"TIMED OUT"' "$mutation_report"; then
+          echo "mutate: в изменённых строках нет поддерживаемых мутантов (ERROR выше от gremlins — ложный: v0.6.0 сравнивает с порогом ноль)"
+          exit 0
+        fi
+        exit "$mutation_status"
+
   check:
     desc: Все гейты PR
     cmds:
@@ -51,6 +115,7 @@ tasks:
       - task: vuln
       - task: gencheck
       - task: ratchet
+      - task: mutate
       - task: floor
 
   gen:

@@ -49,3 +49,20 @@ func TestRootWiresOutputStreamsAndJSON(t *testing.T) {
 		t.Errorf("сообщение: stdout %q, stderr %q, %v", out, msg, err)
 	}
 }
+
+// Корень PostgreSQL обязан передать --json без повторной сериализации и без
+// запроса спецификаций для человеческой колонки режима.
+func TestPostgreSQLRootPreservesJSON(t *testing.T) {
+	f := newFakeCloud(t)
+	raw := `{"id":"pg1","instances":2,"new_field":12345678901234567890}`
+	f.on("GET /v1/clusters/pg1", jsonReply(raw))
+
+	out, msg, err := execute(NewDBaaSRoot(), "", "postgresql", "clusters", "get", "pg1", "--json")
+	if err != nil || strings.TrimSpace(out) != raw || msg != "" {
+		t.Errorf("JSON PostgreSQL: stdout %q, stderr %q, %v", out, msg, err)
+	}
+
+	if strings.Join(f.calls, ",") != "GET /v1/clusters/pg1" {
+		t.Errorf("лишние запросы: %v", f.calls)
+	}
+}

@@ -1,0 +1,13 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: list not assembled: trailing data in response clusters
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /redis/v1/clusters?page_size=100&project_id=proj-1
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1

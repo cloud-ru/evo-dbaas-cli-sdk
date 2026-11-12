@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: resuming a cluster: rerun with --yes
+--- requests

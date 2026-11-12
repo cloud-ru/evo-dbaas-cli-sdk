@@ -1,0 +1,14 @@
+exit: 1
+--- stdout
+
+--- stderr
+ошибка: кластер ещё создаётся, удалить можно, когда создание закончится; состояние: `clickhouse clusters get ch1`
+API 500: cannot receive any new tasks
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+DELETE /clickhouse/v1/clusters/ch1
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1

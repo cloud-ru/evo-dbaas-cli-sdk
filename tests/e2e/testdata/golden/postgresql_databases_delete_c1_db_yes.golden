@@ -1,0 +1,13 @@
+exit: 0
+--- stdout
+
+--- stderr
+database db deleted
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+DELETE /postgresql/v1/clusters/c1/databases/db
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1

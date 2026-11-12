@@ -52,6 +52,56 @@ var coverageFlagsGlobal = map[string]bool{"json": true, "project": true, "api-ur
 // coverageRuns — вызовы CLI, которыми тест обходит API. Новый флаг или команда
 // без строки здесь роняет тест (каждый флаг каждой команды обязан встретиться).
 var coverageRuns = []covRun{
+	// PostgreSQL: backups, recovery and lifecycle.
+	{args: "postgresql backups list --cluster-id c1"},
+	{args: "postgresql backups get daily --cluster-id c1"},
+	{args: "postgresql backups create daily --cluster-id c1"},
+	{args: "postgresql clusters suspend c1 --yes"},
+	{args: "postgresql clusters resume c1 --yes"},
+	{args: "postgresql clusters switchover c1 --yes"},
+	{args: "postgresql clusters storage-info c1"},
+	{args: "postgresql clusters locales c1"},
+	{args: "postgresql versions locales 17"},
+	{args: "postgresql clusters create --name restored --version 17 --spec s --initial-database app --storage-gib 50 --subnet-id sn1 --backup-retention-days 14 --recover-from-cluster source --backup-id b1", extraArgs: []string{"--backup-schedule", "0 3 * * 0"}},
+	{args: "postgresql clusters create --name restored --version 17 --spec s --initial-database app --storage-gib 50 --subnet-id sn1 --recover-from-cluster source --pitr 2026-11-07T12:30:00+03:00"},
+	{args: "postgresql clusters create --name bare --version 17 --spec s --initial-database app --storage-gib 50 --subnet-id sn1 --no-backup"},
+	{args: "postgresql clusters update c1 --backup-retention-days 30", extraArgs: []string{"--backup-schedule", "15 14 ? * *"}},
+	// PostgreSQL: base commands.
+	{args: "postgresql versions list"},
+	{args: "postgresql specs list --version 17"},
+	{args: "postgresql specs list --cluster-id c1"},
+	{args: "postgresql clusters list"},
+	{args: "postgresql clusters get c1"},
+	{args: "postgresql clusters create --name n --description d --version 17 --spec s --initial-database app --lc-collate C --lc-ctype C --storage-gib 50 --wal-gib 20 --instances 2 --subnet-id sn1 --subnet-id sn2 --logging --log-group-id lg --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"SESSION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"anytime\":{}}}"},
+	{args: "postgresql clusters update c1 --spec s2 --instances 2 --subnet-id sn1,sn2 --storage-gib 100 --wal-gib 20 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"TRANSACTION\",\"parameters\":{\"max_client_conn\":\"200\"}},\"maintenance_window\":{\"anytime\":{}}}"},
+	{args: "postgresql clusters delete c1 --yes"},
+	{args: "postgresql users list c1"},
+	{args: "postgresql users get c1 u"},
+	{args: "postgresql users create c1 u --password-env PW --body {}", env: "PW=Secret-1"},
+	{args: "postgresql users create c1 u --password-stdin", stdin: "Secret-1\n"},
+	{args: "postgresql users update c1 u --password-env PW --role pg_read_all_data --body {}", env: "PW=Secret-2"},
+	{args: "postgresql users update c1 u --password-stdin", stdin: "Secret-2\n"},
+	{args: "postgresql users delete c1 u --yes"},
+	{args: "postgresql databases list c1"},
+	{args: "postgresql databases get c1 db"},
+	{args: "postgresql databases create c1 db --owner u --lc-collate C --lc-ctype C --body {}"},
+	{args: "postgresql databases delete c1 db --yes"},
+	{args: "postgresql operations list c1"},
+	{args: "postgresql operations get op1"},
+	{args: "postgresql clusters create --name n --version 17 --spec s --initial-database app --storage-gib 50 --subnet-id sn1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"TRANSACTION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_MON\",\"hour\":2}}}"},
+	{args: "postgresql clusters update c1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"SESSION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_MON\",\"hour\":2}}}"},
+	{args: "postgresql clusters create --name n --version 17 --spec s --initial-database app --storage-gib 50 --subnet-id sn1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"TRANSACTION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_TUE\",\"hour\":2}}}"},
+	{args: "postgresql clusters update c1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"SESSION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_TUE\",\"hour\":2}}}"},
+	{args: "postgresql clusters create --name n --version 17 --spec s --initial-database app --storage-gib 50 --subnet-id sn1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"TRANSACTION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_WED\",\"hour\":2}}}"},
+	{args: "postgresql clusters update c1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"SESSION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_WED\",\"hour\":2}}}"},
+	{args: "postgresql clusters create --name n --version 17 --spec s --initial-database app --storage-gib 50 --subnet-id sn1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"TRANSACTION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_THU\",\"hour\":2}}}"},
+	{args: "postgresql clusters update c1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"SESSION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_THU\",\"hour\":2}}}"},
+	{args: "postgresql clusters create --name n --version 17 --spec s --initial-database app --storage-gib 50 --subnet-id sn1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"TRANSACTION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_FRI\",\"hour\":2}}}"},
+	{args: "postgresql clusters update c1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"SESSION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_FRI\",\"hour\":2}}}"},
+	{args: "postgresql clusters create --name n --version 17 --spec s --initial-database app --storage-gib 50 --subnet-id sn1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"TRANSACTION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_SAT\",\"hour\":2}}}"},
+	{args: "postgresql clusters update c1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"SESSION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_SAT\",\"hour\":2}}}"},
+	{args: "postgresql clusters create --name n --version 17 --spec s --initial-database app --storage-gib 50 --subnet-id sn1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"TRANSACTION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_SUN\",\"hour\":2}}}"},
+	{args: "postgresql clusters update c1 --body {\"pooler_config\":{\"enabled\":true,\"pool_mode\":\"SESSION\",\"parameters\":{\"max_client_conn\":\"100\"}},\"maintenance_window\":{\"weekly_maintenance_window\":{\"day\":\"WEEK_DAY_SUN\",\"hour\":2}}}"},
 	// ClickHouse
 	{args: "clickhouse versions list"},
 	{args: "clickhouse specs list --version 25.8 --zone zone-1 --role server"},
@@ -81,6 +131,7 @@ var coverageRuns = []covRun{
 	{args: "clickhouse roles list c1"},
 	{args: "clickhouse operations get op1"},
 	{args: "clickhouse operations list c1"},
+	{args: "clickhouse clusters resize c1 --config background_pool_size=1 --config background_schedule_pool_size=1 --config keep_alive_timeout=1 --config mark_cache_size=1 --config max_concurrent_queries=1 --config max_partition_size_to_drop=1 --config max_session_timeout=1 --config max_table_size_to_drop=1 --config uncompressed_cache_size=1"},
 	// Redis
 	{args: "redis versions list"},
 	{args: "redis specs list --version-id v1 --zone zone-1"},
@@ -159,9 +210,10 @@ var coverageRuns = []covRun{
 }
 
 type covRun struct {
-	args  string
-	stdin string
-	env   string // ИМЯ=значение
+	extraArgs []string // arguments containing spaces, passed as single values
+	args      string
+	stdin     string
+	env       string // ИМЯ=значение
 }
 
 type covRequest struct {
@@ -200,6 +252,20 @@ func (rec *covRecorder) serve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if product == "postgresql" && r.Method == http.MethodGet {
+		switch {
+		case path == "v1/specifications":
+			_, _ = w.Write([]byte(`{"specifications":[{"id":"s","deployment_mode":"BUSINESS","max_hosts":3},{"id":"s2","deployment_mode":"BUSINESS","max_hosts":3}]}`))
+			return
+		case path == "v1/clusters/c1":
+			_, _ = w.Write([]byte(`{"id":"c1","version":"17","specification_id":"s","instances":1,"subnet_ids":["sn1"]}`))
+			return
+		case (path == "v1/clusters" || strings.HasSuffix(path, "/operations")) && r.URL.Query().Get("page_token") == "":
+			_, _ = w.Write([]byte(`{"clusters":[],"operations":[],"next_page_token":"second"}`))
+			return
+		}
+	}
+
 	_, _ = w.Write([]byte(`{}`))
 }
 
@@ -216,6 +282,7 @@ func TestAPICoverage(t *testing.T) {
 	t.Setenv("CLOUDRU_CLICKHOUSE_API_URL", srv.URL+"/clickhouse")
 	t.Setenv("CLOUDRU_REDIS_API_URL", srv.URL+"/redis")
 	t.Setenv("CLOUDRU_KAFKA_API_URL", srv.URL+"/kafka")
+	t.Setenv("CLOUDRU_POSTGRESQL_API_URL", srv.URL+"/postgresql")
 	t.Setenv("CLOUDRU_COMPUTE_API_URL", srv.URL+"/compute")
 	t.Setenv("CLOUDRU_VPC_API_URL", srv.URL+"/vpc")
 	t.Setenv("CLOUDRU_IAM_API_URL", srv.URL+"/iamapi")
@@ -227,7 +294,7 @@ func TestAPICoverage(t *testing.T) {
 
 	usedFlags := map[string]bool{} // "redis users create --role"
 	for _, run := range coverageRuns {
-		args := strings.Fields(strings.ReplaceAll(run.args, "ENVFILE", filepath.Join(t.TempDir(), "key.env")))
+		args := append(strings.Fields(strings.ReplaceAll(run.args, "ENVFILE", filepath.Join(t.TempDir(), "key.env"))), run.extraArgs...)
 		if run.env != "" {
 			k, v, _ := strings.Cut(run.env, "=")
 			t.Setenv(k, v)
@@ -289,6 +356,7 @@ func TestAPICoverage(t *testing.T) {
 		{"clickhouse", "openapi-clickhouse.yaml", nil},
 		{"redis", "openapi-redis.yaml", nil},
 		{"kafka", "openapi-kafka.yaml", nil},
+		{"postgresql", "openapi-postgresql.yaml", nil},
 		// Из API виртуальных машин, VPC и IAM CLI берёт то, что нужно для
 		// кластера: подсети, VPC, сервисные аккаунты, ключи, роли. Внутри
 		// этих путей покрытие полное, как у продуктов.
@@ -302,6 +370,8 @@ func TestAPICoverage(t *testing.T) {
 		}},
 	} {
 		spec := loadSpec(t, "../../api/"+p.file)
+
+		operations, fields, values, queries := 0, 0, 0, 0
 		for _, op := range spec.operations() {
 			if len(p.scope) > 0 && !slices.Contains(p.scope, op.path) {
 				continue
@@ -321,6 +391,8 @@ func TestAPICoverage(t *testing.T) {
 				continue
 			}
 
+			operations++
+
 			for _, q := range op.query {
 				if q.deprecated {
 					continue
@@ -338,7 +410,13 @@ func TestAPICoverage(t *testing.T) {
 					continue
 				}
 
+				queries++
+
 				for _, e := range q.enum {
+					if sent[e] && !strings.HasSuffix(e, "_UNSPECIFIED") {
+						values++
+					}
+
 					if !sent[e] && !strings.HasSuffix(e, "_UNSPECIFIED") {
 						miss("enum " + key + " " + q.name + "=" + e)
 					}
@@ -363,13 +441,21 @@ func TestAPICoverage(t *testing.T) {
 					continue
 				}
 
+				fields++
+
 				for _, e := range f.enum {
+					if sent[f.path][e] && !strings.HasSuffix(e, "_UNSPECIFIED") {
+						values++
+					}
+
 					if !sent[f.path][e] && !strings.HasSuffix(e, "_UNSPECIFIED") {
 						miss("enum " + key + " " + f.path + "=" + e)
 					}
 				}
 			}
 		}
+
+		t.Logf("полнота относительно API %s: операций %d, полей тела %d, query %d, значений enum %d", p.name, operations, fields, queries, values)
 	}
 
 	for key, reason := range coverageExceptions {
@@ -547,6 +633,12 @@ func (s covSpec) operations() []covOp {
 func (s covSpec) fields(prefix string, schema map[string]any) []covField {
 	var out []covField
 
+	if variants, ok := schema["allOf"].([]any); ok {
+		for _, variant := range variants {
+			out = append(out, s.fields(prefix, s.resolve(asMap(variant)))...)
+		}
+	}
+
 	props := asMap(schema["properties"])
 	for name, raw := range props {
 		ps := s.resolve(asMap(raw))
@@ -565,7 +657,7 @@ func (s covSpec) fields(prefix string, schema map[string]any) []covField {
 		}
 
 		out = append(out, covField{path: p, enum: enumOf(item)})
-		if asMap(item["properties"]) != nil {
+		if asMap(item["properties"]) != nil || item["allOf"] != nil {
 			out = append(out, s.fields(p, item)...)
 		}
 	}

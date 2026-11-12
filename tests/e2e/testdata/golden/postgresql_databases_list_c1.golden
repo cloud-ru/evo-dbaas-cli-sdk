@@ -1,0 +1,13 @@
+exit: 0
+--- stdout
+NAME  OWNER  SIZE_MB  LC_COLLATE  LC_CTYPE
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /postgresql/v1/clusters/c1/databases
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1

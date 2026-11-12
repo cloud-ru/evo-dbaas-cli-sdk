@@ -36,6 +36,11 @@ func createCmd(s *state.State) *cobra.Command {
 				return err
 			}
 
+			subnets := req.Subnets
+			if len(subnets) > 1 && (len(subnets) != 3 || subnets[0] == subnets[1] || subnets[0] == subnets[2] || subnets[1] == subnets[2]) {
+				return &base.ExitError{Code: 1, Msg: i18n.T("redis.cluster.create.err.multi_az")}
+			}
+
 			if req.Params, err = base.ParseKV("param", params); err != nil {
 				return err
 			}

@@ -30,6 +30,7 @@ type Config struct {
 
 	ClickHouseURL string `koanf:"clickhouse_url"`
 	RedisURL      string `koanf:"redis_url"`
+	PostgreSQLURL string `koanf:"postgresql_url"`
 	KafkaURL      string `koanf:"kafka_url"`
 	ComputeURL    string `koanf:"compute_url"`
 	VPCURL        string `koanf:"vpc_url"`
@@ -51,6 +52,7 @@ type Options struct {
 var defaults = map[string]any{
 	"allow_http":     false,
 	"clickhouse_url": "https://clickhouse.api.cloud.ru",
+	"postgresql_url": "https://postgresql.api.cloud.ru",
 	"redis_url":      "https://redis.api.cloud.ru",
 	"kafka_url":      "https://kafka.api.cloud.ru",
 	"compute_url":    "https://compute.api.cloud.ru",
@@ -62,7 +64,7 @@ var defaults = map[string]any{
 // keys — ключи в порядке полей Config: так их печатает config list.
 var keys = []string{
 	"key_id", "key_secret", "project_id", "clickhouse_url", "redis_url", "kafka_url",
-	"compute_url", "vpc_url", "iam_url", "iam_auth_url", "allow_http",
+	"postgresql_url", "compute_url", "vpc_url", "iam_url", "iam_auth_url", "allow_http",
 }
 
 // envKeys — имена переменных окружения. Все с префиксом CLOUDRU_; старые
@@ -73,6 +75,7 @@ var envKeys = map[string]string{
 	"CLOUDRU_PROJECT_ID":         "project_id",
 	"CLOUDRU_CLICKHOUSE_API_URL": "clickhouse_url",
 	"CLOUDRU_REDIS_API_URL":      "redis_url",
+	"CLOUDRU_POSTGRESQL_API_URL": "postgresql_url",
 	"CLOUDRU_KAFKA_API_URL":      "kafka_url",
 	"CLOUDRU_COMPUTE_API_URL":    "compute_url",
 	"CLOUDRU_VPC_API_URL":        "vpc_url",

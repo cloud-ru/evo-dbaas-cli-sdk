@@ -25,7 +25,7 @@ const (
 	opDone    = `{"id":"op1","done":true,"description":"Создание кластера","resource_id":"c1"}`
 )
 
-var dbaasProducts = map[string]bool{"clickhouse": true, "redis": true, "kafka": true}
+var dbaasProducts = map[string]bool{"clickhouse": true, "redis": true, "kafka": true, "postgresql": true}
 
 // fakeCloud — все API cloud.ru на одном сервере, продукт — первый сегмент пути
 // (/clickhouse, /redis, /kafka, /compute, /vpc, /iamapi; токен — /iam/token).
@@ -58,6 +58,7 @@ func (f *fakeCloud) env(unset []string) []string {
 		"CLOUDRU_CLICKHOUSE_API_URL=" + u + "/clickhouse",
 		"CLOUDRU_REDIS_API_URL=" + u + "/redis",
 		"CLOUDRU_KAFKA_API_URL=" + u + "/kafka",
+		"CLOUDRU_POSTGRESQL_API_URL=" + u + "/postgresql",
 		"CLOUDRU_COMPUTE_API_URL=" + u + "/compute",
 		"CLOUDRU_VPC_API_URL=" + u + "/vpc",
 		"CLOUDRU_IAM_API_URL=" + u + "/iamapi",
@@ -127,6 +128,24 @@ func defaultReply(r *http.Request) reply {
 	product, path, _ := strings.Cut(strings.TrimPrefix(r.URL.Path, "/"), "/")
 
 	switch {
+	case product == "postgresql" && r.Method == http.MethodGet && path == "v1/clusters/c1/backups":
+		return reply{body: `{"backups":[{"id":"b1","name":"daily","status":"BACKUP_STATUS_COMPLETED","size_bytes":"12345678901234567890"}]}`}
+	case product == "postgresql" && r.Method == http.MethodGet && path == "v1/clusters/c1/backups/daily":
+		return reply{body: `{"id":"b1","name":"daily","status":"BACKUP_STATUS_COMPLETED","size_bytes":"12345678901234567890"}`}
+	case product == "postgresql" && r.Method == http.MethodGet && strings.HasSuffix(path, ":locales"):
+		return reply{body: `{"lc_collate":["C","en_US.UTF-8"],"lc_ctype":["C","en_US.UTF-8"]}`}
+	case product == "postgresql" && r.Method == http.MethodGet && path == "v1/clusters/c1:storageInfo":
+		return reply{body: `{"read_only_mode":false,"pg_data":{"total_gb":50,"used_gb":1}}`}
+	case product == "postgresql" && path == "v1/specifications":
+		return reply{body: `{"specifications":[{"id":"s","display_name":"pg-business","deployment_mode":"BUSINESS","max_hosts":3},{"id":"s2","deployment_mode":"BUSINESS","max_hosts":3}]}`}
+	case product == "postgresql" && r.Method == http.MethodGet && path == "v1/clusters/c1/users/u":
+		return reply{body: `{"name":"u","granted_roles":[{"name":"pg_read_all_data"}],"supported_roles":[{"name":"pg_read_all_data"},{"name":"pg_write_all_data"}]}`}
+	case product == "postgresql" && r.Method == http.MethodGet && path == "v1/clusters/c1/databases/db":
+		return reply{body: `{"name":"db","owner":"u","size_mb":100,"lc_collate":"C","lc_ctype":"C"}`}
+	case product == "postgresql" && path == "v1/clusters/c1" && r.Method == http.MethodGet:
+		return reply{body: `{"id":"c1","name":"n","status":"READY","health":"HEALTHY","version":"17","specification_id":"s","instances":2,"subnet_ids":["sn1","sn2"],"availability_zone_ids":["az1","az2"],"storage":{"pg_data_gb":50}}`}
+	case product == "postgresql" && r.Method != http.MethodGet && (strings.Contains(path, "/users") || strings.Contains(path, "/databases")):
+		return reply{body: `{}`}
 	case r.URL.Path == "/iam/token":
 		return reply{body: `{"access_token":"tok","expires_in":3600}`}
 	case r.URL.Path == "/compute/api/v1/availability-zones":

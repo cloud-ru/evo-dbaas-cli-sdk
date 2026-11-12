@@ -1,0 +1,13 @@
+exit: 0
+--- stdout
+{"id":"b1","name":"daily","status":"BACKUP_STATUS_COMPLETED","size_bytes":"12345678901234567890"}
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /postgresql/v1/clusters/c1/backups/daily
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1

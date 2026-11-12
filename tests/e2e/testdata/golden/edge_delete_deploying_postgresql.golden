@@ -1,0 +1,14 @@
+exit: 1
+--- stdout
+
+--- stderr
+error: The cluster is still being created; deletion is available after creation completes; check its state: `postgresql clusters get pg1`
+API 400: create inventory task 456: FailedPrecondition
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+DELETE /postgresql/v1/clusters/pg1
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1

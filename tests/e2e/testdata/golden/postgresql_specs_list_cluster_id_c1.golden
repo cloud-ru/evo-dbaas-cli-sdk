@@ -1,0 +1,15 @@
+exit: 0
+--- stdout
+ID  NAME         CPU  RAM_GB  MODE      MAX_HOSTS  MIN_STORAGE
+s   pg-business  0    0       BUSINESS  3          0
+s2               0    0       BUSINESS  3          0
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /postgresql/v1/specifications?cluster_id=c1&product_type=postgres
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1

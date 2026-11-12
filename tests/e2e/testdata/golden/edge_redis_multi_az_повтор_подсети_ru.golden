@@ -1,0 +1,6 @@
+exit: 1
+--- stdout
+
+--- stderr
+ошибка: Redis Multi-AZ: нужно ровно 3 разные подсети в --subnet-id
+--- requests

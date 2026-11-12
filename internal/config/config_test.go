@@ -17,6 +17,7 @@ func TestLoadDefaults(t *testing.T) {
 
 	assert.Equal(t, Config{
 		ClickHouseURL: "https://clickhouse.api.cloud.ru",
+		PostgreSQLURL: "https://postgresql.api.cloud.ru",
 		RedisURL:      "https://redis.api.cloud.ru",
 		KafkaURL:      "https://kafka.api.cloud.ru",
 		ComputeURL:    "https://compute.api.cloud.ru",
@@ -32,14 +33,14 @@ func TestLoadEnvOverridesDefaults(t *testing.T) {
 	c, err := load(Options{}, environ(
 		"CLOUDRU_KEY_ID=kid", "CLOUDRU_KEY_SECRET=sec", "CLOUDRU_PROJECT_ID=p1",
 		"CLOUDRU_CLICKHOUSE_API_URL=http://ch", "CLOUDRU_REDIS_API_URL=http://redis", "CLOUDRU_KAFKA_API_URL=http://kafka",
-		"CLOUDRU_COMPUTE_API_URL=http://compute", "CLOUDRU_VPC_API_URL=http://vpc", "CLOUDRU_IAM_API_URL=http://iam",
+		"CLOUDRU_POSTGRESQL_API_URL=http://postgresql", "CLOUDRU_COMPUTE_API_URL=http://compute", "CLOUDRU_VPC_API_URL=http://vpc", "CLOUDRU_IAM_API_URL=http://iam",
 		"CLOUDRU_IAM_AUTH_URL=http://token", "CLOUDRU_ALLOW_HTTP=1",
 	))
 	require.NoError(t, err)
 
 	assert.Equal(t, Config{
 		KeyID: "kid", KeySecret: "sec", ProjectID: "p1",
-		ClickHouseURL: "http://ch", RedisURL: "http://redis", KafkaURL: "http://kafka",
+		ClickHouseURL: "http://ch", RedisURL: "http://redis", KafkaURL: "http://kafka", PostgreSQLURL: "http://postgresql",
 		ComputeURL: "http://compute", VPCURL: "http://vpc", IAMURL: "http://iam", IAMAuthURL: "http://token",
 		AllowHTTP: true,
 	}, c)

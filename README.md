@@ -32,6 +32,8 @@ windows; amd64, arm64), сверка — `checksums.txt`.
 go install github.com/cloud-ru/evo-dbaas-cli-sdk/cmd/cloudru-dbaas@latest
 ```
 
+Проверка версии: `cloudru-dbaas version` = `cloudru-dbaas --version`; `version --json` выводит объект с полем `version`.
+
 ## Доступ
 
 Нужен ключ доступа сервисного аккаунта (или персональный) с ролью на нужный
@@ -124,6 +126,18 @@ cloudru-dbaas iam service-accounts create --name agent-clickhouse
 cloudru-dbaas iam roles grant --subject <SA_ID> --role dbaas.clickhouse.admin
 cloudru-dbaas iam access-keys create <SA_ID> --env-file agent.env   # секрет — только в файл 0600
 ```
+
+## PostgreSQL: бэкапы по умолчанию
+
+`postgresql clusters create` без флагов `--backup-*` включает автоматическое
+резервное копирование с умолчаниями спеки API: каждое воскресенье в 03:00
+(`0 3 * * SUN`), срок хранения 14 дней. Задан один флаг — второе поле берётся
+из умолчаний. Кластер без бэкапов — `--no-backup`. `--body` с ключом `backup`
+заменяет блок целиком, флаги `--backup-*` и `--no-backup` тогда не действуют.
+
+Почему CLI шлёт блок сам: API создаёт кластер без блока `backup` с выключенными
+бэкапами (ручной бэкап и список — 400 «backup disabled», восстановление на
+момент времени — 404), хотя спека описывает умолчание (проверено 7.11.2026).
 
 ## Для агентов
 

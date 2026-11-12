@@ -19,9 +19,10 @@ OAPI_CODEGEN=github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.8.0
 declare -A SPEC_URL=(
   [clickhouse]=https://cloud.ru/docs/api/specs/clickhouse/ug/_specs/openapi-clickhouse.yaml
   [redis]=https://cloud.ru/docs/api/specs/redis/ug/_specs/openapi-redis.yaml
+  [postgresql]=https://cloud.ru/docs/api/specs/paas-postgresql/ug/_specs/openapi-postgresql.yaml
   [kafka]=https://cloud.ru/docs/api/specs/paas-kafka/ug/_specs/openapi-kafka.yaml
 )
-declare -A PKG=([clickhouse]=gen/clickhouse [redis]=gen/redis [kafka]=gen/kafka [vpc]=gen/vpc [compute]=gen/compute [iam]=gen/iam)
+declare -A PKG=([clickhouse]=gen/clickhouse [redis]=gen/redis [kafka]=gen/kafka [postgresql]=gen/postgresql [vpc]=gen/vpc [compute]=gen/compute [iam]=gen/iam)
 
 # Скачиваются с User-Agent браузера.
 declare -A EXTRA_URL=(
@@ -45,7 +46,7 @@ if grep -l 'sbercloud\.dev' api/openapi-*.yaml; then
   exit 1
 fi
 
-for p in clickhouse redis vpc; do
+for p in clickhouse redis vpc postgresql; do
   go run "$OAPI_CODEGEN" -config "internal/${PKG[$p]}/cfg.yaml" "api/openapi-$p.yaml"
 done
 

@@ -2,5 +2,5 @@ exit: 1
 --- stdout
 
 --- stderr
-error: config: unknown key "clikhouse_url" (keys: key_id, key_secret, project_id, clickhouse_url, redis_url, kafka_url, compute_url, vpc_url, iam_url, iam_auth_url, allow_http)
+error: config: unknown key "clikhouse_url" (keys: key_id, key_secret, project_id, clickhouse_url, redis_url, kafka_url, postgresql_url, compute_url, vpc_url, iam_url, iam_auth_url, allow_http)
 --- requests

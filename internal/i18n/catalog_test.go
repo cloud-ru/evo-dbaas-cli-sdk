@@ -53,6 +53,37 @@ func TestCatalogsHaveSameKeys(t *testing.T) {
 	}
 }
 
+// Совпадение ключей и глаголов не ловит возврат пользовательского текста ru на английский.
+func TestRussianUserMessagesHaveCyrillic(t *testing.T) {
+	t.Parallel()
+
+	ru := catalog(t, "ru")
+
+	var untranslated []string
+
+	for _, id := range []string{
+		"auth.err.cache",
+		"auth.err.cache_write",
+		"auth.err.key_forbidden",
+		"auth.err.key_rejected",
+		"auth.err.no_key",
+		"auth.err.rate_limited",
+		"base.operation.resource",
+		"base.operation.status",
+		"output.err.encode_json",
+		"output.err.write_output",
+		"output.err.write_table",
+		"transport.err.read_body",
+		"transport.err.read_error_body",
+	} {
+		if !strings.ContainsFunc(ru[id], isCyrillic) {
+			untranslated = append(untranslated, id)
+		}
+	}
+
+	assert.Empty(t, untranslated, "пользовательские тексты ru должны содержать кириллицу")
+}
+
 // verbs — какой глагол fmt получает каждый аргумент (с 1), как считает сам fmt:
 // %[n] переставляет счётчик, * берёт аргумент под ширину или точность.
 func verbs(s string) map[int]string {
