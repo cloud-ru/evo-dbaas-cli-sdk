@@ -25,7 +25,7 @@ const (
 	opDone    = `{"id":"op1","done":true,"description":"Создание кластера","resource_id":"c1"}`
 )
 
-var dbaasProducts = map[string]bool{"clickhouse": true, "redis": true, "kafka": true, "postgresql": true}
+var dbaasProducts = map[string]bool{"clickhouse": true, "redis": true, "kafka": true, "postgresql": true, "opensearch": true}
 
 // fakeCloud — все API cloud.ru на одном сервере, продукт — первый сегмент пути
 // (/clickhouse, /redis, /kafka, /compute, /vpc, /iamapi; токен — /iam/token).
@@ -59,6 +59,7 @@ func (f *fakeCloud) env(unset []string) []string {
 		"CLOUDRU_REDIS_API_URL=" + u + "/redis",
 		"CLOUDRU_KAFKA_API_URL=" + u + "/kafka",
 		"CLOUDRU_POSTGRESQL_API_URL=" + u + "/postgresql",
+		"CLOUDRU_OPENSEARCH_API_URL=" + u + "/opensearch",
 		"CLOUDRU_COMPUTE_API_URL=" + u + "/compute",
 		"CLOUDRU_VPC_API_URL=" + u + "/vpc",
 		"CLOUDRU_IAM_API_URL=" + u + "/iamapi",
@@ -128,6 +129,12 @@ func defaultReply(r *http.Request) reply {
 	product, path, _ := strings.Cut(strings.TrimPrefix(r.URL.Path, "/"), "/")
 
 	switch {
+	case product == "opensearch" && r.Method == http.MethodGet && strings.HasPrefix(path, "v1/specifications/"):
+		return reply{body: `{"id":"s","min_data_nodes":1,"max_data_nodes":5,"min_master_nodes":0,"max_master_nodes":3,"min_data_nodes_storage_gigs":40,"min_master_nodes_storage_gigs":10}`}
+	case product == "opensearch" && r.Method == http.MethodGet && path == "v1/clusters/c1":
+		return reply{body: `{"id":"c1","name":"n","status":"READY","health":"HEALTHY","version":"2.18.0","specification_id":"s","data_nodes":3,"master_nodes":3,"data_nodes_disk_size_gib":100,"master_nodes_disk_size_gib":25,"data_nodes_subnet_ids":["sn1","sn2"],"master_nodes_subnet_ids":["sn3","sn4"],"hosts":["cluster.opensearch.cloud.ru:9200"]}`}
+	case product == "opensearch" && r.Method == http.MethodGet && path == "v1/clusters":
+		return reply{body: `{"clusters":[{"id":"c1","name":"n","status":"READY","health":"HEALTHY","version":"2.18.0","data_nodes":3,"master_nodes":3,"data_nodes_subnet_ids":["sn1","sn2"],"master_nodes_subnet_ids":["sn3","sn4"]}]}`}
 	case product == "postgresql" && r.Method == http.MethodGet && path == "v1/clusters/c1/backups":
 		return reply{body: `{"backups":[{"id":"b1","name":"daily","status":"BACKUP_STATUS_COMPLETED","size_bytes":"12345678901234567890"}]}`}
 	case product == "postgresql" && r.Method == http.MethodGet && path == "v1/clusters/c1/backups/daily":

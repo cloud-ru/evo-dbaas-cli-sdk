@@ -1,0 +1,13 @@
+exit: 0
+--- stdout
+ID  NAME  CPU  RAM_GB  DATA_NODES  MASTER_NODES  MIN_DATA_GIB
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /opensearch/v1/specifications?availability_zone_id=az1&product_type=opensearch&version=2.18.0
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1

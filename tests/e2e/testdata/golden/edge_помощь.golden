@@ -22,6 +22,7 @@ Available Commands:
   iam         Service accounts, access keys and roles
   kafka       Managed Kafka
   network     Network: subnets and VPCs (needed to create clusters)
+  opensearch  Managed OpenSearch
   postgresql  Managed PostgreSQL
   redis       Managed Redis
   version     Print the CLI version

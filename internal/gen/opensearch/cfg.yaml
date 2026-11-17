@@ -1,0 +1,7 @@
+package: opensearch
+output: internal/gen/opensearch/client.gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  skip-prune: true

@@ -13,7 +13,7 @@ import (
 // --api-url продукта перекрывает адрес из env и конфига (флаг > env > файл, root.go init).
 // Фейковое облако из env отвергает любой запрос API: дошёл туда — флаг потерян.
 func TestAPIURLFlagOverridesConfigPerProduct(t *testing.T) {
-	for _, product := range []string{"clickhouse", "redis", "kafka", "postgresql"} {
+	for _, product := range []string{"clickhouse", "redis", "kafka", "postgresql", "opensearch"} {
 		t.Run(product, func(t *testing.T) {
 			f := newFakeCloud(t)
 

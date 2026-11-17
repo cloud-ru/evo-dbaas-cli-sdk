@@ -18,7 +18,7 @@ CLI, сделанный под один сценарий («создать ми�
 что реально ушло в сеть, а не имена в коде.
 
 **Вживую не проверены:** выделенный Keeper, `--config`, `--param` кластера,
-`--logging`, `users update`, `topics update`, `specs list --cluster-id`, Multi-AZ
+`--logging`, `users update`, `topics update`, `specs list --cluster-id` (кроме ClickHouse и OpenSearch), Multi-AZ
 (`subnet_ids`), `iam roles revoke`, `iam access-keys delete`, `network vpcs create|delete`.
 
 ## Как устроена проверка
@@ -76,6 +76,7 @@ CLI, сделанный под один сценарий («создать ми�
 | Redis, Kafka `specs list` | `version_id`, `availability_zone_id` необязательны | Без них 400 (Redis с одной зоной — 500) |
 | Redis Multi-AZ `subnet_ids` | Массив строк без ограничений размера и уникальности; `replicas` лишь «Количество реплик» | По находке владельца 12.11 две подсети дают 400 `replicas per shard must be in range [3:3], requested - 2`; 8.11 три подсети в разных зонах приняты. CLI проверяет ровно 3 разных id при нескольких `--subnet-id`; число реплик из ответа не выводим. Закрытие: код и тест на фейке в коммите «Проверять подсети Redis Multi-AZ до запроса»; живой вызов здесь не повторялся |
 | Redis списки | `page_size` необязателен | Без него 500 |
+| ClickHouse, OpenSearch `specs list --cluster-id` | `cluster_id` сочетается с остальными параметрами | Только один: с `version`, `availability_zone_id` (у OpenSearch и с `product_type`) — 400 «cluster_id and other parameters can't be specified at the same time»; живые прогоны 7.11 и 17.11. CLI отказывает до запроса, у OpenSearch шлёт один `cluster_id` |
 | ClickHouse `config.*` (10 полей) | `integer` int64, `readOnly` | В ответе строки (`"100"`); в create принимаются и применяются (13.10, `max_connections=100`) |
 | ClickHouse `keeper_mode: EMBEDDED` | Ограничений нет | Только 1 шард × 1 реплика × 1 подсеть, иначе 500 |
 | ClickHouse без `keeper_mode` (legacy) | Ограничений нет | Только 1×3 или 3×3 и 1 подсеть, иначе 400; multi-AZ — только standalone |

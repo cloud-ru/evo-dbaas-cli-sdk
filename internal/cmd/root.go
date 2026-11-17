@@ -15,6 +15,7 @@ import (
 	iamcmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/iam"
 	kafkacmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/kafka"
 	networkcmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/network"
+	opensearchcmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/opensearch"
 	postgresqlcmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/postgresql"
 	rediscmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/redis"
 	zonescmd "github.com/cloud-ru/evo-dbaas-cli-sdk/internal/cmd/zones"
@@ -62,7 +63,7 @@ func NewDBaaSRoot() *cobra.Command {
 	a.commonFlags(root)
 
 	// Адреса продуктов — из конфига при выполнении (init): файл и профиль известны только после разбора флагов.
-	root.AddCommand(postgresqlcmd.NewCmd(a.st, ""), clickhousecmd.NewCmd(a.st, ""), rediscmd.NewCmd(a.st, ""), kafkacmd.NewCmd(a.st, ""), iamcmd.NewCmd(a.st), networkcmd.NewCmd(a.st), zonescmd.NewCmd(a.st), a.configCmd(), a.versionCmd())
+	root.AddCommand(opensearchcmd.NewCmd(a.st, ""), postgresqlcmd.NewCmd(a.st, ""), clickhousecmd.NewCmd(a.st, ""), rediscmd.NewCmd(a.st, ""), kafkacmd.NewCmd(a.st, ""), iamcmd.NewCmd(a.st), networkcmd.NewCmd(a.st), zonescmd.NewCmd(a.st), a.configCmd(), a.versionCmd())
 
 	return root
 }
@@ -141,6 +142,7 @@ func (a *app) init(cmd *cobra.Command) error {
 		{&a.st.RedisURL, cfg.RedisURL, product == "redis" && cmd.Flags().Changed("api-url")},
 		{&a.st.KafkaURL, cfg.KafkaURL, product == "kafka" && cmd.Flags().Changed("api-url")},
 		{&a.st.PostgreSQLURL, cfg.PostgreSQLURL, product == "postgresql" && cmd.Flags().Changed("api-url")},
+		{&a.st.OpenSearchURL, cfg.OpenSearchURL, product == "opensearch" && cmd.Flags().Changed("api-url")},
 	} {
 		if !f.set {
 			*f.v = f.def

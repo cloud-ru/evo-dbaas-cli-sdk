@@ -25,6 +25,22 @@ const (
 
 var commandRuns = []scenario{
 	{args: "version", noKey: true},
+	// OpenSearch: all 14 public operations.
+	{args: "opensearch versions list"},
+	{args: "opensearch specs list --version 2.18.0 --zone az1"},
+	{args: "opensearch specs list --cluster-id c1"},
+	{args: "opensearch specs get s"},
+	{args: "opensearch clusters list"},
+	{args: "opensearch clusters get c1"},
+	{args: "opensearch clusters create --name n --description d --version 2.18.0 --spec s --data-nodes 3 --master-nodes 3 --data-storage-gib 100 --master-storage-gib 25 --data-subnet-id sn1 --data-subnet-id sn2 --master-subnet-id sn3 --master-subnet-id sn4 --snapshots-enabled --snapshots-retention-days 14 --restore --restore-cluster-id source --restore-snapshot daily --body {}", extraArgs: []string{"--snapshots-cron", "15 14 * * *"}},
+	{args: "opensearch clusters update c1 --spec s2 --data-nodes 4 --master-nodes 3 --data-storage-gib 120 --master-storage-gib 50 --data-subnet-id sn1,sn2 --master-subnet-id sn3,sn4 --snapshots-enabled=false --snapshots-retention-days 30 --body {}", extraArgs: []string{"--snapshots-cron", "15 14 * * *"}},
+	{args: "opensearch clusters delete c1 --yes"},
+	{args: "opensearch snapshots list --cluster-id c1"},
+	{args: "opensearch snapshots get daily --cluster-id c1"},
+	{args: "opensearch snapshots create daily --cluster-id c1 --body {}"},
+	{args: "opensearch snapshots delete daily --cluster-id c1 --yes"},
+	{args: "opensearch operations list c1"},
+	{args: "opensearch operations get op1"},
 	// PostgreSQL: backups, recovery and lifecycle.
 	{args: "postgresql backups list --cluster-id c1"},
 	{args: "postgresql backups get daily --cluster-id c1"},

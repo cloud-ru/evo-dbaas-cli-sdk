@@ -33,7 +33,9 @@ type State struct {
 	KafkaURL      string
 	Kafka         func() (*cloud.Kafka, error)
 	PostgreSQLURL string
+	OpenSearchURL string
 	PostgreSQL    func() (*cloud.PostgreSQL, error)
+	OpenSearch    func() (*cloud.OpenSearch, error)
 	Compute       func() (*cloud.Compute, error)
 	VPC           func() (*cloud.VPC, error)
 	IAM           func() (*cloud.IAM, error)

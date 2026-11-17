@@ -1,0 +1,13 @@
+exit: 0
+--- stdout
+{"id":"s","min_data_nodes":1,"max_data_nodes":5,"min_master_nodes":0,"max_master_nodes":3,"min_data_nodes_storage_gigs":40,"min_master_nodes_storage_gigs":10}
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /opensearch/v1/specifications/s
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1

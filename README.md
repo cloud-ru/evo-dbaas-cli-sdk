@@ -1,9 +1,10 @@
 # cloudru-dbaas
 
-CLI для Managed ClickHouse, Redis и Kafka в cloud.ru поверх Public API, плюс
+CLI для Managed ClickHouse, Redis, Kafka, PostgreSQL и OpenSearch в cloud.ru поверх Public API, плюс
 скиллы для агентов, которые учат им пользоваться.
 
-- `cloudru-dbaas` — все три продукта: `cloudru-dbaas clickhouse|redis|kafka …`,
+- `cloudru-dbaas` — все пять продуктов:
+  `cloudru-dbaas clickhouse|redis|kafka|postgresql|opensearch …`,
   плюс то, что нужно кластеру вокруг: `zones list`, `network subnets|vpcs`
   (подсети и VPC) и `iam service-accounts|access-keys|roles` (сервисные
   аккаунты, ключи доступа, роли в проекте).
@@ -11,6 +12,7 @@ CLI для Managed ClickHouse, Redis и Kafka в cloud.ru поверх Public AP
 ```bash
 cloudru-dbaas redis clusters list
 cloudru-dbaas kafka clusters get <CLUSTER_ID> --json
+cloudru-dbaas opensearch versions list
 cloudru-dbaas clickhouse users create <CLUSTER_ID> app --password-stdin --role cloud_admin < app.pass
 ```
 
@@ -56,6 +58,7 @@ CLI сам обменивает ключ на токен IAM и кеширует
 | `CLOUDRU_KEY_ID`, `CLOUDRU_KEY_SECRET` | ключ доступа |
 | `CLOUDRU_PROJECT_ID` | проект по умолчанию |
 | `CLOUDRU_CLICKHOUSE_API_URL` | другой адрес Public API ClickHouse (по умолчанию `https://clickhouse.api.cloud.ru`) |
+| `CLOUDRU_REDIS_API_URL`, `CLOUDRU_KAFKA_API_URL`, `CLOUDRU_POSTGRESQL_API_URL`, `CLOUDRU_OPENSEARCH_API_URL` | другие адреса Public API остальных продуктов |
 | `CLOUDRU_IAM_AUTH_URL` | другой адрес выдачи токена IAM |
 | `CLOUDRU_IAM_API_URL`, `CLOUDRU_VPC_API_URL`, `CLOUDRU_COMPUTE_API_URL` | другие адреса API IAM, VPC и виртуальных машин |
 
@@ -67,8 +70,8 @@ CLI сам обменивает ключ на токен IAM и кеширует
 То же можно держать в файле `~/.config/cloudru-dbaas/config.yaml` (или
 `$XDG_CONFIG_HOME/cloudru-dbaas/config.yaml`; другой путь — `--config` или
 `CLOUDRU_CONFIG`). Ключи: `key_id`, `key_secret`, `project_id`,
-`clickhouse_url`, `redis_url`, `kafka_url`, `compute_url`, `vpc_url`, `iam_url`,
-`iam_auth_url`, `allow_http`.
+`clickhouse_url`, `redis_url`, `kafka_url`, `postgresql_url`, `opensearch_url`,
+`compute_url`, `vpc_url`, `iam_url`, `iam_auth_url`, `allow_http`.
 
 ```yaml
 profile: stand            # профиль по умолчанию; без строки — default
@@ -188,8 +191,8 @@ MIT, см. [LICENSE](LICENSE).
 
 ## English
 
-`cloudru-dbaas` is a command-line client for cloud.ru Managed ClickHouse, Redis
-and Kafka, built on the public API, plus agent skills (agentskills.io format)
+`cloudru-dbaas` is a command-line client for cloud.ru Managed ClickHouse, Redis,
+Kafka, PostgreSQL and OpenSearch, built on the public API, plus agent skills (agentskills.io format)
 in `skills/`. Help texts and skills are in Russian.
 
 Install a binary from Releases or `go install

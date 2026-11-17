@@ -66,3 +66,19 @@ func TestPostgreSQLRootPreservesJSON(t *testing.T) {
 		t.Errorf("лишние запросы: %v", f.calls)
 	}
 }
+
+// Проверяет связку нового корня с принтером: неизвестное большое число не теряется.
+func TestOpenSearchRootPreservesJSON(t *testing.T) {
+	f := newFakeCloud(t)
+	raw := `{"id":"os1","new_field":12345678901234567890}`
+	f.on("GET /v1/clusters/os1", jsonReply(raw))
+
+	out, msg, err := execute(NewDBaaSRoot(), "", "opensearch", "clusters", "get", "os1", "--json")
+	if err != nil || strings.TrimSpace(out) != raw || msg != "" {
+		t.Errorf("JSON OpenSearch: stdout %q, stderr %q, %v", out, msg, err)
+	}
+
+	if strings.Join(f.calls, ",") != "GET /v1/clusters/os1" {
+		t.Errorf("лишние запросы: %v", f.calls)
+	}
+}

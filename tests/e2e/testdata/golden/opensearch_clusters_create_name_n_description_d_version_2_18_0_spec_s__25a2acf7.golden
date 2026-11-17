@@ -1,0 +1,20 @@
+exit: 0
+--- stdout
+operation op1 — in progress
+resource  c1
+          Создание кластера
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /opensearch/v1/specifications/s
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1
+POST /opensearch/v1/clusters
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1
+  content-type: application/json
+  body: {"data_nodes":3,"data_nodes_disk_size_gib":100,"data_nodes_subnet_ids":["sn1","sn2"],"description":"d","master_nodes":3,"master_nodes_disk_size_gib":25,"master_nodes_subnet_ids":["sn3","sn4"],"name":"n","project_id":"proj-1","restore":{"cluster_id":"source","enabled":true,"snapshot_name":"daily"},"snapshots_schedule":{"cron":"15 14 * * *","enabled":true,"retention_days":"14"},"specification_id":"s","version":"2.18.0"}

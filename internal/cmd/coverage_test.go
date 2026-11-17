@@ -52,6 +52,22 @@ var coverageFlagsGlobal = map[string]bool{"json": true, "project": true, "api-ur
 // coverageRuns — вызовы CLI, которыми тест обходит API. Новый флаг или команда
 // без строки здесь роняет тест (каждый флаг каждой команды обязан встретиться).
 var coverageRuns = []covRun{
+	// OpenSearch: all 14 public operations.
+	{args: "opensearch versions list"},
+	{args: "opensearch specs list --version 2.18.0 --zone az1"},
+	{args: "opensearch specs list --cluster-id c1"},
+	{args: "opensearch specs get s"},
+	{args: "opensearch clusters list"},
+	{args: "opensearch clusters get c1"},
+	{args: "opensearch clusters create --name n --description d --version 2.18.0 --spec s --data-nodes 3 --master-nodes 3 --data-storage-gib 100 --master-storage-gib 25 --data-subnet-id sn1 --data-subnet-id sn2 --master-subnet-id sn3 --master-subnet-id sn4 --snapshots-enabled --snapshots-retention-days 14 --restore --restore-cluster-id source --restore-snapshot daily --body {}", extraArgs: []string{"--snapshots-cron", "15 14 * * *"}},
+	{args: "opensearch clusters update c1 --spec s2 --data-nodes 4 --master-nodes 3 --data-storage-gib 120 --master-storage-gib 50 --data-subnet-id sn1,sn2 --master-subnet-id sn3,sn4 --snapshots-enabled=false --snapshots-retention-days 30 --body {}", extraArgs: []string{"--snapshots-cron", "15 14 * * *"}},
+	{args: "opensearch clusters delete c1 --yes"},
+	{args: "opensearch snapshots list --cluster-id c1"},
+	{args: "opensearch snapshots get daily --cluster-id c1"},
+	{args: "opensearch snapshots create daily --cluster-id c1 --body {}"},
+	{args: "opensearch snapshots delete daily --cluster-id c1 --yes"},
+	{args: "opensearch operations list c1"},
+	{args: "opensearch operations get op1"},
 	// PostgreSQL: backups, recovery and lifecycle.
 	{args: "postgresql backups list --cluster-id c1"},
 	{args: "postgresql backups get daily --cluster-id c1"},
@@ -252,6 +268,20 @@ func (rec *covRecorder) serve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if product == "opensearch" && r.Method == http.MethodGet {
+		switch {
+		case strings.HasPrefix(path, "v1/specifications/"):
+			_, _ = w.Write([]byte(`{"id":"s","min_data_nodes":1,"max_data_nodes":5,"min_master_nodes":0,"max_master_nodes":3,"min_data_nodes_storage_gigs":40,"min_master_nodes_storage_gigs":10}`))
+			return
+		case path == "v1/clusters/c1":
+			_, _ = w.Write([]byte(`{"specification_id":"s","data_nodes":3,"master_nodes":3,"data_nodes_disk_size_gib":100,"master_nodes_disk_size_gib":25}`))
+			return
+		case (path == "v1/clusters" || strings.HasSuffix(path, "/operations")) && r.URL.Query().Get("page_token") == "":
+			_, _ = w.Write([]byte(`{"clusters":[],"operations":[],"next_page_token":"second"}`))
+			return
+		}
+	}
+
 	if product == "postgresql" && r.Method == http.MethodGet {
 		switch {
 		case path == "v1/specifications":
@@ -283,6 +313,7 @@ func TestAPICoverage(t *testing.T) {
 	t.Setenv("CLOUDRU_REDIS_API_URL", srv.URL+"/redis")
 	t.Setenv("CLOUDRU_KAFKA_API_URL", srv.URL+"/kafka")
 	t.Setenv("CLOUDRU_POSTGRESQL_API_URL", srv.URL+"/postgresql")
+	t.Setenv("CLOUDRU_OPENSEARCH_API_URL", srv.URL+"/opensearch")
 	t.Setenv("CLOUDRU_COMPUTE_API_URL", srv.URL+"/compute")
 	t.Setenv("CLOUDRU_VPC_API_URL", srv.URL+"/vpc")
 	t.Setenv("CLOUDRU_IAM_API_URL", srv.URL+"/iamapi")
@@ -357,6 +388,7 @@ func TestAPICoverage(t *testing.T) {
 		{"redis", "openapi-redis.yaml", nil},
 		{"kafka", "openapi-kafka.yaml", nil},
 		{"postgresql", "openapi-postgresql.yaml", nil},
+		{"opensearch", "openapi-opensearch.yaml", nil},
 		// Из API виртуальных машин, VPC и IAM CLI берёт то, что нужно для
 		// кластера: подсети, VPC, сервисные аккаунты, ключи, роли. Внутри
 		// этих путей покрытие полное, как у продуктов.

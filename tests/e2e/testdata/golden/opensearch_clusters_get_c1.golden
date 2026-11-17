@@ -1,0 +1,25 @@
+exit: 0
+--- stdout
+id:                          c1
+name:                        n
+status:                      READY
+health:                      HEALTHY
+version:                     2.18.0
+specification_id:            s
+data_nodes:                  3
+master_nodes:                3
+data_nodes_disk_size_gib:    100
+master_nodes_disk_size_gib:  25
+data_nodes_subnet_ids:       sn1, sn2
+master_nodes_subnet_ids:     sn3, sn4
+hosts:                       cluster.opensearch.cloud.ru:9200
+--- stderr
+
+--- requests
+POST /iam/token
+  ua: Go-http-client/1.1
+  content-type: application/json
+  body: {"keyId":"kid","secret":"sec"}
+GET /opensearch/v1/clusters/c1
+  ua: cloudru-dbaas/VERSION
+  auth: Bearer tok1
