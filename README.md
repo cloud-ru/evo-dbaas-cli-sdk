@@ -25,6 +25,19 @@ curl -fsSL https://raw.githubusercontent.com/cloud-ru/evo-dbaas-cli-sdk/main/ins
 curl -fsSL https://raw.githubusercontent.com/cloud-ru/evo-dbaas-cli-sdk/main/install.sh | sh -s -- --version v0.1.0
 ```
 
+Через Homebrew (macOS и Linux), две команды:
+
+```bash
+brew tap cloud-ru/evo-dbaas-cli-sdk https://github.com/cloud-ru/evo-dbaas-cli-sdk
+brew install cloudru-dbaas
+```
+
+`brew tap` нужен один раз: формула лежит в этом репозитории
+(`Formula/cloudru-dbaas.rb`), а не в общем tap'е, поэтому Homebrew надо
+указать адрес явно. Формулу обновляет релиз, отдельно ничего ставить не нужно.
+Проверка — `cloudru-dbaas --version`, обновление — `brew upgrade cloudru-dbaas`,
+удаление — `brew uninstall cloudru-dbaas && brew untap cloud-ru/evo-dbaas-cli-sdk`.
+
 Или бинарник со страницы релизов: `cloudru-dbaas_<os>_<arch>` (linux, darwin,
 windows; amd64, arm64), сверка — `checksums.txt`.
 
