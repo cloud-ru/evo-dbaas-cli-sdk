@@ -2,28 +2,28 @@
 class CloudruDbaas < Formula
   desc "CLI для Managed ClickHouse, Redis, Kafka, PostgreSQL и OpenSearch в cloud.ru"
   homepage "https://github.com/cloud-ru/evo-dbaas-cli-sdk"
-  version "0.6.0"
+  version "0.6.1"
   license "MIT"
 
   on_macos do
     on_arm do
-      url "https://github.com/cloud-ru/evo-dbaas-cli-sdk/releases/download/v0.6.0/cloudru-dbaas_darwin_arm64"
-      sha256 "8fa6de9054872378b2c2568bbdc18381f6b51a9cb2fc999563fc6c9bea7f6a42"
+      url "https://github.com/cloud-ru/evo-dbaas-cli-sdk/releases/download/v0.6.1/cloudru-dbaas_darwin_arm64"
+      sha256 "7ec91bc9827da314ae8469d9c8c3ca676296eb546ff5dcad1b87ba9284cd6a63"
     end
     on_intel do
-      url "https://github.com/cloud-ru/evo-dbaas-cli-sdk/releases/download/v0.6.0/cloudru-dbaas_darwin_amd64"
-      sha256 "92c88178fa0c1c97eb1d0deca6bb0cf04bb83c06bfb85a59f85804ef2e738d85"
+      url "https://github.com/cloud-ru/evo-dbaas-cli-sdk/releases/download/v0.6.1/cloudru-dbaas_darwin_amd64"
+      sha256 "f3facca9a48b45719c2b99d46a542ae6bee6450a8d767d46490108421d7415fa"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/cloud-ru/evo-dbaas-cli-sdk/releases/download/v0.6.0/cloudru-dbaas_linux_arm64"
-      sha256 "510a28372ed1802ff4a2f2aca7a96beca381a46734dc43dc14ae14212af398f4"
+      url "https://github.com/cloud-ru/evo-dbaas-cli-sdk/releases/download/v0.6.1/cloudru-dbaas_linux_arm64"
+      sha256 "026676b852013b46b327881a71eed51a14f8cdfe96ea2c3efe14e4e71ec4d227"
     end
     on_intel do
-      url "https://github.com/cloud-ru/evo-dbaas-cli-sdk/releases/download/v0.6.0/cloudru-dbaas_linux_amd64"
-      sha256 "f74773236b37793969f6587d6697c4b56a27a0dfce6c1b22329180e377b31ba1"
+      url "https://github.com/cloud-ru/evo-dbaas-cli-sdk/releases/download/v0.6.1/cloudru-dbaas_linux_amd64"
+      sha256 "01db08680ab54c6e5795ac4e6eb5a1a302ba51a36b461bc4c4deef909e1cd054"
     end
   end
 
