@@ -93,8 +93,8 @@ type kafkaListEndpoint struct {
 
 func kafkaListEndpoints() []kafkaListEndpoint {
 	return []kafkaListEndpoint{
-		{"кластеры", "clusters", "/v1/clusters", url.Values{"page_size": {"100"}, "project_id": {"p1"}, "product_type": {"kafka"}}, func(ctx context.Context, k *Kafka) ([]byte, error) { return k.Clusters(ctx, "p1") }},
-		{"операции", "operations", "/v1/clusters/c1/operations", url.Values{"page_size": {"100"}}, func(ctx context.Context, k *Kafka) ([]byte, error) { return k.ClusterOperations(ctx, "c1") }},
+		{"кластеры", "clusters", "/v1/clusters", url.Values{"page_size": {"50"}, "project_id": {"p1"}, "product_type": {"kafka"}}, func(ctx context.Context, k *Kafka) ([]byte, error) { return k.Clusters(ctx, "p1") }},
+		{"операции", "operations", "/v1/clusters/c1/operations", url.Values{"page_size": {"50"}}, func(ctx context.Context, k *Kafka) ([]byte, error) { return k.ClusterOperations(ctx, "c1") }},
 		{"топики без фильтра", "topics", "/v1/clusters/c1/topics", url.Values{"page_size": {"100"}}, func(ctx context.Context, k *Kafka) ([]byte, error) { return k.Topics(ctx, "c1", "") }},
 		{"топики с фильтром", "topics", "/v1/clusters/c1/topics", url.Values{"page_size": {"100"}, "filter_by_partial_topic_name": {"event +/"}}, func(ctx context.Context, k *Kafka) ([]byte, error) { return k.Topics(ctx, "c1", "event +/") }},
 	}

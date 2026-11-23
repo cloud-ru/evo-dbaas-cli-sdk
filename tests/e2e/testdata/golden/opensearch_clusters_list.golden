@@ -9,6 +9,6 @@ POST /iam/token
   ua: Go-http-client/1.1
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
-GET /opensearch/v1/clusters?page_size=100&product_type=opensearch&project_id=proj-1
+GET /opensearch/v1/clusters?page_size=50&product_type=opensearch&project_id=proj-1
   ua: cloudru-dbaas/VERSION
   auth: Bearer tok1

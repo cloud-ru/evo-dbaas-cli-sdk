@@ -4,6 +4,8 @@ on:
     tags: ["v*"]
 permissions:
   contents: write
+# два тега подряд не толкают формулу в main одновременно
+concurrency: release
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -21,3 +23,18 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Формула Homebrew — в Formula/ витрины, ставится через
+      # brew tap cloud-ru/evo-dbaas-cli-sdk <url репо>. В основном репо шаг не идёт.
+      - name: Формула Homebrew
+        if: github.repository == 'cloud-ru/evo-dbaas-cli-sdk'
+        run: |
+          git fetch -q origin main
+          git switch -q -C main origin/main
+          mkdir -p Formula
+          scripts/brew-formula.sh "$GITHUB_REF_NAME" dist/checksums.txt > Formula/cloudru-dbaas.rb
+          git add Formula/cloudru-dbaas.rb
+          git -c user.name='github-actions[bot]' \
+            -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -q -m "Formula: cloudru-dbaas $GITHUB_REF_NAME"
+          git pull -q --rebase origin main
+          git push -q origin main

@@ -8,6 +8,6 @@ POST /iam/token
   ua: Go-http-client/1.1
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
-GET /postgresql/v1/clusters?page_size=100&product_type=postgres&project_id=proj-1
+GET /postgresql/v1/clusters?page_size=50&product_type=postgres&project_id=proj-1
   ua: cloudru-dbaas/VERSION
   auth: Bearer tok1

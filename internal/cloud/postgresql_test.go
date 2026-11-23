@@ -37,10 +37,10 @@ func TestPostgreSQLWireContract(t *testing.T) {
 		{"specs cluster", "GET", "/v1/specifications?cluster_id=c1&product_type=postgres", "", func(ctx context.Context, p *PostgreSQL) ([]byte, error) {
 			return p.Specs(ctx, PostgreSQLSpecFilter{Cluster: "c1"})
 		}},
-		{"clusters", "GET", "/v1/clusters?page_size=100&product_type=postgres&project_id=p1", "", func(ctx context.Context, p *PostgreSQL) ([]byte, error) { return p.Clusters(ctx, "p1") }},
+		{"clusters", "GET", "/v1/clusters?page_size=50&product_type=postgres&project_id=p1", "", func(ctx context.Context, p *PostgreSQL) ([]byte, error) { return p.Clusters(ctx, "p1") }},
 		{"get cluster", "GET", "/v1/clusters/c%20%2F1", "", func(ctx context.Context, p *PostgreSQL) ([]byte, error) { return p.Cluster(ctx, "c /1") }},
 		{"delete cluster", "DELETE", "/v1/clusters/c%20%2F1", "", func(ctx context.Context, p *PostgreSQL) ([]byte, error) { return p.DeleteCluster(ctx, "c /1") }},
-		{"operations", "GET", "/v1/clusters/c%20%2F1/operations?page_size=100", "", func(ctx context.Context, p *PostgreSQL) ([]byte, error) { return p.ClusterOperations(ctx, "c /1") }},
+		{"operations", "GET", "/v1/clusters/c%20%2F1/operations?page_size=50", "", func(ctx context.Context, p *PostgreSQL) ([]byte, error) { return p.ClusterOperations(ctx, "c /1") }},
 		{"operation", "GET", "/v1/operations/op%20%2F1", "", func(ctx context.Context, p *PostgreSQL) ([]byte, error) { return p.Operation(ctx, "op /1") }},
 		{"databases", "GET", "/v1/clusters/c%20%2F1/databases", "", func(ctx context.Context, p *PostgreSQL) ([]byte, error) { return p.Databases(ctx, "c /1") }},
 		{"database", "GET", "/v1/clusters/c%20%2F1/databases/db%20%2F1", "", func(ctx context.Context, p *PostgreSQL) ([]byte, error) { return p.Database(ctx, "c /1", "db /1") }},

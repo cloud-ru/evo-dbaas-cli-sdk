@@ -18,3 +18,6 @@ checksum:
 changelog:
   use: git
   sort: asc
+  filters:
+    # коммиты бота с формулой Homebrew (release.yml) — не изменения CLI
+    exclude: ['^Formula:']

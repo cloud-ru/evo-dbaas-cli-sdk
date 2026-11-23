@@ -30,10 +30,10 @@ func TestOpenSearchWireContract(t *testing.T) {
 			return h.Specs(ctx, OpenSearchSpecFilter{Cluster: "c1"})
 		}},
 		{"spec", "GET", "/v1/specifications/s%20%2F1", "", func(ctx context.Context, h *OpenSearch) ([]byte, error) { return h.Spec(ctx, "s /1") }},
-		{"clusters", "GET", "/v1/clusters?page_size=100&product_type=opensearch&project_id=p1", "", func(ctx context.Context, h *OpenSearch) ([]byte, error) { return h.Clusters(ctx, "p1") }},
+		{"clusters", "GET", "/v1/clusters?page_size=50&product_type=opensearch&project_id=p1", "", func(ctx context.Context, h *OpenSearch) ([]byte, error) { return h.Clusters(ctx, "p1") }},
 		{"cluster", "GET", "/v1/clusters/c%20%2F1", "", func(ctx context.Context, h *OpenSearch) ([]byte, error) { return h.Cluster(ctx, "c /1") }},
 		{"delete cluster", "DELETE", "/v1/clusters/c%20%2F1", "", func(ctx context.Context, h *OpenSearch) ([]byte, error) { return h.DeleteCluster(ctx, "c /1") }},
-		{"operations", "GET", "/v1/clusters/c%20%2F1/operations?page_size=100", "", func(ctx context.Context, h *OpenSearch) ([]byte, error) { return h.ClusterOperations(ctx, "c /1") }},
+		{"operations", "GET", "/v1/clusters/c%20%2F1/operations?page_size=50", "", func(ctx context.Context, h *OpenSearch) ([]byte, error) { return h.ClusterOperations(ctx, "c /1") }},
 		{"operation", "GET", "/v1/operations/op%20%2F1", "", func(ctx context.Context, h *OpenSearch) ([]byte, error) { return h.Operation(ctx, "op /1") }},
 		{"snapshots", "GET", "/v1/clusters/c%20%2F1/snapshots", "", func(ctx context.Context, h *OpenSearch) ([]byte, error) { return h.Snapshots(ctx, "c /1") }},
 		{"snapshot", "GET", "/v1/clusters/c%20%2F1/snapshots/s%20%2F1", "", func(ctx context.Context, h *OpenSearch) ([]byte, error) { return h.Snapshot(ctx, "c /1", "s /1") }},

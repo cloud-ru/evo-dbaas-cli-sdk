@@ -8,6 +8,6 @@ POST /iam/token
   ua: Go-http-client/1.1
   content-type: application/json
   body: {"keyId":"kid","secret":"sec"}
-GET /redis/v1/clusters/c1/operations?page_size=100
+GET /redis/v1/clusters/c1/operations?page_size=50
   ua: cloudru-dbaas/VERSION
   auth: Bearer tok1

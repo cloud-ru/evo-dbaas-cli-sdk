@@ -38,7 +38,7 @@ func checkRedisListRequest(t *testing.T, r *http.Request, endpoint redisListEndp
 
 	assert.Equal(t, http.MethodGet, r.Method)
 	assert.Equal(t, endpoint.path, r.URL.Path)
-	assert.Equal(t, []string{"100"}, r.URL.Query()["page_size"])
+	assert.Equal(t, []string{dbaasPageSize}, r.URL.Query()["page_size"])
 	assert.Equal(t, token, r.URL.Query().Get("page_token"))
 
 	if token == "" {

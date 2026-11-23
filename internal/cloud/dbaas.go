@@ -35,7 +35,9 @@ func (e *APIError) flakyAccess() bool {
 
 // dbaasPageSize отправляем в каждом списке DBaaS. В спецификации page_size
 // необязателен, но Redis без него отвечает 500 (проверено 8.10.2026).
-const dbaasPageSize = "100"
+// Не больше 50: с 23.11.2026 Kafka (service-inventory) отвечает 400
+// «PageSize must be inside range [1, 50]»; остальные пока принимают и 100.
+const dbaasPageSize = "50"
 
 // dbaasOperation — схема операции, общая у трёх продуктов.
 type dbaasOperation struct {
